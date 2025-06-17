@@ -9,6 +9,7 @@ import Toast from 'primevue/toast'
     <router-view />
     <Toast />
   </div>
+  
 </template>
 
 <style scoped>
