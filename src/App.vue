@@ -1,28 +1,27 @@
+<!-- src/App.vue -->
 <script setup>
-import { ref } from 'vue'
-import HelloWorld from './components/HelloWorld.vue'
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+
+import StudentLayout from './layouts/StudentLayout.vue'
+import BlankLayout from './layouts/BlankLayout.vue'
+
 import Toast from 'primevue/toast'
+
+const route = useRoute()
+
+const layout = computed(() => {
+  const name = route.meta.layout || 'blank';
+  return {
+    student: StudentLayout,
+    blank: BlankLayout,
+  }[name] || StudentLayout;
+});
 </script>
 
 <template>
-  <div id="app">
+  <component :is="layout">
     <router-view />
     <Toast />
-  </div>
-  
+  </component>
 </template>
-
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
-</style>
