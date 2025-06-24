@@ -42,7 +42,14 @@
   </div>
 </template>
 
+
+<route lang="yaml">
+meta:
+  layout: "student"
+</route>
+
 <script setup>
+
 import { ref, computed } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import DataTable from 'primevue/datatable'
