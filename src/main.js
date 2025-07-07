@@ -1,15 +1,17 @@
 // import { createApp } from 'vue'
 // import './style.css'
-import { createApp } from 'vue'
-import 'primeicons/primeicons.css'
 import App from './App.vue'
 import router from './router'
+import 'primeicons/primeicons.css'
+import { createApp } from 'vue';
 import PrimeVue from 'primevue/config';
 import ToastService from 'primevue/toastservice'
 import Toast from 'primevue/toast'
 import Aura from '@primeuix/themes/aura';
 
 import ConfirmationService from 'primevue/confirmationservice'
+
+
 
 const app = createApp(App);
 

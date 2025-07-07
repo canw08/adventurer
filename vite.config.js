@@ -3,7 +3,8 @@ import vue from '@vitejs/plugin-vue'
 import Pages from 'vite-plugin-pages'
 import Layouts from 'vite-plugin-vue-layouts'
 import Components from 'unplugin-vue-components/vite'
-import { PrimeVueResolver } from '@primevue/auto-import-resolver'
+import { PrimeVueResolver } from 'unplugin-vue-components/resolvers';
+
 
 export default defineConfig({
   plugins: [

@@ -25,12 +25,8 @@
     <div class="main-content">
       <div class="main-header">
         <div class="header-left-group">
-          <span class="header-left">My Projects</span>
+          <span class="header-left">Quest Borad</span>
           <div class="vertical-divider"></div>
-          <span class="header-right">
-            <span class="running-count">{{ runningProjects.length }}</span>
-            <span class="running-label"> running project</span>
-          </span>
         </div>
         <div class="bell-right-group">
           <div class="notification-wrapper" @click="togglePanel($event)">
@@ -51,13 +47,6 @@
 
       <div class="main-subheader">
         <span class="greeting">Good morning, adventurer</span>
-        <div class="filter-buttons-wrapper small-toggle">
-          <SelectButton
-            v-model="activeTab"
-            :options="tabOptions"
-            class="tab-toggle"
-          />
-        </div>
       </div>
 
       <!-- 主体卡片区域 -->
@@ -78,7 +67,6 @@
             <div class="task-exp">{{ project.exp || 'N/A' }}</div>
             <div class="task-teamwork">
               <img :src="project.image" alt="Project Image" class="task-teamwork-image" />
-              <div class="teamwork-text">Teamwork</div>
             </div>
             <div class="task-footer">
               <div class="avatar-wrapper">
@@ -100,7 +88,6 @@
 <script setup>
 import { ref, computed } from 'vue';
 import Avatar from 'primevue/avatar';
-import SelectButton from 'primevue/selectbutton';
 import OverlayPanel from 'primevue/overlaypanel';
 import Button from 'primevue/button';
 import { useRouter } from 'vue-router';
@@ -108,7 +95,7 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 
 const activeTab = ref('ongoing');
-const tabOptions = ref(['ongoing', 'completed']);
+
 
 const op = ref(null);
 const unreadCount = ref(2);
@@ -160,12 +147,10 @@ const allProjects = [
 const filteredProjects = computed(() =>
   allProjects.filter((p) => p.status === activeTab.value)
 );
-const runningProjects = computed(() =>
-  allProjects.filter((p) => p.status === 'ongoing')
-);
 const goToProfile = () => {
   router.push('/student/task');
 };
+
 </script>
 
 <style scoped>
@@ -177,7 +162,7 @@ const goToProfile = () => {
   font-family: 'Segoe UI', sans-serif;
 }
 .sidebar {
-  width: 280px;
+  width: 300px;
   background-color: #f3f7fe;
   color: #333;
   display: flex;
@@ -226,7 +211,7 @@ const goToProfile = () => {
 /* 右侧内容 */
 .main-content {
   flex: 1;
-  padding: 32px 48px;
+  padding: 4px 48px;
   display: flex;
   flex-direction: column;
   background-color: #ffffff;
@@ -236,7 +221,8 @@ const goToProfile = () => {
   justify-content: space-between;
   align-items: center;
   border-bottom: 2px solid #d5dbe5;
-  padding-bottom: 8px;
+  padding-bottom: 4px;
+  padding-top: 4px;
 }
 .header-left-group {
   display: flex;
@@ -259,15 +245,7 @@ const goToProfile = () => {
   align-items: center;
   gap: 12px;
 }
-.running-count {
-  color: #304ffe;
-  font-weight: bold;
-  font-size: 16px;
-}
-.running-label {
-  color: #888;
-  margin-left: 4px;
-}
+
 
 /* 通知 */
 .bell-right-group {
@@ -330,11 +308,11 @@ const goToProfile = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 12px 0;
+  margin: 10px 0;
 }
 .greeting {
   font-style: italic;
-  font-size: 16px;
+  font-size: 18px;
   color: #333;
 }
 .filter-buttons-wrapper {
@@ -380,19 +358,19 @@ const goToProfile = () => {
   z-index: 1;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 24px;
-  padding: 24px;
+  gap: 40px;
+  padding: 40px;
 }
 
 /* task-card 样式用于 projects */
 .task-card {
-  background-color: #ffffff;
+  background-color: white;
   border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2); 
   padding: 16px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start; 
   transition: transform 0.2s, box-shadow 0.2s;
 }
 .task-card:hover {
@@ -402,48 +380,54 @@ const goToProfile = () => {
 .task-title {
   font-size: 18px;
   font-weight: bold;
-  margin-bottom: 8px;
-  text-align: center;
+  margin-bottom: 4px; 
+  text-align: left; 
+  width: 100%;
 }
 .task-time {
-  color: #8a8a8a;
+  color: #888; 
   font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
+  margin-bottom: 4px;
+  text-align: left; 
+  width: 100%; 
+  display: flex; 
+  align-items: center; 
+  gap: 8px; 
 }
 .task-exp {
-  color: #879fe9;
-  font-size: 20px;
-  text-shadow: 0 1px white;
+  color: #003366; 
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); 
+  font-size: 16px; 
   font-weight: bold;
-  margin: 8px 0;
+  margin-bottom: 8px;
+  text-align: left;
+  width: 100%;
 }
-.task-teamwork img {
-  width: 70%;
-  height: auto;
-  display: block;
+.task-teamwork {
+  width: 100%; 
+  border-bottom: 1px solid #ddd; 
+  padding-bottom: 8px; 
+  margin-bottom: 8px; 
+}
+.task-teamwork-image {
+  display: block;  
+  width: calc(100% - 32px); 
+  height: auto;  
   margin: 0 auto;
-}
-.teamwork-text {
-  font-size: 18px;
-  font-weight: bold;
-  margin-top: 8px;
-  text-align: center;
+  border-radius: 8px;  
+  object-fit: cover;
 }
 .task-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
-  margin-top: 12px;
+  margin-top: auto; 
+  width: 100%;
 }
 .task-level {
-  color: #03bafc;
+  color: #0099ff; 
   font-weight: bold;
-  font-size: 18px;
+  font-size: 16px;
   text-align: right;
-  padding-right: 16px;
 }
 </style>
