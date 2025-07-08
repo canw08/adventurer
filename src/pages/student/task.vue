@@ -357,7 +357,7 @@ const goToProfile = () => {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+ grid-template-columns: repeat(2, 1fr);
   gap: 40px;
   padding: 40px;
 }
