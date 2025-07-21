@@ -49,40 +49,49 @@
         <span class="greeting">Good morning, adventurer</span>
       </div>
 
-      <!-- 主体卡片区域 -->
-      <div class="main-body">
-        <div class="card-background"></div>
-        <div class="grid-container">
-          <!-- Projects 使用 task-card 样式 -->
-          <div
-            v-for="project in filteredProjects"
-            :key="project.id"
-            class="task-card"
-          >
-            <h3 class="task-title">{{ project.title }}</h3>
-            <div class="task-time">
-              <i class="pi pi-clock"></i>
-              <span>{{ project.date }}</span>
-            </div>
-            <div class="task-exp">{{ project.exp || 'N/A' }}</div>
-            <div class="task-teamwork">
-              <img :src="project.image" alt="Project Image" class="task-teamwork-image" />
-            </div>
-            <div class="task-footer">
-              <div class="avatar-wrapper">
-                <Avatar
-                  image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
-                  shape="circle"
-                  class="user-avatar"
-                />
-              </div>
-              <span class="task-level">Level B</span>
-            </div>
+      <!-- ✅ 正确写法：循环渲染每个项目 -->
+<div class="main-body">
+  <div class="card-background"></div>
+  <div class="grid-container">
+    <div
+      v-for="project in filteredProjects"
+      :key="project.id"
+      class="task-card"
+    >
+      <!-- 上部：图文横向布局 -->
+      <div class="task-main-content">
+        <div class="task-left">
+          <h3 class="task-title">{{ project.title }}</h3>
+          <div class="task-time">
+            <i class="pi pi-clock"></i>
+            <span>{{ project.date }}</span>
           </div>
+          <div class="task-exp">{{ project.exp || 'N/A' }}</div>
         </div>
+        <div class="task-right">
+          <img :src="project.image" alt="Project Image" class="task-image" />
+        </div>
+      </div>
+
+      <!-- 分割线 -->
+      <div class="task-divider"></div>
+
+      <!-- 下部 Footer -->
+      <div class="task-footer">
+        <div class="avatar-wrapper">
+          <Avatar
+            image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
+            shape="circle"
+            class="user-avatar"
+          />
+        </div>
+        <span class="task-level">Level B</span>
       </div>
     </div>
   </div>
+</div>
+</div>
+</div>
 </template>
 
 <script setup>
@@ -120,7 +129,7 @@ const allProjects = [
   },
   {
     id: 2,
-    title: 'Organize Community Book Drive',
+    title: 'Organize Communityafdnja',
     date: '12 June, 2025',
     status: 'ongoing',
     image: 'https://picsum.photos/seed/book/400/200',
@@ -363,16 +372,7 @@ const goToProfile = () => {
 }
 
 /* task-card 样式用于 projects */
-.task-card {
-  background-color: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2); 
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start; 
-  transition: transform 0.2s, box-shadow 0.2s;
-}
+
 .task-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
@@ -417,17 +417,81 @@ const goToProfile = () => {
   border-radius: 8px;  
   object-fit: cover;
 }
-.task-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: auto; 
-  width: 100%;
-}
+
 .task-level {
   color: #0099ff; 
   font-weight: bold;
   font-size: 16px;
   text-align: right;
 }
+/* ✅ 横向卡片整体结构 */
+.task-card {
+  display: flex;
+  flex-direction: column;
+  height: 300px;
+  padding: 16px;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+  gap: 12px;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.task-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+.task-main-content {
+  display: flex;
+  flex: 3;
+  flex-direction: row;
+  gap: 16px;
+}
+.task-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: 1;
+}
+
+.task-divider {
+  width: 100%;
+  height: 1px;
+  background-color: #e1e8f5;
+  margin-bottom: 8px;
+}
+
+.task-left,
+.task-right {
+  width: 50%;
+  height: 100%;
+  box-sizing: border-box;
+}
+.task-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  overflow: hidden;
+  overflow-wrap: break-word;
+}
+.task-right {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.task-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+#testDiv {
+  width: 100%;
+  word-wrap: break-word;
+  word-break: break-all;
+  overflow: hidden;
+}
+
 </style>
