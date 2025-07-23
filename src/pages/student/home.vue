@@ -154,6 +154,30 @@ const allProjects = [
     image: 'https://picsum.photos/seed/poster/400/200',
     exp: '350 exp',
   },
+    {
+    id: 5,
+    title: 'Volunteer Feeding Stray Cats',
+    date: '5 July, 2025',
+    status: 'ongoing',
+    image: 'https://picsum.photos/seed/cat/400/200',
+    exp: '300 exp',
+  },
+  {
+    id: 6,
+    title: 'Organize Community Book Drive',
+    date: '12 June, 2025',
+    status: 'ongoing',
+    image: 'https://picsum.photos/seed/book/400/200',
+    exp: '400 exp',
+  },
+  {
+    id: 7,
+    title: 'Schoolyard Cleanup Event',
+    date: '20 May, 2025',
+    status: 'completed',
+    image: 'https://picsum.photos/seed/school/400/200',
+    exp: '250 exp',
+  },
 ];
 
 const filteredProjects = computed(() =>
@@ -222,13 +246,13 @@ const goToProfile = () => {
   color: white;
 }
 
+
 /* 右侧内容 */
 .main-content {
   flex: 1;
   padding: 4px 48px;
   display: flex;
   flex-direction: column;
-  background-color: #ffffff;
 }
 .main-header {
   display: flex;
@@ -364,7 +388,11 @@ const goToProfile = () => {
   flex: 1;
   display: flex;
   flex-direction: column;
+    /* 让 main-body 内部滚动 */
+  overflow-y: auto;
 }
+
+
 .card-background {
   position: absolute;
   top: 0;
