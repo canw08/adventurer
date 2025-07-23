@@ -28,11 +28,11 @@
           <span class="header-left">Quest Borad</span>
           <div class="vertical-divider"></div>
         </div>
-        <div class="bell-right-group">
+      <div class="bell-right-group">
           <div class="notification-wrapper" @click="togglePanel($event)">
             <Button icon="pi pi-bell" class="notify-bell" text rounded />
             <span v-if="unreadCount > 0" class="notification-badge">{{ unreadCount }}</span>
-          </div>
+            </div>
           <OverlayPanel ref="op" class="announcement-panel">
             <div class="panel-title">📢 公告通知</div>
             <ul class="announcement-list">
@@ -57,6 +57,7 @@
       v-for="project in filteredProjects"
       :key="project.id"
       class="task-card"
+      @click="openProjectDialog(project)"
     >
       <!-- 上部：图文横向布局 -->
       <div class="task-main-content">
@@ -92,6 +93,54 @@
 </div>
 </div>
 </div>
+<Dialog
+  v-model:visible="showDialog"
+  modal
+  :style="{ width: '1400px', height: '1200px' }"
+  :header="selectedProject?.title || ''"
+  class="project-dialog"
+>
+  <!-- 活动标题 + Level -->
+<div class="dialog-header">
+  <span class="dialog-level">Level E</span>
+</div>
+
+<!-- 日期 -->
+<div class="dialog-date">
+  <i class="pi pi-clock dialog-icon"></i>
+  <span>{{ selectedProject.date }}</span>
+</div>
+
+<!-- 发布人信息 -->
+<div class="dialog-author">
+  <Avatar
+    image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
+    shape="circle"
+    size="large"
+    style="margin-right: 12px"
+  />
+  <span class="author-name">Bridgette-文碧之</span>
+</div>
+
+<!-- 中文说明 -->
+<p class="dialog-description">
+  中午十二点，在三棵树集合喂猫时长为1h 需要5–6个人
+</p>
+
+<!-- 图片占位区域 -->
+<div class="dialog-images">
+  <div class="image-placeholder"></div>
+  <div class="image-placeholder"></div>
+</div>
+
+<!-- 接受按钮 -->
+<div class="dialog-footer">
+  <Button
+    label="Accept"
+    style="background-color: #5C6BC0; color: white; border-radius: 12px; padding: 12px 24px"
+  />
+</div>
+</Dialog>
 </template>
 
 <script setup>
@@ -100,8 +149,17 @@ import Avatar from 'primevue/avatar';
 import OverlayPanel from 'primevue/overlaypanel';
 import Button from 'primevue/button';
 import { useRouter } from 'vue-router';
+import Dialog from 'primevue/dialog';
 
 const router = useRouter();
+
+const showDialog = ref(false);
+const selectedProject = ref(null);
+
+const openProjectDialog = (project) => {
+  selectedProject.value = project;
+  showDialog.value = true;
+};
 
 const activeTab = ref('ongoing');
 
@@ -170,6 +228,7 @@ const goToProfile = () => {
   background-color: #ffffff;
   font-family: 'Segoe UI', sans-serif;
 }
+
 .sidebar {
   width: 300px;
   background-color: #f3f7fe;
@@ -180,6 +239,7 @@ const goToProfile = () => {
   padding: 32px 16px;
   border-right: 1px solid #e3eaf5;
 }
+
 .profile-header {
   display: flex;
   flex-direction: column;
@@ -187,6 +247,7 @@ const goToProfile = () => {
   gap: 12px;
   margin-bottom: 32px;
 }
+
 .user-id {
   background-color: #e0e0e0;
   padding: 4px 10px;
@@ -194,6 +255,7 @@ const goToProfile = () => {
   font-size: 14px;
   color: #333;
 }
+
 .menu-list {
   width: 100%;
   display: flex;
@@ -201,6 +263,7 @@ const goToProfile = () => {
   gap: 16px;
   margin-top: 24px;
 }
+
 .menu-button {
   display: flex;
   justify-content: center;
@@ -212,6 +275,7 @@ const goToProfile = () => {
   background-color: #e3eaf5;
   color: #1e1e1e;
 }
+
 .menu-button.active {
   background-color: #2A2C56;
   color: white;
@@ -225,6 +289,7 @@ const goToProfile = () => {
   flex-direction: column;
   background-color: #ffffff;
 }
+
 .main-header {
   display: flex;
   justify-content: space-between;
@@ -233,21 +298,25 @@ const goToProfile = () => {
   padding-bottom: 4px;
   padding-top: 4px;
 }
+
 .header-left-group {
   display: flex;
   align-items: center;
   gap: 16px;
 }
+
 .header-left {
   font-size: 28px;
   font-weight: 800;
   color: #1e1e1e;
 }
+
 .vertical-divider {
   height: 32px;
   width: 2px;
   background-color: #999;
 }
+
 .header-right {
   font-size: 14px;
   display: flex;
@@ -255,22 +324,24 @@ const goToProfile = () => {
   gap: 12px;
 }
 
-
 /* 通知 */
 .bell-right-group {
   display: flex;
   align-items: center;
   gap: 8px;
 }
+
 .notification-wrapper {
   position: relative;
   cursor: pointer;
   padding: 16px;
 }
+
 .notify-bell .p-button-icon {
   font-size: 48px;
   color: black;
 }
+
 .notification-badge {
   position: absolute;
   top: 2px;
@@ -285,6 +356,7 @@ const goToProfile = () => {
   text-align: center;
   line-height: 1.3;
 }
+
 .announcement-panel {
   width: 300px;
   background-color: #fffefc;
@@ -292,21 +364,25 @@ const goToProfile = () => {
   border-radius: 12px;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
 }
+
 .panel-title {
   font-weight: bold;
   margin-bottom: 12px;
   font-size: 16px;
 }
+
 .announcement-list li {
   margin-bottom: 12px;
   padding-bottom: 8px;
   border-bottom: 1px dashed #ddd;
 }
+
 .announcement-date {
   font-size: 13px;
   color: #888;
   margin-bottom: 4px;
 }
+
 .announcement-content {
   font-size: 14px;
   color: #333;
@@ -492,6 +568,63 @@ const goToProfile = () => {
   word-wrap: break-word;
   word-break: break-all;
   overflow: hidden;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+:deep(.p-dialog-title) {
+  font-size: 100px;
+  color: #333;
+  font-weight: bold;
+}
+
+.dialog-level {
+  color: #2F80ED;
+  font-weight: bold;
+}
+.dialog-date {
+  display: flex;
+  align-items: center;
+  color: #666;
+  margin-bottom: 12px;
+}
+.dialog-icon {
+  margin-right: 8px;
+}
+.dialog-author {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.author-name {
+  font-weight: 500;
+  font-size: 16px;
+}
+.dialog-description {
+  color: #666;
+  font-size: 16px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+.dialog-images {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.image-placeholder {
+  flex: 1;
+  height: 160px;
+  background-color: #e0e0e0;
+  border-radius: 12px;
+}
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
 }
 
 </style>
