@@ -1,25 +1,4 @@
 <template>
-  <div class="layout-container">
-    <!-- 左栏 -->
-    <div class="sidebar">
-      <div class="profile-header">
-        <Avatar
-          image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
-          shape="circle"
-          size="xlarge"
-        />
-        <h2>大帅哥-周心阳</h2>
-        <p class="user-id">ID：A2107034</p>
-      </div>
-      <div class="menu-list">
-        <div class="menu-button active">
-          Quest Log
-        </div>
-          <div class="menu-button" @click="goToProfile">
-          Go to Profile
-            </div>
-      </div>
-    </div>
 
     <!-- 右侧 -->
     <div class="main-content">
@@ -93,8 +72,12 @@
         </div>
       </div>
     </div>
-  </div>
 </template>
+
+<route lang="yaml">
+meta:
+  layout: "student"
+</route>
 
 <script setup>
 import { ref, computed } from 'vue';
@@ -460,12 +443,13 @@ const goToProfile = () => {
   margin-bottom: 8px; 
 }
 .task-teamwork-image {
-  display: block;  
-  width: calc(100% - 32px); 
+  width: 100%;
   height: auto;  
+  max-height: 200px;
+  object-fit: contain;
+  border-radius: 12px;
+  display: block;
   margin: 0 auto;
-  border-radius: 8px;  
-  object-fit: cover;
 }
 .task-footer {
   display: flex;
