@@ -31,7 +31,7 @@ const goToProfile = () => {
 
 <style scoped>
 .sidebar {
-  width: 280px;
+  width: 300px;
   background-color: #f3f7fe;
   color: #333;
   display: flex;

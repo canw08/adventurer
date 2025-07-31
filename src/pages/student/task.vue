@@ -3,21 +3,13 @@
     <!-- 左栏 -->
     <div class="sidebar">
       <div class="profile-header">
-        <Avatar
-          image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
-          shape="circle"
-          size="xlarge"
-        />
+        <Avatar image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png" shape="circle" size="xlarge" />
         <h2>大帅哥-周心阳</h2>
         <p class="user-id">ID：A2107034</p>
       </div>
       <div class="menu-list">
-        <div class="menu-button ">
-          My Projects
-        </div>
-          <div class="menu-button active" @click="goToProfile">
-          Go to Profile
-            </div>
+        <div class="menu-button ">My Projects</div>
+        <div class="menu-button active" @click="goToProfile">Go to Profile</div>
       </div>
     </div>
 
@@ -28,11 +20,11 @@
           <span class="header-left">Quest Borad</span>
           <div class="vertical-divider"></div>
         </div>
-      <div class="bell-right-group">
+        <div class="bell-right-group">
           <div class="notification-wrapper" @click="togglePanel($event)">
             <Button icon="pi pi-bell" class="notify-bell" text rounded />
             <span v-if="unreadCount > 0" class="notification-badge">{{ unreadCount }}</span>
-            </div>
+          </div>
           <OverlayPanel ref="op" class="announcement-panel">
             <div class="panel-title">📢 公告通知</div>
             <ul class="announcement-list">
@@ -49,99 +41,136 @@
         <span class="greeting">Good morning, adventurer</span>
       </div>
 
-      <!-- ✅ 正确写法：循环渲染每个项目 -->
-<div class="main-body">
-  <div class="card-background"></div>
-  <div class="grid-container">
-    <div
-      v-for="project in filteredProjects"
-      :key="project.id"
-      class="task-card"
-      @click="openProjectDialog(project)"
-    >
-      <!-- 上部：图文横向布局 -->
-      <div class="task-main-content">
-        <div class="task-left">
-          <h3 class="task-title">{{ project.title }}</h3>
-          <div class="task-time">
-            <i class="pi pi-clock"></i>
-            <span>{{ project.date }}</span>
+      <!-- ✅ 卡片列表 -->
+      <div class="main-body">
+        <div class="card-background"></div>
+        <div class="grid-container">
+          <div v-for="project in filteredProjects" :key="project.id" class="task-card" @click="openProjectDialog(project)">
+            <!-- 上部图文 -->
+            <div class="task-main-content">
+              <div class="task-left">
+                <h3 class="task-title">{{ project.title }}</h3>
+                <div class="task-time">
+                  <i class="pi pi-clock"></i>
+                  <span>{{ project.date }}</span>
+                </div>
+                <div class="task-exp">{{ project.exp || 'N/A' }}</div>
+              </div>
+              <div class="task-right">
+                <img :src="project.image" alt="Project Image" class="task-image" />
+              </div>
+            </div>
+
+            <div class="task-divider"></div>
+
+            <div class="task-footer">
+              <div class="avatar-wrapper">
+                <Avatar image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png" shape="circle" class="user-avatar" />
+              </div>
+              <span class="task-level">Level {{ project.level }}</span>
+            </div>
           </div>
-          <div class="task-exp">{{ project.exp || 'N/A' }}</div>
         </div>
-        <div class="task-right">
-          <img :src="project.image" alt="Project Image" class="task-image" />
-        </div>
-      </div>
-
-      <!-- 分割线 -->
-      <div class="task-divider"></div>
-
-      <!-- 下部 Footer -->
-      <div class="task-footer">
-        <div class="avatar-wrapper">
-          <Avatar
-            image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
-            shape="circle"
-            class="user-avatar"
-          />
-        </div>
-        <span class="task-level">Level B</span>
       </div>
     </div>
   </div>
-</div>
-</div>
-</div>
-<Dialog
+
+  <!-- ✅ 弹窗 -->
+  <Dialog
   v-model:visible="showDialog"
   modal
-  :style="{ width: '1400px', height: '1200px' }"
-  :header="selectedProject?.title || ''"
+  dismissableMask
+  :closable="false"
+  :style="{ width: '1100px', height: '700px', position: 'relative' }"
   class="project-dialog"
 >
-  <!-- 活动标题 + Level -->
-<div class="dialog-header">
-  <span class="dialog-level">Level E</span>
-</div>
+  <!-- 自定义 Header -->
+  <template #header>
+    <div class="dialog-custom-header">
+      <!-- 左侧返回按钮 -->
+      <div class="dialog-header-left">
+        <Button
+          icon="pi pi-arrow-left"
+          text
+          class="dialog-back-button"
+          @click="showDialog = false"
+        />
+      </div>
 
-<!-- 日期 -->
-<div class="dialog-date">
-  <i class="pi pi-clock dialog-icon"></i>
-  <span>{{ selectedProject.date }}</span>
-</div>
+      <!-- 中间标题 -->
+      <div class="dialog-header-center">
+        <span class="dialog-title">{{ selectedProject?.title || '' }}</span>
+      </div>
 
-<!-- 发布人信息 -->
-<div class="dialog-author">
-  <Avatar
-    image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
-    shape="circle"
-    size="large"
-    style="margin-right: 12px"
-  />
-  <span class="author-name">Bridgette-文碧之</span>
-</div>
+       <!-- 浮动右上角的等级标签 -->
+      <div class="floating-dialog-level">
+        Level {{ selectedProject?.level || '' }}
+      </div>
+    </div>
+  </template>
 
-<!-- 中文说明 -->
-<p class="dialog-description">
-  中午十二点，在三棵树集合喂猫时长为1h 需要5–6个人
+  <!-- 弹窗主体内容区域 -->
+  <div class="dialog-content-wrapper">
+    <!-- 左侧内容区域 -->
+    <div class="dialog-left-section">
+      <div class="dialog-date">
+        <i class="pi pi-clock dialog-icon"></i>
+        <span>{{ selectedProject.date }}</span>
+      </div>
+
+      <div class="dialog-author">
+        <Avatar
+          image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
+          shape="circle"
+          size="large"
+          style="margin-right: 12px"
+        />
+        <span class="author-name">Bridgette-文碧之</span>
+      </div>
+
+     <div class="dialog-description-row">
+      <div class="fake-avatar-space"></div>
+      <p class="dialog-description">
+  {{ selectedProject?.description || '无任务说明' }}
 </p>
+   </div>
 
-<!-- 图片占位区域 -->
-<div class="dialog-images">
-  <div class="image-placeholder"></div>
-  <div class="image-placeholder"></div>
-</div>
+      <div class="dialog-images">
+        <div class="image-placeholder"></div>
+        <div class="image-placeholder"></div>
+      </div>
+    </div>
 
-<!-- 接受按钮 -->
-<div class="dialog-footer">
-  <Button
-    label="Accept"
-    style="background-color: #5C6BC0; color: white; border-radius: 12px; padding: 12px 24px"
-  />
-</div>
+    <!-- 分隔线 -->
+    <div class="dialog-vertical-divider"></div>
+
+    <!-- 右侧区域 -->
+    <div class="dialog-right-section"></div>
+  </div>
+
+  <!-- 接任务按钮 -->
+  <div class="absolute-accept-button">
+    <Button
+      label="Accept"
+      style="
+        background-color: #2A2C52;
+        color: white;
+        border-radius: 12px;
+        padding: 12px 24px;
+      "
+    />
+  </div>
 </Dialog>
 </template>
+
+<style scoped>
+.absolute-accept-button {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  z-index: 999;
+}
+</style>
 
 <script setup>
 import { ref, computed } from 'vue';
@@ -184,14 +213,22 @@ const allProjects = [
     status: 'ongoing',
     image: 'https://picsum.photos/seed/cat/400/200',
     exp: '300 exp',
+    level: 'E',
+    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
+    author: 'Amy Elsner',
+    description: '中午十二点，在三棵树集合喂猫，时长为1小时，需要5–6人',
   },
   {
     id: 2,
-    title: 'Organize Communityafdnja',
+    title: 'Organize Community Event',
     date: '12 June, 2025',
     status: 'ongoing',
     image: 'https://picsum.photos/seed/book/400/200',
     exp: '400 exp',
+    level: 'C',
+    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/onyamalimba.png',
+    author: 'Onya Malimba',
+    description: '下午两点，在活动中心组织志愿者会议，需要3人负责接待',
   },
   {
     id: 3,
@@ -200,6 +237,10 @@ const allProjects = [
     status: 'completed',
     image: 'https://picsum.photos/seed/school/400/200',
     exp: '250 exp',
+    level: 'D',
+    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/ivanmagalhaes.png',
+    author: 'Ivan Magalhaes',
+    description: '早上九点集合，清理学校操场，需要10人，时长2小时',
   },
   {
     id: 4,
@@ -208,7 +249,11 @@ const allProjects = [
     status: 'ongoing',
     image: 'https://picsum.photos/seed/poster/400/200',
     exp: '350 exp',
-  },
+    level: 'B',
+    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
+    author: 'Xu Xuefeng',
+    description: '设计艺术节宣传海报，预计工作时间3小时，需要2位同学合作完成',
+  }
 ];
 
 const filteredProjects = computed(() =>
@@ -456,8 +501,8 @@ const goToProfile = () => {
 .task-title {
   font-size: 18px;
   font-weight: bold;
-  margin-bottom: 4px; 
-  text-align: left; 
+  margin: 0 0 4px 0;
+  text-align: left;
   width: 100%;
 }
 .task-time {
@@ -497,7 +542,7 @@ const goToProfile = () => {
 .task-level {
   color: #0099ff; 
   font-weight: bold;
-  font-size: 16px;
+  font-size: 22px;
   text-align: right;
 }
 /* ✅ 横向卡片整体结构 */
@@ -603,7 +648,7 @@ const goToProfile = () => {
 }
 .author-name {
   font-weight: 500;
-  font-size: 16px;
+  font-size: 20px;
 }
 .dialog-description {
   color: #666;
@@ -617,14 +662,112 @@ const goToProfile = () => {
   margin-bottom: 20px;
 }
 .image-placeholder {
-  flex: 1;
+  width: 240px;
   height: 160px;
   background-color: #e0e0e0;
   border-radius: 12px;
+  flex-shrink: 0;
+  object-fit: cover;
 }
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
+}
+.dialog-custom-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+}
+
+.dialog-back-button {
+  font-size: 18px;
+  color: #333;
+}
+
+.dialog-title {
+  font-size: 30px;
+  font-weight: bold;
+  color: #1e1e1e;
+}
+
+:deep(.p-dialog-mask.p-component-overlay) {
+  backdrop-filter: blur(6px); /* 背景模糊 */
+  background-color: rgba(0, 0, 0, 0.2); /* 带轻微暗色 */
+  transition: all 0.3s ease;
+}
+
+.dialog-vertical-divider {
+  position: absolute;
+  top: 48px;
+  bottom: 48px;
+  left: calc(100% * 0.75);
+  width: 1px;
+  background-color: #ccc;
+  border-radius: 1px;
+  z-index: 10;
+}
+.dialog-content-wrapper {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  padding: 4px 24px 24px 24px;
+  box-sizing: border-box;
+  height: 100%; 
+}
+.dialog-right-section {
+  position: relative;
+  width: 25%; /* 与分割线对齐 */
+  min-height: 100%;
+}
+
+.fixed-accept-button {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+}
+:deep(.p-dialog) {
+  height: 100%;
+}
+:deep(.p-dialog-content) {
+  position: relative;
+  height: calc(700px - 50px); /* 50px 是 header 高度大约估算值 */
+}
+.floating-dialog-level {
+  position: absolute;
+  top: 28px;
+  right: 130px;
+  color: #2a2c52;
+  font-weight: bold;
+  font-size: 32px;
+  text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  pointer-events: none;
+}
+.dialog-description-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.fake-avatar-space {
+  width: 48px;   /* 模拟头像宽度 */
+  height: 48px;  /* 可设为 0 也可以跟高度统一 */
+  flex-shrink: 0;
+}
+
+.dialog-description {
+  font-size: 16px;
+  color: #666;
+  line-height: 1.5;
+  margin: 0;
+}
+.dialog-left-section {
+  flex: 1;
+  max-width: 75%;
+  word-wrap: break-word;
+  word-break: break-word;
 }
 
 </style>
