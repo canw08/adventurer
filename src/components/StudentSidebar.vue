@@ -10,11 +10,21 @@
       <p class="user-id">ID：A2107034</p>
     </div>
     <div class="menu-list">
-      <div class="menu-button active">
-        My Projects
+      <div
+        class="menu-button"
+        :class="{ active: isActive('/student/home') }"
+        @click="goToLog"
+        v-ripple
+      >
+        Quest Log
       </div>
-      <div class="menu-button" @click="goToProfile">
-        Go to Profile
+      <div
+        class="menu-button"
+        :class="{ active: isActive('/student/task') }"
+        @click="goToBoard"
+        v-ripple
+      >
+        Quest Board
       </div>
     </div>
   </div>
@@ -22,11 +32,18 @@
 
 <script setup>
 import Avatar from 'primevue/avatar';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
+
 const router = useRouter();
-const goToProfile = () => {
+const route = useRoute();
+
+const goToLog = () => {
+  router.push('/student/home');
+};
+const goToBoard = () => {
   router.push('/student/task');
 };
+const isActive = (path) => route.path === path;
 </script>
 
 <style scoped>
@@ -69,11 +86,23 @@ const goToProfile = () => {
   font-size: 18px;
   font-weight: 600;
   border-radius: 14px;
-  background-color: #e3eaf5;
-  color: #1e1e1e;
+  background-color: #f3f7fe;
+  color: #5067b0;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  transform: scale(1);
+  position: relative;
+  overflow: hidden;
+}
+.menu-button:hover {
+  transform: scale(1.03);
+  background-color: #e0e8ff;
+}
+.menu-button:active {
+  transform: scale(0.96);
 }
 .menu-button.active {
-  background-color: #2A2C56;
+  background-color: #2a2c56;
   color: white;
 }
 </style>

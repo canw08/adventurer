@@ -1,17 +1,4 @@
 <template>
-  <div class="layout-container">
-    <!-- 左栏 -->
-    <div class="sidebar">
-      <div class="profile-header">
-        <Avatar image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png" shape="circle" size="xlarge" />
-        <h2>大帅哥-周心阳</h2>
-        <p class="user-id">ID：A2107034</p>
-      </div>
-      <div class="menu-list">
-        <div class="menu-button ">My Projects</div>
-        <div class="menu-button active" @click="goToProfile">Go to Profile</div>
-      </div>
-    </div>
 
     <!-- 右侧 -->
     <div class="main-content">
@@ -82,8 +69,6 @@
 </div>
       </div>
     </div>
-  </div>
-
   <!-- ✅ 弹窗 -->
   <Dialog
   v-model:visible="showDialog"
@@ -170,6 +155,7 @@
     />
   </div>
 </Dialog>
+
 </template>
 
 <style scoped>
@@ -180,6 +166,11 @@
   z-index: 999;
 }
 </style>
+
+<route lang="yaml">
+meta:
+  layout: "student"
+</route>
 
 <script setup>
 import { ref, computed } from 'vue';
