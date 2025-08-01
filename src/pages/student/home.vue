@@ -41,7 +41,6 @@
 
       <!-- 主体卡片区域 -->
       <div class="main-body">
-        <div class="card-background"></div>
         <div class="grid-container">
           <!-- Projects 使用 task-card 样式 -->
           <div
@@ -181,6 +180,7 @@ const goToProfile = () => {
   height: 100vh;
   background-color: #ffffff;
   font-family: 'Segoe UI', sans-serif;
+  overflow: hidden;
 }
 .sidebar {
   width: 300px;
@@ -236,7 +236,10 @@ const goToProfile = () => {
   padding: 4px 48px;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  overflow: hidden;
 }
+
 .main-header {
   display: flex;
   justify-content: space-between;
@@ -367,14 +370,10 @@ const goToProfile = () => {
 
 /* 主体卡片区域 */
 .main-body {
-  position: relative;
   flex: 1;
-  display: flex;
-  flex-direction: column;
-    /* 让 main-body 内部滚动 */
-  overflow-y: auto;
+  overflow-y: auto;       /* ✅ 只允许这里滚动 */
+  background-color: #f3f7fe;  /* ✅ 放背景色在这里 */
 }
-
 
 .card-background {
   position: absolute;

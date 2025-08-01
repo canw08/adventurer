@@ -17,7 +17,7 @@
     <div class="main-content">
       <div class="main-header">
         <div class="header-left-group">
-          <span class="header-left">Quest Borad</span>
+          <span class="header-left">Quest Board</span>
           <div class="vertical-divider"></div>
         </div>
         <div class="bell-right-group">
@@ -45,7 +45,7 @@
       <div class="main-body">
         <div class="card-background"></div>
         <div class="grid-container">
-          <div v-for="project in filteredProjects" :key="project.id" class="task-card" @click="openProjectDialog(project)">
+          <div v-for="project in paginatedProjects" :key="project.id" class="task-card" @click="openProjectDialog(project)">
             <!-- 上部图文 -->
             <div class="task-main-content">
               <div class="task-left">
@@ -71,6 +71,15 @@
             </div>
           </div>
         </div>
+        <div class="fixed-footer-wrapper">
+      <Paginator
+    :rows="rowsPerPage"
+    :totalRecords="filteredProjects.length"
+    :first="currentPage * rowsPerPage"
+    @page="(e) => currentPage = e.page"
+    style="background-color: white; border-radius: 12px; padding: 4px 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);"
+  />
+</div>
       </div>
     </div>
   </div>
@@ -180,6 +189,7 @@ import Button from 'primevue/button';
 import { useRouter } from 'vue-router';
 import Dialog from 'primevue/dialog';
 
+
 const router = useRouter();
 
 const showDialog = ref(false);
@@ -262,6 +272,13 @@ const filteredProjects = computed(() =>
 const goToProfile = () => {
   router.push('/student/task');
 };
+const currentPage = ref(0)
+const rowsPerPage = 2  
+
+const paginatedProjects = computed(() => {
+  const start = currentPage.value * rowsPerPage;
+  return filteredProjects.value.slice(start, start + rowsPerPage);
+});
 
 </script>
 
@@ -549,7 +566,7 @@ const goToProfile = () => {
 .task-card {
   display: flex;
   flex-direction: column;
-  height: 300px;
+  height: auto;
   padding: 16px;
   background-color: white;
   border-radius: 16px;
@@ -580,6 +597,7 @@ const goToProfile = () => {
   width: 100%;
   height: 1px;
   background-color: #e1e8f5;
+  margin-top: 1px;
   margin-bottom: 8px;
 }
 
@@ -600,10 +618,12 @@ const goToProfile = () => {
   display: flex;
   justify-content: center;
   align-items: center;
+  padding-top: 6px; 
+  padding-bottom: 6px;
 }
 .task-image {
   width: 100%;
-  height: 100%;
+  aspect-ratio: 4 / 3;
   object-fit: cover;
   border-radius: 8px;
 }
@@ -769,5 +789,20 @@ const goToProfile = () => {
   word-wrap: break-word;
   word-break: break-word;
 }
+.fixed-footer-wrapper {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+}
 
+.footer-text {
+  background-color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  color: #333;
+  font-weight: 500;
+}
 </style>
