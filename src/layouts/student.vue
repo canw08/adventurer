@@ -26,7 +26,6 @@ html, body {
   background-color: #ffffff;
   font-family: 'Segoe UI', sans-serif;
   overflow: hidden;
-  
 }
 
 .main-contents {

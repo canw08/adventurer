@@ -77,6 +77,7 @@ const isActive = (path) => route.path === path;
   flex-direction: column;
   gap: 16px;
   margin-top: 24px;
+  padding: 16px;
 }
 .menu-button {
   display: flex;

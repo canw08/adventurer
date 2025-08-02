@@ -23,9 +23,15 @@
           </OverlayPanel>
         </div>
       </div>
-
-      <div class="main-subheader">
+       <div class="main-subheader">
         <span class="greeting">Good morning, adventurer</span>
+         <div class="filter-buttons-wrapper small-toggle">
+    <SelectButton
+      v-model="activeTab"
+      :options="tabOptions"
+      class="tab-toggle"
+    />
+  </div>
       </div>
 
       <!-- ✅ 卡片列表 -->
@@ -51,11 +57,17 @@
             <div class="task-divider"></div>
 
             <div class="task-footer">
-              <div class="avatar-wrapper">
-                <Avatar image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png" shape="circle" class="user-avatar" />
-              </div>
-              <span class="task-level">Level {{ project.level }}</span>
-            </div>
+  <div class="avatar-wrapper">
+    <Avatar
+      :image="project.avatar"
+      shape="circle"
+      style="width: 40px; height: 40px"
+    />
+    <span class="avatar-name">{{ project.author }}</span>
+  </div>
+  <span class="task-level">Level {{ project.level }}</span>
+</div>
+</div>
           </div>
         </div>
         <div class="fixed-footer-wrapper">
@@ -68,7 +80,6 @@
   />
 </div>
       </div>
-    </div>
   <!-- ✅ 弹窗 -->
   <Dialog
   v-model:visible="showDialog"
@@ -117,9 +128,9 @@
           image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
           shape="circle"
           size="large"
-          style="margin-right: 12px"
+          style="width: 40px; height: 40px"
         />
-        <span class="author-name">Bridgette-文碧之</span>
+        <span class="author-name">{{ selectedProject?.author }}</span>
       </div>
 
      <div class="dialog-description-row">
@@ -192,6 +203,7 @@ const openProjectDialog = (project) => {
 };
 
 const activeTab = ref('ongoing');
+const tabOptions = ref(['ongoing', 'completed']);
 
 
 const op = ref(null);
@@ -302,7 +314,7 @@ const paginatedProjects = computed(() => {
 }
 
 .user-id {
-  background-color: #e0e0e0;
+  background-color: #e6e6e6;
   padding: 4px 10px;
   border-radius: 999px;
   font-size: 14px;
@@ -367,7 +379,7 @@ const paginatedProjects = computed(() => {
 .vertical-divider {
   height: 32px;
   width: 2px;
-  background-color: #999;
+  background-color: #e1e8f5;
 }
 
 .header-right {
@@ -446,19 +458,14 @@ const paginatedProjects = computed(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 10px 0;
+  margin: 4px 0;
+  padding: 0;
+  min-height: 40px;
 }
 .greeting {
   font-style: italic;
   font-size: 18px;
   color: #333;
-}
-.filter-buttons-wrapper {
-  display: inline-flex;
-  padding: 2px;
-  border: 1px solid #c5d4ea;
-  border-radius: 12px;
-  background-color: white;
 }
 .small-toggle {
   transform: scale(0.9);
@@ -475,18 +482,18 @@ const paginatedProjects = computed(() => {
 }
 
 /* 主体卡片区域 */
+
 .main-body {
   position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
+  border-radius: 12px;
+  overflow: hidden;
 }
 .card-background {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; bottom: 0; left: 0; right: 0;
   background-color: #f3f7fe;
   border-radius: 12px;
   z-index: 0;
@@ -566,11 +573,6 @@ const paginatedProjects = computed(() => {
   overflow: hidden;
   transition: transform 0.2s, box-shadow 0.2s;
 }
-.task-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
-}
-
 .task-main-content {
   display: flex;
   flex: 3;
@@ -795,5 +797,43 @@ const paginatedProjects = computed(() => {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   color: #333;
   font-weight: 500;
+}
+
+
+.filter-buttons-wrapper {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid #c5d4ea;
+  border-radius: 12px;
+  background-color: white;
+}
+
+.small-toggle {
+  transform: scale(0.9);
+  transform-origin: right center;
+}
+
+.tab-toggle ::v-deep(.p-button) {
+  padding: 6px 16px;
+  font-size: 14px;
+  border-radius: 0;
+}
+.avatar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* 控制头像与名字之间的间距 */
+}
+
+.avatar-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+.task-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
 }
 </style>

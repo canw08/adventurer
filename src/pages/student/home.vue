@@ -58,15 +58,16 @@
               <img :src="project.image" alt="Project Image" class="task-teamwork-image" />
             </div>
             <div class="task-footer">
-              <div class="avatar-wrapper">
-                <Avatar
-                  image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
-                  shape="circle"
-                  class="user-avatar"
-                />
-              </div>
-              <span class="task-level">Level B</span>
-            </div>
+  <div class="avatar-wrapper">
+    <Avatar
+      :image="project.avatar"
+      shape="circle"
+      style="width: 40px; height: 40px"
+    />
+    <span class="avatar-name">{{ project.author }}</span>
+  </div>
+  <span class="task-level">Level {{ project.level }}</span>
+</div>
           </div>
         </div>
       </div>
@@ -111,6 +112,8 @@ const allProjects = [
     status: 'ongoing',
     image: 'https://picsum.photos/seed/cat/400/200',
     exp: '300 exp',
+    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
+    author: 'Amy Elsner',
   },
   {
     id: 2,
@@ -119,6 +122,8 @@ const allProjects = [
     status: 'ongoing',
     image: 'https://picsum.photos/seed/book/400/200',
     exp: '400 exp',
+    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
+    author: 'Amy Elsner',
   },
   {
     id: 3,
@@ -127,6 +132,8 @@ const allProjects = [
     status: 'completed',
     image: 'https://picsum.photos/seed/school/400/200',
     exp: '250 exp',
+    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
+    author: 'Amy Elsner',
   },
   {
     id: 4,
@@ -135,6 +142,8 @@ const allProjects = [
     status: 'ongoing',
     image: 'https://picsum.photos/seed/poster/400/200',
     exp: '350 exp',
+    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
+    author: 'Amy Elsner',
   },
     {
     id: 5,
@@ -143,6 +152,8 @@ const allProjects = [
     status: 'ongoing',
     image: 'https://picsum.photos/seed/cat/400/200',
     exp: '300 exp',
+    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
+    author: 'Amy Elsner',
   },
   {
     id: 6,
@@ -151,6 +162,8 @@ const allProjects = [
     status: 'ongoing',
     image: 'https://picsum.photos/seed/book/400/200',
     exp: '400 exp',
+    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
+    author: 'Amy Elsner',
   },
   {
     id: 7,
@@ -200,7 +213,7 @@ const goToProfile = () => {
   margin-bottom: 32px;
 }
 .user-id {
-  background-color: #e0e0e0;
+  background-color: #e6e6e6;
   padding: 4px 10px;
   border-radius: 999px;
   font-size: 14px;
@@ -261,7 +274,7 @@ const goToProfile = () => {
 .vertical-divider {
   height: 32px;
   width: 2px;
-  background-color: #999;
+  background-color: #e1e8f5;
 }
 .header-right {
   font-size: 14px;
@@ -340,11 +353,17 @@ const goToProfile = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 10px 0;
+  margin: 4px 0;
+  padding: 0;
+  min-height: 40px;
 }
+
 .greeting {
   font-style: italic;
   font-size: 18px;
+  line-height: 1.2;
+  margin: 0;
+  padding: 0;
   color: #333;
 }
 .filter-buttons-wrapper {
@@ -370,20 +389,21 @@ const goToProfile = () => {
 
 /* 主体卡片区域 */
 .main-body {
+  position: relative;
   flex: 1;
-  overflow-y: auto;       /* ✅ 只允许这里滚动 */
-  background-color: #f3f7fe;  /* ✅ 放背景色在这里 */
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  overflow: hidden;
+  overflow: auto;
+    background-color: #f3f7fe;
 }
-
 .card-background {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #f3f7fe;
+  top: 0; bottom: 0; left: 0; right: 0;
   border-radius: 12px;
   z-index: 0;
+  pointer-events: none;
 }
 .grid-container {
   position: relative;
@@ -462,5 +482,16 @@ const goToProfile = () => {
   font-weight: bold;
   font-size: 16px;
   text-align: right;
+}
+.avatar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
 }
 </style>
