@@ -1,13 +1,13 @@
 <template>
-  <div class="sidebar">
+  <div class="sidebar" v-if="userStore.userInfo">
     <div class="profile-header">
       <Avatar
-        image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
+        :image="userStore.userInfo.avatar || defaultAvatar"
         shape="circle"
         size="xlarge"
       />
-      <h2>大帅哥-周心阳</h2>
-      <p class="user-id">ID：A2107034</p>
+      <h2>{{ userStore.userInfo.nickname || userStore.userInfo.username }}</h2>
+      <p class="user-id">ID：{{ userStore.userInfo.identifier }}</p>
     </div>
     <div class="menu-list">
       <div
@@ -30,15 +30,23 @@
       </div>
     </div>
   </div>
+  <div v-else>
+    加载中...
+  </div>
 </template>
 
 <script setup>
 import Avatar from 'primevue/avatar';
 import { useRouter, useRoute } from 'vue-router';
-import 'primeicons/primeicons.css'
+import 'primeicons/primeicons.css';
+import { onMounted } from 'vue';
+import { useUserStore } from '../stores/user';
 
 const router = useRouter();
 const route = useRoute();
+const userStore = useUserStore();
+
+const defaultAvatar = 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png';
 
 const goToLog = () => {
   router.push('/student/home');
@@ -47,6 +55,14 @@ const goToBoard = () => {
   router.push('/student/task');
 };
 const isActive = (path) => route.path === path;
+
+onMounted(async () => {
+  try {
+    await userStore.fetchUser();
+  } catch {
+    // 可做错误提示
+  }
+});
 </script>
 
 <style scoped>
@@ -86,7 +102,7 @@ const isActive = (path) => route.path === path;
   display: flex;
   align-items: center;
   padding: 16px;
-  padding-left: 32px; /* 控制整体左边距以实现视觉居中 */
+  padding-left: 32px;
   font-size: 18px;
   font-weight: 600;
   border-radius: 14px;
@@ -113,9 +129,8 @@ const isActive = (path) => route.path === path;
   margin-right: 30px;
   font-size: 1.2em;
 }
-
 .label-text {
-  transform: translateY(-3px); /* 根据视觉需求可调整 */
+  transform: translateY(-3px);
   display: inline-block;
   font-size: 20.5px;
 }

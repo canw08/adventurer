@@ -1,126 +1,63 @@
+<<!-- SliderCustom.vue -->
 <template>
-  <div class="layout-container">
-    <div class="notification-wrapper" @click="togglePanel($event)">
-      <!-- 铃铛图标文本 -->
-      <span class="bell-text">🔔</span>
-      <!-- 红点数字 -->
-      <span v-if="unreadCount > 0" class="badge">{{ unreadCount }}</span>
-    </div>
-
-    <!-- 公告弹窗 -->
-    <OverlayPanel ref="op" class="announcement-panel">
-      <div class="panel-title">📢 公告通知</div>
-      <ul class="announcement-list">
-        <li v-for="(item, index) in announcements" :key="index">
-          <div class="announcement-date">{{ item.date }}</div>
-          <div class="announcement-content">{{ item.content }}</div>
-        </li>
-      </ul>
-    </OverlayPanel>
+  <div class="slider-demo">
+    <p>值：{{ value }}</p>
+    <Slider v-model="value" :min="0" :max="100" />
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue';
-import OverlayPanel from 'primevue/overlaypanel';
-
-const op = ref(null);
-
-const togglePanel = (event) => {
-  op.value.toggle(event);
-  unreadCount.value = 0;
-};
-
-const announcements = ref([
-  {
-    date: '2025年6月26日',
-    content: '你们是否发现周围有个集所有美德于一身的人？没错，他叫周心阳。',
-  },
-  {
-    date: '2025年6月25日',
-    content: '系统将于今晚 10 点维护，请保存好数据。',
-  },
-]);
-
-const unreadCount = ref(announcements.value.length);
-</script>
-
 <style scoped>
-.layout-container {
-  padding: 48px;
-  background-color: #f5f7fb;
-  height: 100vh;
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
+::v-deep(.p-slider .p-slider-handle),
+::v-deep(.p-slider .p-slider-handle:hover),
+::v-deep(.p-slider .p-slider-handle:focus),
+::v-deep(.p-slider .p-slider-handle:active) {
+  width: 32px !important;
+  height: 32px !important;
+  background: url('/login.jpg') no-repeat center center !important;
+  background-size: cover !important;
+  border: none !important;
+  border-radius: 4px !important; /* 方块，改0完全方形 */
+  box-shadow: none !important;
+  top: -12px !important;
+  cursor: pointer !important;
+  transition: transform 0.2s !important;
 }
 
-.notification-wrapper {
-  position: relative;
-  cursor: pointer;
-  font-size: 28px;
-  color: #304ffe;
-  padding: 10px;
-  user-select: none;
+::v-deep(.p-slider .p-slider-handle:hover) {
+  transform: scale(1.1) !important;
+  /* 不要改背景，避免图片消失 */
 }
 
-.bell-text {
-  font-size: 28px;
+::v-deep(.p-slider .p-slider-handle) {
+  width: 32px !important;
+  height: 32px !important;
+  background: url('/login.jpg') no-repeat center center !important;
+  background-size: cover !important;
+  border: none !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  top: -12px !important;
+  cursor: pointer !important;
+  position: relative !important;
+  overflow: hidden !important;
 }
 
-/* 红点 */
-.badge {
-  position: absolute;
-  top: 4px;
-  right: 0px;
-  background-color: red;
-  color: white;
-  font-size: 12px;
-  font-weight: bold;
-  border-radius: 50%;
-  padding: 2px 6px;
-  min-width: 20px;
-  text-align: center;
-  line-height: 1.3;
+/* 彻底隐藏 ::before 圆环 */
+::v-deep(.p-slider .p-slider-handle)::before {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+  box-shadow: none !important;
+  border: none !important;
 }
 
-/* 公告弹窗样式 */
-.announcement-panel {
-  width: 300px;
-  background-color: #fffefc;
-  padding: 16px;
-  border-radius: 12px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-  line-height: 1.5;
+/* 悬停时也保持图片不变 */
+::v-deep(.p-slider .p-slider-handle:hover) {
+  transform: scale(1.1) !important;
+  background: url('/login.jpg') no-repeat center center !important;
+  background-size: cover !important;
 }
 
-.panel-title {
-  font-weight: bold;
-  margin-bottom: 12px;
-  font-size: 16px;
-  color: #222;
-}
-
-.announcement-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.announcement-list li {
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px dashed #ddd;
-}
-
-.announcement-date {
-  font-size: 13px;
-  color: #888;
-  margin-bottom: 4px;
-}
-
-.announcement-content {
-  font-size: 14px;
-  color: #333;
-}
 </style>
+
+>
