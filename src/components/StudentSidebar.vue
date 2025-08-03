@@ -16,7 +16,8 @@
         @click="goToLog"
         v-ripple
       >
-        Quest Log
+        <i class="pi pi-book icon"></i>
+        <span class="label-text">Quest Log</span>
       </div>
       <div
         class="menu-button"
@@ -24,7 +25,8 @@
         @click="goToBoard"
         v-ripple
       >
-        Quest Board
+        <i class="pi pi-user icon"></i>
+        <span class="label-text">Quest Board</span>
       </div>
     </div>
   </div>
@@ -33,6 +35,7 @@
 <script setup>
 import Avatar from 'primevue/avatar';
 import { useRouter, useRoute } from 'vue-router';
+import 'primeicons/primeicons.css'
 
 const router = useRouter();
 const route = useRoute();
@@ -80,9 +83,9 @@ const isActive = (path) => route.path === path;
 }
 .menu-button {
   display: flex;
-  justify-content: center;
   align-items: center;
   padding: 16px;
+  padding-left: 32px; /* 控制整体左边距以实现视觉居中 */
   font-size: 18px;
   font-weight: 600;
   border-radius: 14px;
@@ -104,5 +107,15 @@ const isActive = (path) => route.path === path;
 .menu-button.active {
   background-color: #2a2c56;
   color: white;
+}
+.icon {
+  margin-right: 30px;
+  font-size: 1.2em;
+}
+
+.label-text {
+  transform: translateY(-3px); /* 根据视觉需求可调整 */
+  display: inline-block;
+  font-size: 20.5px;
 }
 </style>
