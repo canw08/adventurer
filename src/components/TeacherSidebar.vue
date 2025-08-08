@@ -49,10 +49,10 @@ const userStore = useUserStore();
 const defaultAvatar = 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png';
 
 const goToPosted = () => {
-  router.push('/student/home');
+  router.push('/teacher/home');
 };
 const goToSetting = () => {
-  router.push('/student/task');
+  router.push('/teacher/settings');
 };
 const isActive = (path) => route.path === path;
 
