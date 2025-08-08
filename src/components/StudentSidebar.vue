@@ -17,7 +17,7 @@
         v-ripple
       >
         <i class="pi pi-book icon"></i>
-        <span class="label-text">Quest Log</span>
+        <span class="label-text">Home</span>
       </div>
       <div
         class="menu-button"
@@ -26,7 +26,16 @@
         v-ripple
       >
         <i class="pi pi-user icon"></i>
-        <span class="label-text">Quest Board</span>
+        <span class="label-text">Board</span>
+      </div>
+      <div
+        class="menu-button"
+        :class="{ active: isActive('/student/team') }"
+        @click="goToTeam"
+        v-ripple
+      >
+        <i class="pi pi-user icon"></i>
+        <span class="label-text">Team</span>
       </div>
     </div>
   </div>
@@ -53,6 +62,9 @@ const goToLog = () => {
 };
 const goToBoard = () => {
   router.push('/student/task');
+};
+const goToTeam = () => {
+  router.push('/student/team');
 };
 const isActive = (path) => route.path === path;
 
