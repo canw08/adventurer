@@ -1,32 +1,68 @@
 <template>
-  <div class="sidebar">
+  <div class="sidebar" v-if="userStore.userInfo">
     <div class="profile-header">
       <Avatar
-        image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
+        :image="userStore.userInfo.avatar || defaultAvatar"
         shape="circle"
         size="xlarge"
       />
-      <h2>大蟑螂-周心阳</h2>
-      <p class="user-id">ID：A2107034</p>
+      <h2>{{ userStore.userInfo.nickname || userStore.userInfo.username }}</h2>
+      <p class="user-id">ID：{{ userStore.userInfo.identifier }}</p>
     </div>
     <div class="menu-list">
-      <div class="menu-button active">
-        Posture
+      <div
+        class="menu-button"
+        :class="{ active: isActive('/teacher/home') }"
+        @click="goToPosted"
+        v-ripple
+      >
+        <i class="pi pi-book icon"></i>
+        <span class="label-text">Posted</span>
       </div>
-      <div class="menu-button" @click="Settings">
-        Settings
+      <div
+        class="menu-button"
+        :class="{ active: isActive('/teacher/settings') }"
+        @click="goToSetting"
+        v-ripple
+      >
+        <i class="pi pi-user icon"></i>
+        <span class="label-text">Setting</span>
       </div>
     </div>
+  </div>
+  <div v-else>
+    加载中...
   </div>
 </template>
 
 <script setup>
 import Avatar from 'primevue/avatar';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
+import 'primeicons/primeicons.css';
+import { onMounted } from 'vue';
+import { useUserStore } from '../stores/user';
+
 const router = useRouter();
-const Settings = () => {
-  router.push('/teacher/settings');
+const route = useRoute();
+const userStore = useUserStore();
+
+const defaultAvatar = 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png';
+
+const goToPosted = () => {
+  router.push('/student/home');
 };
+const goToSetting = () => {
+  router.push('/student/task');
+};
+const isActive = (path) => route.path === path;
+
+onMounted(async () => {
+  try {
+    await userStore.fetchUser();
+  } catch {
+    // 可做错误提示
+  }
+});
 </script>
 
 <style scoped>
@@ -60,20 +96,42 @@ const Settings = () => {
   flex-direction: column;
   gap: 16px;
   margin-top: 24px;
+  padding: 16px;
 }
 .menu-button {
   display: flex;
-  justify-content: center;
   align-items: center;
   padding: 16px;
+  padding-left: 32px;
   font-size: 18px;
   font-weight: 600;
   border-radius: 14px;
-  background-color: #e3eaf5;
-  color: #1e1e1e;
+  background-color: #f3f7fe;
+  color: #5067b0;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  transform: scale(1);
+  position: relative;
+  overflow: hidden;
+}
+.menu-button:hover {
+  transform: scale(1.03);
+  background-color: #e0e8ff;
+}
+.menu-button:active {
+  transform: scale(0.96);
 }
 .menu-button.active {
-  background-color: #2A2C56;
+  background-color: #2a2c56;
   color: white;
+}
+.icon {
+  margin-right: 30px;
+  font-size: 1.2em;
+}
+.label-text {
+  transform: translateY(-3px);
+  display: inline-block;
+  font-size: 20.5px;
 }
 </style>
