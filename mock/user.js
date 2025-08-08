@@ -10,7 +10,7 @@ export default [
         username: 'silvervoid',
         nickname: '这是个名称', // 随机英文名
         email: 'wangcan20080128@qq.com',
-        avatar: null,
+        avatar: 'sadSADSAasdasdasd',
         bio: null,
         experience: 0,
         tokens: 0,

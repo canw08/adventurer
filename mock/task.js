@@ -1,0 +1,21 @@
+import Mock from 'mockjs';
+
+export default [
+  {
+    url: '/api/tasks/create/',
+    method: 'post',
+    response: () => {
+      return Mock.mock({
+        id: '@increment(1)',
+        title: '魔法迷宫探险',
+        description: '探索危险的地下迷宫，获取宝藏！',
+        task_type: 'team',
+        deadline: '2025-08-01T12:00:00Z',
+        experience_reward: 300,
+        token_reward: 150,
+        is_started: false,
+        is_accepted: false,
+      });
+    },
+  },
+];
