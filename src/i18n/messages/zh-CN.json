@@ -1,7 +1,15 @@
 {
+  "questLog": {
+    "title": "营地",
+    "runningQuest": "进行中的任务\n"
+  },
   "greetings": {
     "morning": "早上好，冒险者",
     "afternoon": "下午好，冒险者",
     "evening": "晚上好，冒险者"
+  },
+  "common": {
+    "na": "空",
+    "level": "等级"
   }
 }
