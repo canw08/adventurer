@@ -1,7 +1,15 @@
 {
+  "questLog": {
+    "title": "Quest Log",
+    "runningQuest": "Running Quest"
+  },
   "greetings": {
     "morning": "Good morning, adventurer",
     "afternoon": "Good afternoon, adventurer",
     "evening": "Good evening, adventurer"
+  },
+  "common": {
+    "na": "N/A",
+    "level": "Level"
   }
 }

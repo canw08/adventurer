@@ -29,13 +29,14 @@ async function loadMessages(locale) {
 
 // 4. 初始化 i18n（先加载默认语言）
 const defaultMessages = await loadMessages(defaultLocale)
-
+const enMessages = await loadMessages('en')
 export const i18n = createI18n({
   legacy: false, // 使用 Composition API 风格
   locale: defaultLocale,
   fallbackLocale: 'en',
   messages: {
-    [defaultLocale]: defaultMessages
+    [defaultLocale]: defaultMessages,
+    en: enMessages
   }
 })
 

@@ -4,11 +4,11 @@
     <div class="main-content">
       <div class="main-header">
         <div class="header-left-group">
-          <span class="header-left">Quest Log</span>
+          <span class="header-left">{{ $t('questLog.title') }}</span>
           <div class="vertical-divider"></div>
           <span class="header-right">
             <span class="running-count">{{ runningProjects.length }}</span>
-            <span class="running-label"> Running Quest</span>
+            <span class="running-label"> {{ $t('questLog.runningQuest') }}</span>
           </span>
         </div>
         <AnnouncementPanel />
@@ -39,21 +39,21 @@
               <i class="pi pi-clock"></i>
               <span>{{ project.date }}</span>
             </div>
-            <div class="task-exp">{{ project.exp || 'N/A' }}</div>
+            <div class="task-exp">{{ project.exp || $t('common.na') }}</div>
             <div class="task-teamwork">
               <img :src="project.image" alt="Project Image" class="task-teamwork-image" />
             </div>
             <div class="task-footer">
-  <div class="avatar-wrapper">
-    <Avatar
-      :image="project.avatar"
-      shape="circle"
-      style="width: 40px; height: 40px"
-    />
-    <span class="avatar-name">{{ project.author }}</span>
-  </div>
-  <span class="task-level">Level {{ project.level }}</span>
-</div>
+              <div class="avatar-wrapper">
+                <Avatar
+                  :image="project.avatar"
+                  shape="circle"
+                  style="width: 40px; height: 40px"
+                />
+                <span class="avatar-name">{{ project.author }}</span>
+              </div>
+              <span class="task-level">{{ $t('common.level') }} {{ project.level }}</span>
+            </div>
           </div>
         </div>
       </div>
