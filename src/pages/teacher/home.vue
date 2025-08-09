@@ -1,109 +1,155 @@
 <template>
 
-    <!-- 右侧 -->
-    <div class="main-content">
-      <div class="main-header">
-        <div class="header-left-group">
-          <span class="header-left">Poested Assignments</span>
-          <div class="vertical-divider"></div>
-          <span class="header-right">
-            <span class="running-count">{{ runningProjects.length }}</span>
-            <span class="running-label"> Running Quest</span>
-          </span>
-        </div>
-        <div class="bell-right-group">
-          <div class="notification-wrapper" @click="togglePanel($event)">
-            <Button icon="pi pi-bell" class="notify-bell" text rounded />
-            <span v-if="unreadCount > 0" class="notification-badge">{{ unreadCount }}</span>
-          </div>
-          <OverlayPanel ref="op" class="announcement-panel">
-            <div class="panel-title">📢 公告通知</div>
-            <ul class="announcement-list">
-              <li v-for="(item, index) in announcements" :key="index">
-                <div class="announcement-date">{{ item.date }}</div>
-                <div class="announcement-content">{{ item.content }}</div>
-              </li>
-            </ul>
-          </OverlayPanel>
-        </div>
+  <!-- 右侧 -->
+  <div class="main-content">
+    <div class="main-header">
+      <div class="header-left-group">
+        <span class="header-left">Poested Assignments</span>
+        <div class="vertical-divider"></div>
+        <span class="header-right">
+          <span class="running-count">{{ runningProjects.length }}</span>
+          <span class="running-label"> Running Quest</span>
+        </span>
       </div>
-
-      <div class="main-subheader">
-        <span class="greeting">Good morning, teacher</span>
-        <div class="filter-buttons-wrapper small-toggle">
-          <SelectButton
-            v-model="activeTab"
-            :options="tabOptions"
-            class="tab-toggle"
-          />
+      <div class="bell-right-group">
+        <div class="notification-wrapper" @click="togglePanel($event)">
+          <Button icon="pi pi-bell" class="notify-bell" text rounded />
+          <span v-if="unreadCount > 0" class="notification-badge">{{ unreadCount }}</span>
         </div>
+        <OverlayPanel ref="op" class="announcement-panel">
+          <div class="panel-title">📢 公告通知</div>
+          <ul class="announcement-list">
+            <li v-for="(item, index) in announcements" :key="index">
+              <div class="announcement-date">{{ item.date }}</div>
+              <div class="announcement-content">{{ item.content }}</div>
+            </li>
+          </ul>
+        </OverlayPanel>
       </div>
+    </div>
 
-      <!-- 悬浮按钮 -->
-        <Button
-          icon="pi pi-plus"
-          class="floating-new-quest-btn custom-round-button p-button-rounded p-button-icon-only"
-          @click="showDialog = true"
+    <div class="main-subheader">
+      <span class="greeting">Good morning, teacher</span>
+      <div class="filter-buttons-wrapper small-toggle">
+        <SelectButton
+          v-model="activeTab"
+          :options="tabOptions"
+          class="tab-toggle"
         />
+      </div>
+    </div>
 
+    <!-- 悬浮按钮 -->
+    <Button
+      icon="pi pi-plus"
+      class="floating-new-quest-btn custom-round-button p-button-rounded p-button-icon-only"
+      @click="showDialog = true"
+    />
 
-
-
-        <!-- 弹出对话框 -->
-        <Dialog 
-          header="Create New Quest" 
-          v-model:visible="showDialog" 
-          modal 
-          class="p-fluid"
-        >
-          <div class="p-field">
-            <label for="title">Quest Title</label>
-            <InputText id="title" v-model="newQuestTitle" />
+    <!-- 发布任务弹窗 -->
+    <Dialog
+      header="Release a task"
+      v-model:visible="showDialog"
+      modal
+      class="p-fluid"
+      :style="{ width: '1100px', maxWidth: '90vw' , height:'700px'}"
+    >
+      <!-- Choose level -->
+      <div class="p-field">
+        <label>Choose level</label>
+        <div class="level-options">
+          <div v-for="level in levels" :key="level" class="level-item">
+            <RadioButton
+              v-model="selectedLevel"
+              :inputId="level"
+              :value="level"
+              name="quest-level"
+            />
+            <label :for="level">{{ level }}</label>
           </div>
-          <div class="p-field">
-            <label for="exp">Experience (exp)</label>
-            <InputNumber id="exp" v-model="newQuestExp" />
-          </div>
-          <div class="p-field">
-            <Button label="Submit" @click="submitQuest" />
-          </div>
-        </Dialog>
+        </div>
+      </div>
 
+      <!-- 选择奖励 -->
+      <div class="p-field">
+        <label>Choose award</label>
 
+        <label>
+          EXP：
+          <input id="exp" type="range" min="0" max="1000" step="50" v-model="exp">
+          <span>{{ exp }}</span>
+        </label>
 
-      <!-- 主体卡片区域 -->
-      <div class="main-body">
-        <div class="card-background"></div>
-        <div class="grid-container">
-          <!-- Projects 使用 task-card 样式 -->
-          <div
-            v-for="project in filteredProjects"
-            :key="project.id"
-            class="task-card"
+        <label>
+          coin：
+          <input id="coin" type="range" min="0" max="2000" step="50" v-model="coin">
+          <span>{{ coin }}</span>
+        </label>
+      </div>
+
+      <!-- 任务日期 -->
+      <div class="p-field">
+        <label for="date">Task date</label>
+        <Calendar id="date" v-model="taskDate" dateFormat="mm/dd/yy" />
+      </div>
+
+      <!-- 富文本编辑表单（替换原 Textarea+自定义提交按钮） -->
+      <Form
+        v-slot="$form"
+        :resolver="resolver"
+        :initialValues="initialValues"
+        @submit="onFormSubmit"
+        class="flex flex-col gap-4"
+      >
+        <div class="flex flex-col gap-1">
+          <Editor name="content" editorStyle="height: 320px" />
+          <Message
+            v-if="$form?.content?.invalid"
+            severity="error"
+            size="small"
+            variant="simple"
           >
-            <h3 class="task-title">{{ project.title }}</h3>
-            <div class="task-time">
-              <i class="pi pi-clock"></i>
-              <span>{{ project.date }}</span>
+            {{ $form?.content?.error?.message }}
+          </Message>
+        </div>
+        <Button type="submit" severity="secondary" label="Submit" />
+      </Form>
+    </Dialog>
+
+
+    <!-- 主体卡片区域 -->
+    <div class="main-body">
+      <div class="card-background"></div>
+      <div class="grid-container">
+        <!-- Projects 使用 task-card 样式 -->
+        <div
+          v-for="project in filteredProjects"
+          :key="project.id"
+          class="task-card"
+        >
+          <h3 class="task-title">{{ project.title }}</h3>
+          <div class="task-time">
+            <i class="pi pi-clock"></i>
+            <span>{{ project.date }}</span>
+          </div>
+          <div class="task-exp">{{ project.exp || 'N/A' }}</div>
+          <div class="task-teamwork">
+            <img :src="project.image" alt="Project Image" class="task-teamwork-image" />
+          </div>
+          <div class="task-footer">
+            <div class="avatar-wrapper">
+              <Avatar
+                image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
+                shape="circle"
+                class="user-avatar"
+              />
             </div>
-            <div class="task-exp">{{ project.exp || 'N/A' }}</div>
-            <div class="task-teamwork">
-              <img :src="project.image" alt="Project Image" class="task-teamwork-image" />
-            </div>
-            <div class="task-footer">
-              <div class="avatar-wrapper">
-                <Avatar
-                  image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
-                  shape="circle"
-                  class="user-avatar"
-                />
-              </div>
-              <span class="task-level">Level B</span>
-            </div>
+            <span class="task-level">Level B</span>
           </div>
         </div>
       </div>
     </div>
+  </div>
 </template>
 
 <route lang="yaml">
@@ -112,29 +158,36 @@ meta:
 </route>
 
 <script setup>
-import { ref, computed } from 'vue';
-import Avatar from 'primevue/avatar';
-import SelectButton from 'primevue/selectbutton';
-import OverlayPanel from 'primevue/overlaypanel';
-import Button from 'primevue/button';
-import { useRouter } from 'vue-router';
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 
-const router = useRouter();
+import Avatar from 'primevue/avatar'
+import SelectButton from 'primevue/selectbutton'
+import OverlayPanel from 'primevue/overlaypanel'
+import Button from 'primevue/button'
+import Dialog from 'primevue/dialog'
+import RadioButton from 'primevue/radiobutton'
+import Slider from 'primevue/slider'
+import Calendar from 'primevue/calendar'
+import Editor from 'primevue/editor'
+import Message from 'primevue/message'
 
-const activeTab = ref('ongoing');
-const tabOptions = ref(['ongoing', 'completed']);
+const router = useRouter()
 
-const op = ref(null);
-const unreadCount = ref(2);
+const activeTab = ref('ongoing')
+const tabOptions = ref(['ongoing', 'completed'])
+
+const op = ref(null)
+const unreadCount = ref(2)
 const togglePanel = (event) => {
-  op.value.toggle(event);
-  unreadCount.value = 0;
-};
+  op.value.toggle(event)
+  unreadCount.value = 0
+}
 
 const announcements = ref([
   { date: '2025年6月26日', content: '你们是否发现周围有个集所有美德于一身的人？没错，他叫周心阳。' },
   { date: '2025年6月25日', content: '系统将于今晚 10 点维护，请保存好数据。' },
-]);
+])
 
 const allProjects = [
   {
@@ -169,7 +222,7 @@ const allProjects = [
     image: 'https://picsum.photos/seed/poster/400/200',
     exp: '350 exp',
   },
-    {
+  {
     id: 5,
     title: 'Volunteer Feeding Stray Cats',
     date: '5 July, 2025',
@@ -193,32 +246,61 @@ const allProjects = [
     image: 'https://picsum.photos/seed/school/400/200',
     exp: '250 exp',
   },
-];
+]
 
 const filteredProjects = computed(() =>
   allProjects.filter((p) => p.status === activeTab.value)
-);
+)
 const runningProjects = computed(() =>
   allProjects.filter((p) => p.status === 'ongoing')
-);
+)
 const goToProfile = () => {
-  router.push('/teacher/homeforteacher');
-};
+  router.push('/teacher/homeforteacher')
+}
 
-/* 新加的*/
-import Dialog from 'primevue/dialog'
-import InputText from 'primevue/inputtext'
-import InputNumber from 'primevue/inputnumber'
-
+/* 弹窗相关 */
 const showDialog = ref(false)
-const newQuestTitle = ref('')
-const newQuestExp = ref(0)
+const levels = ['Level A', 'Level B', 'Level C', 'Level D', 'Level E', 'Level F']
+const selectedLevel = ref('')
 
-const submitQuest = () => {
-  console.log('Submitted:', newQuestTitle.value, newQuestExp.value)
+/* 统一的 exp/coin（删除了重复声明） */
+const exp = ref(0)
+const coin = ref(0)
+
+const taskDate = ref(null)
+
+/* Form + Editor 必需：初始值 / 校验 / 提交 */
+const initialValues = {
+  content: ''
+}
+
+const resolver = (values) => {
+  const errors = {}
+  if (!values.content || values.content.trim() === '') {
+    errors.content = { message: '任务内容不能为空' }
+  }
+  return { values, errors }
+}
+
+const onFormSubmit = () => {
+  const plainText = editorContent.value.replace(/<[^>]*>/g, '').trim()
+  if (!plainText) {
+    contentError.value = '任务内容不能为空'
+    return
+  }
+  contentError.value = ''
+  console.log({
+    selectedLevel: selectedLevel.value,
+    exp: exp.value,
+    coin: coin.value,
+    taskDate: taskDate.value,
+    taskDetails: editorContent.value
+  })
   showDialog.value = false
 }
 
+const editorContent = ref('')
+const contentError = ref('')
 </script>
 
 <style scoped>
@@ -275,7 +357,6 @@ const submitQuest = () => {
   background-color: #2A2C56;
   color: white;
 }
-
 
 /* 右侧内容 */
 .main-content {
@@ -418,11 +499,8 @@ const submitQuest = () => {
   flex: 1;
   display: flex;
   flex-direction: column;
-    /* 让 main-body 内部滚动 */
   overflow-y: auto;
 }
-
-
 .card-background {
   position: absolute;
   top: 0;
@@ -446,11 +524,11 @@ const submitQuest = () => {
 .task-card {
   background-color: white;
   border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2); 
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
   padding: 16px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start; 
+  align-items: flex-start;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 .task-card:hover {
@@ -460,38 +538,38 @@ const submitQuest = () => {
 .task-title {
   font-size: 18px;
   font-weight: bold;
-  margin-bottom: 4px; 
-  text-align: left; 
+  margin-bottom: 4px;
+  text-align: left;
   width: 100%;
 }
 .task-time {
-  color: #888; 
+  color: #888;
   font-size: 14px;
   margin-bottom: 4px;
-  text-align: left; 
-  width: 100%; 
-  display: flex; 
-  align-items: center; 
-  gap: 8px; 
+  text-align: left;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .task-exp {
-  color: #003366; 
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); 
-  font-size: 16px; 
+  color: #003366;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  font-size: 16px;
   font-weight: bold;
   margin-bottom: 8px;
   text-align: left;
   width: 100%;
 }
 .task-teamwork {
-  width: 100%; 
-  border-bottom: 1px solid #ddd; 
-  padding-bottom: 8px; 
-  margin-bottom: 8px; 
+  width: 100%;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
 }
 .task-teamwork-image {
   width: 100%;
-  height: auto;  
+  height: auto;
   max-height: 200px;
   object-fit: contain;
   border-radius: 12px;
@@ -502,20 +580,21 @@ const submitQuest = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: auto; 
+  margin-top: auto;
   width: 100%;
 }
 .task-level {
-  color: #0099ff; 
+  color: #0099ff;
   font-weight: bold;
   font-size: 16px;
   text-align: right;
 }
+
 /* 新加的button的 */
 .floating-new-quest-btn {
   position: fixed;
   bottom: 24px;
-  right: 24px;
+  left: 50%;
   z-index: 1000;
 }
 /* 加到 style scoped 里 */
@@ -524,12 +603,55 @@ const submitQuest = () => {
   color: white;
   border: none;
   border-radius: 10px;
-  font-weight: bold;
-  padding: 12px 20px;
+  padding: 28px 28px;
+  font-size: 1.5rem;
+
+  .pi {
+    font-size: 1.5rem;
+  }
 }
-.custom-round-button:hover {
-  background-color: #2A2C55;
+.custom-round-button.p-button:hover,
+.custom-round-button.p-button:enabled:hover {
+  background-color: #DFE8FF !important;
+  color: #2A2C55 !important;
+  border-color: #DFE8FF !important;
+  transition: background-color 0.3s ease;
 }
 
+.award-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+/* 让 Level 横向排列 */
+.level-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+.level-item {
+  display: flex;
+  align-items: center;
+}
+
+/* 原生 range */
+/* EXP 原生滑动条绿色 */
+#exp {
+  accent-color: #F39536;
+}
+
+/* coin 原生滑动条金色 */
+#coin {
+  accent-color: #F2D84A;
+}
+
+
+label {
+  display: block;
+  margin: 16px 0;
+}
 
 </style>
