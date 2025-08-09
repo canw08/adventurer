@@ -162,9 +162,6 @@ const filteredProjects = computed(() =>
 const runningProjects = computed(() =>
   allProjects.filter((p) => p.status === 'ongoing')
 );
-const goToProfile = () => {
-  router.push('/student/task');
-};
 </script>
 
 <style scoped>

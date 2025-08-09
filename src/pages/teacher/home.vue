@@ -4,7 +4,7 @@
     <div class="main-content">
       <div class="main-header">
         <div class="header-left-group">
-          <span class="header-left">Quest Log</span>
+          <span class="header-left">Poested Assignments</span>
           <div class="vertical-divider"></div>
           <span class="header-right">
             <span class="running-count">{{ runningProjects.length }}</span>
@@ -38,6 +38,38 @@
           />
         </div>
       </div>
+
+      <!-- 悬浮按钮 -->
+        <Button
+          icon="pi pi-plus"
+          class="floating-new-quest-btn custom-round-button p-button-rounded p-button-icon-only"
+          @click="showDialog = true"
+        />
+
+
+
+
+        <!-- 弹出对话框 -->
+        <Dialog 
+          header="Create New Quest" 
+          v-model:visible="showDialog" 
+          modal 
+          class="p-fluid"
+        >
+          <div class="p-field">
+            <label for="title">Quest Title</label>
+            <InputText id="title" v-model="newQuestTitle" />
+          </div>
+          <div class="p-field">
+            <label for="exp">Experience (exp)</label>
+            <InputNumber id="exp" v-model="newQuestExp" />
+          </div>
+          <div class="p-field">
+            <Button label="Submit" @click="submitQuest" />
+          </div>
+        </Dialog>
+
+
 
       <!-- 主体卡片区域 -->
       <div class="main-body">
@@ -172,6 +204,21 @@ const runningProjects = computed(() =>
 const goToProfile = () => {
   router.push('/teacher/homeforteacher');
 };
+
+/* 新加的*/
+import Dialog from 'primevue/dialog'
+import InputText from 'primevue/inputtext'
+import InputNumber from 'primevue/inputnumber'
+
+const showDialog = ref(false)
+const newQuestTitle = ref('')
+const newQuestExp = ref(0)
+
+const submitQuest = () => {
+  console.log('Submitted:', newQuestTitle.value, newQuestExp.value)
+  showDialog.value = false
+}
+
 </script>
 
 <style scoped>
@@ -464,4 +511,25 @@ const goToProfile = () => {
   font-size: 16px;
   text-align: right;
 }
+/* 新加的button的 */
+.floating-new-quest-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+}
+/* 加到 style scoped 里 */
+.custom-round-button {
+  background-color: #2A2C55;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  padding: 12px 20px;
+}
+.custom-round-button:hover {
+  background-color: #2A2C55;
+}
+
+
 </style>
