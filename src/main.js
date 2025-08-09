@@ -10,7 +10,7 @@ import Toast from 'primevue/toast'
 import Aura from '@primeuix/themes/aura';
 import Ripple from 'primevue/ripple'
 import { createPinia } from 'pinia';
-
+import { i18n } from './i18n'
 import ConfirmationService from 'primevue/confirmationservice'
 
 
@@ -30,5 +30,6 @@ app.component('Toast', Toast)
 app.directive('ripple', Ripple) 
 
 app.use(pinia);
+app.use(i18n)
 
 app.mount('#app')

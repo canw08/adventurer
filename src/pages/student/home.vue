@@ -15,7 +15,7 @@
       </div>
 
       <div class="main-subheader">
-        <span class="greeting">Good morning, adventurer</span>
+        <span class="greeting">{{ $t(greetingKey) }}</span>
         <div class="filter-buttons-wrapper small-toggle">
           <SelectButton
             v-model="activeTab"
@@ -83,10 +83,13 @@ const togglePanel = (event) => {
   unreadCount.value = 0;
 };
 
-const announcements = ref([
-  { date: '2025年6月26日', content: '你们是否发现周围有个集所有美德于一身的人？没错，他叫周心阳。' },
-  { date: '2025年6月25日', content: '系统将于今晚 10 点维护，请保存好数据。' },
-]);
+const period = computed(() => {
+  const h = new Date().getHours()
+  return h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening'
+})
+
+// greetingKey 必须是字符串
+const greetingKey = computed(() => `greetings.${period.value}`)
 
 const allProjects = [
   {
