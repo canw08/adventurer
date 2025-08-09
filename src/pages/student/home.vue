@@ -20,6 +20,8 @@
           <SelectButton
             v-model="activeTab"
             :options="tabOptions"
+            optionLabel="label"
+            optionValue="value"
             class="tab-toggle"
           />
         </div>
@@ -69,12 +71,16 @@ meta:
 import { ref, computed } from 'vue';
 import Avatar from 'primevue/avatar';
 import SelectButton from 'primevue/selectbutton';
-import { useRouter } from 'vue-router';
 import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue'
-const router = useRouter();
+import { useI18n } from 'vue-i18n'
 
-const activeTab = ref('ongoing');
-const tabOptions = ref(['ongoing', 'completed']);
+const { t } = useI18n()
+
+const activeTab = ref('ongoing')
+const tabOptions = ref([
+  { label: t('tabs.ongoing'), value: 'ongoing' },
+  { label: t('tabs.completed'), value: 'completed' }
+])
 
 const op = ref(null);
 const unreadCount = ref(2);
@@ -85,7 +91,7 @@ const togglePanel = (event) => {
 
 const period = computed(() => {
   const h = new Date().getHours()
-  return h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening'
+  return h < 4 ? 'night' : h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening'
 })
 
 // greetingKey 必须是字符串

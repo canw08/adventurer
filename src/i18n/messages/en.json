@@ -4,9 +4,14 @@
     "runningQuest": "Running Quest"
   },
   "greetings": {
+    "night": "Burning the midnight oil, adventurer?",
     "morning": "Good morning, adventurer",
     "afternoon": "Good afternoon, adventurer",
     "evening": "Good evening, adventurer"
+  },
+  "tabs": {
+    "ongoing": "Ongoing",
+    "completed": "Completed"
   },
   "common": {
     "na": "N/A",
