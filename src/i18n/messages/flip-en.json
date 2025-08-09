@@ -1,0 +1,15 @@
+{
+  "questLog": {
+    "title": "ƃo˥ ʇsǝnQ",
+    "runningQuest": "ʇsǝnQ ƃuᴉuunɹ"
+  },
+  "greetings": {
+    "morning": "ɹǝɹnʇuǝʌpɐ 'ƃuᴉuɹoɯ pooפ",
+    "afternoon": "ɹǝɹnʇuǝʌpɐ 'uoouɹǝʇɟɐ pooפ",
+    "evening": "ɹǝɹnʇuǝʌpɐ 'ƃuᴉuǝʌǝ pooפ"
+  },
+  "common": {
+    "na": "∀/N",
+    "level": "lǝʌǝ˥"
+  }
+}
