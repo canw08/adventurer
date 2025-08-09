@@ -7,21 +7,7 @@
           <span class="header-left">Quest Board</span>
           <div class="vertical-divider"></div>
         </div>
-        <div class="bell-right-group">
-          <div class="notification-wrapper" @click="togglePanel($event)">
-            <Button icon="pi pi-bell" class="notify-bell" text rounded />
-            <span v-if="unreadCount > 0" class="notification-badge">{{ unreadCount }}</span>
-          </div>
-          <OverlayPanel ref="op" class="announcement-panel">
-            <div class="panel-title">📢 公告通知</div>
-            <ul class="announcement-list">
-              <li v-for="(item, index) in announcements" :key="index">
-                <div class="announcement-date">{{ item.date }}</div>
-                <div class="announcement-content">{{ item.content }}</div>
-              </li>
-            </ul>
-          </OverlayPanel>
-        </div>
+        <AnnouncementPanel />
       </div>
       <div class="main-subheader">
         <span class="greeting">Good morning, adventurer</span>
@@ -212,11 +198,10 @@ meta:
 <script setup>
 import { ref, computed } from 'vue';
 import Avatar from 'primevue/avatar';
-import OverlayPanel from 'primevue/overlaypanel';
 import Button from 'primevue/button';
 import { useRouter } from 'vue-router';
 import Dialog from 'primevue/dialog';
-
+import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue'
 
 const router = useRouter();
 
@@ -238,11 +223,6 @@ const togglePanel = (event) => {
   op.value.toggle(event);
   unreadCount.value = 0;
 };
-
-const announcements = ref([
-  { date: '2025年6月26日', content: '你们是否发现周围有个集所有美德于一身的人？没错，他叫周心阳。' },
-  { date: '2025年6月25日', content: '系统将于今晚 10 点维护，请保存好数据。' },
-]);
 
 const allProjects = [
   {

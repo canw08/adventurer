@@ -11,21 +11,7 @@
             <span class="running-label"> Running Quest</span>
           </span>
         </div>
-        <div class="bell-right-group">
-          <div class="notification-wrapper" @click="togglePanel($event)">
-            <Button icon="pi pi-bell" class="notify-bell" text rounded />
-            <span v-if="unreadCount > 0" class="notification-badge">{{ unreadCount }}</span>
-          </div>
-          <OverlayPanel ref="op" class="announcement-panel">
-            <div class="panel-title">📢 公告通知</div>
-            <ul class="announcement-list">
-              <li v-for="(item, index) in announcements" :key="index">
-                <div class="announcement-date">{{ item.date }}</div>
-                <div class="announcement-content">{{ item.content }}</div>
-              </li>
-            </ul>
-          </OverlayPanel>
-        </div>
+        <AnnouncementPanel />
       </div>
 
       <div class="main-subheader">
@@ -83,10 +69,8 @@ meta:
 import { ref, computed } from 'vue';
 import Avatar from 'primevue/avatar';
 import SelectButton from 'primevue/selectbutton';
-import OverlayPanel from 'primevue/overlaypanel';
-import Button from 'primevue/button';
 import { useRouter } from 'vue-router';
-
+import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue'
 const router = useRouter();
 
 const activeTab = ref('ongoing');
@@ -271,35 +255,7 @@ const runningProjects = computed(() =>
   margin-left: 4px;
 }
 
-/* 通知 */
-.bell-right-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.notification-wrapper {
-  position: relative;
-  cursor: pointer;
-  padding: 16px;
-}
-.notify-bell .p-button-icon {
-  font-size: 48px;
-  color: black;
-}
-.notification-badge {
-  position: absolute;
-  top: 2px;
-  right: 0px;
-  background-color: red;
-  color: white;
-  font-size: 12px;
-  font-weight: bold;
-  border-radius: 50%;
-  padding: 2px 6px;
-  min-width: 20px;
-  text-align: center;
-  line-height: 1.3;
-}
+
 .announcement-panel {
   width: 300px;
   background-color: #fffefc;
