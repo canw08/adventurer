@@ -23,14 +23,17 @@
           </OverlayPanel>
         </div>
       </div>
-       <div class="main-subheader">
+      <div class="main-subheader">
         <span class="greeting">Good morning, adventurer</span>
          <div class="filter-buttons-wrapper small-toggle">
-    <SelectButton
-      v-model="activeTab"
-      :options="tabOptions"
-      class="tab-toggle"
-    />
+           <div class="fake-select-wrapper">
+  <Button
+    label="Filter"
+    icon="pi pi-filter"
+    @click="showFilterDialog = true"
+    class="filter-button"
+/>
+</div>
   </div>
       </div>
 
@@ -167,6 +170,29 @@
   </div>
 </Dialog>
 
+<Dialog
+  v-model:visible="showFilterDialog"
+  modal
+  dismissableMask
+  header="Filter Tasks"
+  :style="{ width: '1100px', height: '700px', position: 'relative' }"
+>
+  <!-- ✅ 筛选内容，比如 CascadeSelect 或 SelectButton -->
+  <div style="margin-bottom: 24px">
+    <span style="display: block; margin-bottom: 8px">Task Status</span>
+    <SelectButton
+      v-model="tempTab"
+      :options="['ongoing', 'completed']"
+      style="width: 100%"
+    />
+  </div>
+
+  <!-- ✅ 确认按钮 -->
+  <div class="absolute-apply-button">
+ <Button label="Apply" @click="applyFilter" class="apply-button" />
+</div>
+</Dialog>
+
 </template>
 
 <style scoped>
@@ -283,6 +309,13 @@ const paginatedProjects = computed(() => {
   return filteredProjects.value.slice(start, start + rowsPerPage);
 });
 
+const showFilterDialog = ref(false);
+const tempTab = ref(activeTab.value); // 用于筛选弹窗中临时选中
+
+const applyFilter = () => {
+  activeTab.value = tempTab.value;
+  showFilterDialog.value = false;
+};
 </script>
 
 <style scoped>
@@ -362,6 +395,7 @@ const paginatedProjects = computed(() => {
   border-bottom: 2px solid #d5dbe5;
   padding-bottom: 4px;
   padding-top: 4px;
+  height: 64px;
 }
 
 .header-left-group {
@@ -452,8 +486,6 @@ const paginatedProjects = computed(() => {
   font-size: 14px;
   color: #333;
 }
-
-/* Subheader */
 .main-subheader {
   display: flex;
   justify-content: space-between;
@@ -490,6 +522,7 @@ const paginatedProjects = computed(() => {
   flex-direction: column;
   border-radius: 12px;
   overflow: hidden;
+  border: 1px solid #e4eaf4;
 }
 .card-background {
   position: absolute;
@@ -836,4 +869,64 @@ const paginatedProjects = computed(() => {
   align-items: center;
   margin-top: 4px;
 }
+
+.filter-button.p-button {
+  font-size: 14px !important;
+  font-weight: 500;
+  padding: 4px 14px !important;
+  height: 36px !important;
+  line-height: 1 !important;
+  border-radius: 8px !important;
+  border: 1px solid #c5d4ea !important;
+  background-color: white !important;
+  color: #1e1e1e !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none !important;
+  gap: 8px;
+}
+
+.small-toggle {
+  transform: scale(0.9);
+  transform-origin: right center;
+}
+
+.filter-button {
+  padding: 6px 16px;
+  font-size: 14px;
+  border: 1px solid #c5d4ea;
+  border-radius: 8px;
+  background-color: white;
+  color: #1e1e1e;
+  box-shadow: none;
+}
+
+/* 缩放保持一致 */
+.small-toggle {
+  transform: scale(0.9);
+  transform-origin: right center;
+}
+.apply-button {
+  background-color: #2A2C52; /* 主色 */
+  color: #ffffff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(42, 44, 82, 0.2); /* 同色阴影 */
+  transition: background-color 0.3s, transform 0.2s;
+}
+.apply-button:hover {
+  background-color: #1e1f3e; /* 深一点作为悬停色 */
+  transform: translateY(-1px);
+}
+.absolute-apply-button {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  z-index: 999;
+}
+
 </style>

@@ -112,18 +112,22 @@ const allProjects = [
     status: 'ongoing',
     image: 'https://picsum.photos/seed/cat/400/200',
     exp: '300 exp',
+    level: 'E',
     avatar: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
     author: 'Amy Elsner',
+    description: '中午十二点，在三棵树集合喂猫，时长为1小时，需要5–6人',
   },
   {
     id: 2,
-    title: 'Organize Community Book Drive',
+    title: 'Organize Community Event',
     date: '12 June, 2025',
     status: 'ongoing',
     image: 'https://picsum.photos/seed/book/400/200',
     exp: '400 exp',
-    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
-    author: 'Amy Elsner',
+    level: 'C',
+    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/onyamalimba.png',
+    author: 'Onya Malimba',
+    description: '下午两点，在活动中心组织志愿者会议，需要3人负责接待',
   },
   {
     id: 3,
@@ -132,8 +136,10 @@ const allProjects = [
     status: 'completed',
     image: 'https://picsum.photos/seed/school/400/200',
     exp: '250 exp',
-    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
-    author: 'Amy Elsner',
+    level: 'D',
+    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/ivanmagalhaes.png',
+    author: 'Ivan Magalhaes',
+    description: '早上九点集合，清理学校操场，需要10人，时长2小时',
   },
   {
     id: 4,
@@ -142,38 +148,13 @@ const allProjects = [
     status: 'ongoing',
     image: 'https://picsum.photos/seed/poster/400/200',
     exp: '350 exp',
-    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
-    author: 'Amy Elsner',
-  },
-    {
-    id: 5,
-    title: 'Volunteer Feeding Stray Cats',
-    date: '5 July, 2025',
-    status: 'ongoing',
-    image: 'https://picsum.photos/seed/cat/400/200',
-    exp: '300 exp',
-    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
-    author: 'Amy Elsner',
-  },
-  {
-    id: 6,
-    title: 'Organize Community Book Drive',
-    date: '12 June, 2025',
-    status: 'ongoing',
-    image: 'https://picsum.photos/seed/book/400/200',
-    exp: '400 exp',
-    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
-    author: 'Amy Elsner',
-  },
-  {
-    id: 7,
-    title: 'Schoolyard Cleanup Event',
-    date: '20 May, 2025',
-    status: 'completed',
-    image: 'https://picsum.photos/seed/school/400/200',
-    exp: '250 exp',
-  },
+    level: 'B',
+    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
+    author: 'Xu Xuefeng',
+    description: '设计艺术节宣传海报，预计工作时间3小时，需要2位同学合作完成',
+  }
 ];
+
 
 const filteredProjects = computed(() =>
   allProjects.filter((p) => p.status === activeTab.value)
@@ -260,6 +241,7 @@ const goToProfile = () => {
   border-bottom: 2px solid #d5dbe5;
   padding-bottom: 4px;
   padding-top: 4px;
+  height: 64px;
 }
 .header-left-group {
   display: flex;
@@ -396,7 +378,8 @@ const goToProfile = () => {
   border-radius: 12px;
   overflow: hidden;
   overflow: auto;
-    background-color: #f3f7fe;
+  background-color: #f3f7fe;
+  border: 1px solid #e4eaf4;
 }
 .card-background {
   position: absolute;
@@ -419,7 +402,7 @@ const goToProfile = () => {
   background-color: white;
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2); 
-  padding: 16px;
+ padding: 16px;
   display: flex;
   flex-direction: column;
   align-items: flex-start; 
@@ -432,7 +415,8 @@ const goToProfile = () => {
 .task-title {
   font-size: 18px;
   font-weight: bold;
-  margin-bottom: 4px; 
+  margin-top: 0;
+  margin-bottom: 4px;
   text-align: left; 
   width: 100%;
 }
