@@ -4,22 +4,24 @@
     <div class="main-content">
       <div class="main-header">
         <div class="header-left-group">
-          <span class="header-left">Quest Log</span>
+          <span class="header-left">{{ $t('questLog.title') }}</span>
           <div class="vertical-divider"></div>
           <span class="header-right">
             <span class="running-count">{{ runningProjects.length }}</span>
-            <span class="running-label"> Running Quest</span>
+            <span class="running-label"> {{ $t('questLog.runningQuest') }}</span>
           </span>
         </div>
         <AnnouncementPanel />
       </div>
 
       <div class="main-subheader">
-        <span class="greeting">Good morning, adventurer</span>
+        <span class="greeting">{{ $t(greetingKey) }}</span>
         <div class="filter-buttons-wrapper small-toggle">
           <SelectButton
             v-model="activeTab"
             :options="tabOptions"
+            optionLabel="label"
+            optionValue="value"
             class="tab-toggle"
           />
         </div>
@@ -40,21 +42,21 @@
               <i class="pi pi-clock"></i>
               <span>{{ project.date }}</span>
             </div>
-            <div class="task-exp">{{ project.exp || 'N/A' }}</div>
+            <div class="task-exp">{{ project.exp || $t('common.na') }}</div>
             <div class="task-teamwork">
               <img :src="project.image" alt="Project Image" class="task-teamwork-image" />
             </div>
             <div class="task-footer">
-  <div class="avatar-wrapper">
-    <Avatar
-      :image="project.avatar"
-      shape="circle"
-      style="width: 40px; height: 40px"
-    />
-    <span class="avatar-name">{{ project.author }}</span>
-  </div>
-  <span class="task-level">Level {{ project.level }}</span>
-</div>
+              <div class="avatar-wrapper">
+                <Avatar
+                  :image="project.avatar"
+                  shape="circle"
+                  style="width: 40px; height: 40px"
+                />
+                <span class="avatar-name">{{ project.author }}</span>
+              </div>
+              <span class="task-level">{{ $t('common.level') }} {{ project.level }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -142,13 +144,18 @@ meta:
 import { ref, computed } from 'vue';
 import Avatar from 'primevue/avatar';
 import SelectButton from 'primevue/selectbutton';
-import { useRouter } from 'vue-router';
 import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue'
 import Dialog from 'primevue/dialog';
 const router = useRouter();
+import { useI18n } from 'vue-i18n'
 
-const activeTab = ref('ongoing');
-const tabOptions = ref(['ongoing', 'completed']);
+const { t } = useI18n()
+
+const activeTab = ref('ongoing')
+const tabOptions = ref([
+  { label: t('tabs.ongoing'), value: 'ongoing' },
+  { label: t('tabs.completed'), value: 'completed' }
+])
 
 const op = ref(null);
 const unreadCount = ref(2);
@@ -157,10 +164,13 @@ const togglePanel = (event) => {
   unreadCount.value = 0;
 };
 
-const announcements = ref([
-  { date: '2025年6月26日', content: '你们是否发现周围有个集所有美德于一身的人？没错，他叫周心阳。' },
-  { date: '2025年6月25日', content: '系统将于今晚 10 点维护，请保存好数据。' },
-]);
+const period = computed(() => {
+  const h = new Date().getHours()
+  return h < 4 ? 'night' : h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening'
+})
+
+// greetingKey 必须是字符串
+const greetingKey = computed(() => `greetings.${period.value}`)
 
 const allProjects = [
   {
