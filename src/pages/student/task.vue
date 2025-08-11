@@ -73,6 +73,7 @@
   <Dialog
   v-model:visible="showDialog"
   modal
+  blockScroll
   dismissableMask
   :closable="false"
   :style="{ width: '1100px', height: '700px', position: 'relative' }"
@@ -142,18 +143,13 @@
     <div class="dialog-right-section"></div>
   </div>
 
-  <!-- 接任务按钮 -->
+  <!-- 接任务按钮（保持在 content 外层，绝对定位，不占高度） -->
   <div class="absolute-accept-button">
-    <Button
-      label="Accept"
-      style="
-        background-color: #2A2C52;
-        color: white;
-        border-radius: 12px;
-        padding: 12px 24px;
-      "
-    />
-  </div>
+  <Button
+    label="Accept"
+    class="custom-btn"
+  />
+</div>
 </Dialog>
 
 <Dialog
@@ -180,15 +176,6 @@
 </Dialog>
 
 </template>
-
-<style scoped>
-.absolute-accept-button {
-  position: absolute;
-  right: 24px;
-  bottom: 24px;
-  z-index: 999;
-}
-</style>
 
 <route lang="yaml">
 meta:
@@ -685,7 +672,16 @@ const applyFilter = () => {
 .dialog-images {
   display: flex;
   gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 0px;
+}
+/* 图片区域就是你左侧最后一块：不要底部外边距 */
+.dialog-images { 
+  margin-bottom: 0 !important; 
+}
+
+/* 如果最后一块不是图片，也能兜底把最后一个直接子元素的 margin 去掉 */
+.dialog-left-section > *:last-child {
+  margin-bottom: 0 !important;
 }
 .image-placeholder {
   width: 240px;
@@ -723,23 +719,25 @@ const applyFilter = () => {
   transition: all 0.3s ease;
 }
 
+/* ✅ 保持分割线上下分别 48px，不受按钮影响 */
 .dialog-vertical-divider {
   position: absolute;
   top: 48px;
   bottom: 48px;
-  left: calc(100% * 0.75);
+  left: 75%;
   width: 1px;
   background-color: #ccc;
   border-radius: 1px;
   z-index: 10;
 }
+
+/* 占满内容区高度，不滚动；去掉底部内边距 */
 .dialog-content-wrapper {
-  display: flex;
-  flex-direction: row;
-  gap: 24px;
-  padding: 4px 24px 24px 24px;
-  box-sizing: border-box;
-  height: 100%; 
+  position: relative !important;   /* 作为分割线的定位上下文 */
+  display: flex !important;
+  flex: 1 1 auto;
+  min-height: 0;
+  gap: 0;
 }
 .dialog-right-section {
   position: relative;
@@ -755,10 +753,33 @@ const applyFilter = () => {
 :deep(.p-dialog) {
   height: 100%;
 }
-:deep(.p-dialog-content) {
-  position: relative;
-  height: calc(700px - 50px); /* 50px 是 header 高度大约估算值 */
+/* ✅ 让按钮可相对内容区域绝对定位，且不撑高内容 */
+.project-dialog :deep(.p-dialog) {
+  display: flex;             
+  flex-direction: column;
+  height: 700px;             
+  max-height: 700px;         
 }
+.project-dialog :deep(.p-dialog-content) {
+  display: flex;             
+  flex-direction: column;
+  flex: 1 1 auto;            
+  min-height: 0;             
+  overflow: hidden;          
+  box-sizing: border-box;
+  padding-bottom: 0 !important; 
+  height: auto !important;   
+  position: relative;         /* ⭐ 新增：作为 .absolute-accept-button 的定位父级 */
+}
+
+/* ⭐ 新增：接任务按钮固定右下 & 不占文档流高度 */
+.absolute-accept-button {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  z-index: 1000;
+}
+
 .floating-dialog-level {
   position: absolute;
   top: 28px;
@@ -789,11 +810,25 @@ const applyFilter = () => {
   line-height: 1.5;
   margin: 0;
 }
-.dialog-left-section {
+/* .dialog-left-section {
   flex: 1;
   max-width: 75%;
   word-wrap: break-word;
   word-break: break-word;
+} */
+.dialog-left-section {
+  flex: 0 0 75% !important;  /* 与 75% 分割线一致 */
+  max-width: 75% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+}
+.dialog-right-section {
+  position: relative;
+  width: 25%;
+  flex: 0 0 25%;
+  min-height: 0;
+  overflow: hidden;
 }
 .fixed-footer-wrapper {
   position: absolute;
@@ -908,5 +943,17 @@ const applyFilter = () => {
   bottom: 24px;
   z-index: 999;
 }
+.custom-btn {
+  background-color: #2a2c55;
+  color: #ffffff;
+  border-radius: 12px;
+  padding: 12px 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
 
+.custom-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.25);
+}
 </style>
