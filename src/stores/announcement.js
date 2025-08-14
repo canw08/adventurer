@@ -4,7 +4,7 @@ export const useAnnouncementStore = defineStore('announcements', {
   state: () => ({
     items: [
       { id: 1, avatarSeed: 'none', name: 'Bridgette-文碧之', type: '入会通知', content: '欢迎加入冒险者协会', dateISO: '2025-06-26', read: false },
-      { id: 2, avatarSeed: 'something', name: 'bot', type: '请假通知', content: '请求时间延期到8/22日', dateISO: '2025-06-25', read: false },
+      { id: 2, avatarSeed: 'Wyatt', name: 'bot', type: '请假通知', content: '请求时间延期到8/22日', dateISO: '2025-06-25', read: false },
     ],
   }),
   getters: {
