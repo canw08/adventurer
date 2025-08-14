@@ -71,26 +71,27 @@
       </div>
 
       <!-- 选择奖励 -->
-      <div class="p-field">
-        <label>Choose award</label>
+        <AwardSliders
+          v-if="selectedLevel"
+          :level="selectedLevel === 'Design' ? '定制' : selectedLevel"
+          v-model:exp="exp"
+          v-model:coin="coin"
+          v-model:hours="hours"
+          :customRanges="selectedLevel === 'Design' ? customRanges : null"
+        />
 
-        <label>
-          EXP：
-          <input id="exp" type="range" min="0" max="1000" step="50" v-model="exp">
-          <span>{{ exp }}</span>
-        </label>
 
-        <label>
-          coin：
-          <input id="coin" type="range" min="0" max="2000" step="50" v-model="coin">
-          <span>{{ coin }}</span>
-        </label>
-      </div>
 
       <!-- 任务日期 -->
       <div class="p-field">
-        <label for="date">Task date</label>
-        <Calendar id="date" v-model="taskDate" dateFormat="mm/dd/yy" />
+        <label for="date">Task Details</label>
+        <Calendar id="date" v-model="taskDate" dateFormat="mm/dd/yy" placeholder="MM/DD/YYYY" </Calendar>
+      </div>
+
+
+      <!-- 新增：任务大标题 -->
+      <div class="p-field">
+        <InputText id="bigTitle" v-model="bigTitle" placeholder="Enter main title" style="width: 100%;" />
       </div>
 
       <!-- 富文本编辑表单（替换原 Textarea+自定义提交按钮） -->
@@ -115,7 +116,7 @@
         <Button type="submit" severity="secondary" label="Submit" />
       </Form>
     </Dialog>
-
+ 
 
     <!-- 主体卡片区域 -->
     <div class="main-body">
@@ -158,6 +159,8 @@ meta:
 </route>
 
 <script setup>
+import AwardSliders from '../../components/AwardSliders.vue' // 确认相对路径
+
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -167,10 +170,17 @@ import OverlayPanel from 'primevue/overlaypanel'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import RadioButton from 'primevue/radiobutton'
-import Slider from 'primevue/slider'
 import Calendar from 'primevue/calendar'
 import Editor from 'primevue/editor'
 import Message from 'primevue/message'
+import InputText from 'primevue/inputtext'
+
+const selectedLevel = ref('Design')   // 或 'Level F'
+const exp   = ref(0)
+const coin  = ref(0)
+const hours = ref(0)
+
+const bigTitle = ref('')
 
 const router = useRouter()
 
@@ -260,12 +270,8 @@ const goToProfile = () => {
 
 /* 弹窗相关 */
 const showDialog = ref(false)
-const levels = ['Level A', 'Level B', 'Level C', 'Level D', 'Level E', 'Level F']
-const selectedLevel = ref('')
+const levels = ['Level F', 'Level E', 'Level D', 'Level C', 'Level B', 'Level A' , 'Level S' , 'Design']
 
-/* 统一的 exp/coin（删除了重复声明） */
-const exp = ref(0)
-const coin = ref(0)
 
 const taskDate = ref(null)
 
@@ -293,14 +299,15 @@ const onFormSubmit = () => {
     selectedLevel: selectedLevel.value,
     exp: exp.value,
     coin: coin.value,
+    hours: hours.value,
     taskDate: taskDate.value,
     taskDetails: editorContent.value
   })
   showDialog.value = false
 }
-
 const editorContent = ref('')
 const contentError = ref('')
+
 </script>
 
 <style scoped>
@@ -637,16 +644,6 @@ const contentError = ref('')
   align-items: center;
 }
 
-/* 原生 range */
-/* EXP 原生滑动条绿色 */
-#exp {
-  accent-color: #F39536;
-}
-
-/* coin 原生滑动条金色 */
-#coin {
-  accent-color: #F2D84A;
-}
 
 
 label {

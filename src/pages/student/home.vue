@@ -35,6 +35,7 @@
             v-for="project in filteredProjects"
             :key="project.id"
             class="task-card"
+            @click="openProjectDialog(project)"
           >
             <h3 class="task-title">{{ project.title }}</h3>
             <div class="task-time">
@@ -60,6 +61,78 @@
         </div>
       </div>
     </div>
+    <Dialog
+  v-model:visible="showDialog"
+  modal
+  dismissableMask
+  :closable="false"
+  :style="{ width: '1100px', height: '700px', position: 'relative' }"
+  class="project-dialog"
+>
+  <template #header>
+    <div class="dialog-custom-header">
+      <div class="dialog-header-left">
+        <Button
+          icon="pi pi-arrow-left"
+          text
+          class="dialog-back-button"
+          @click="showDialog = false"
+        />
+      </div>
+      <div class="dialog-header-center">
+        <span class="dialog-title">{{ selectedProject?.title || '' }}</span>
+      </div>
+      <div class="floating-dialog-level">
+        Level {{ selectedProject?.level || '' }}
+      </div>
+    </div>
+  </template>
+
+  <div class="dialog-content-wrapper">
+    <div class="dialog-left-section">
+      <div class="dialog-date">
+        <i class="pi pi-clock dialog-icon"></i>
+        <span>{{ selectedProject?.date || '' }}</span>
+      </div>
+
+      <div class="dialog-author">
+        <Avatar
+          :image="selectedProject?.avatar || 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png'"
+          shape="circle"
+          size="large"
+          style="width: 40px; height: 40px"
+        />
+        <span class="author-name">{{ selectedProject?.author || '' }}</span>
+      </div>
+
+      <div class="dialog-description-row">
+        <div class="fake-avatar-space"></div>
+        <p class="dialog-description">
+          {{ selectedProject?.description || '无任务说明' }}
+        </p>
+      </div>
+
+      <div class="dialog-images">
+        <div class="image-placeholder"></div>
+        <div class="image-placeholder"></div>
+      </div>
+      <!-- 左下角按钮组 -->
+    </div>
+<div class="dialog-left-buttons">
+    <Button
+      label="Button 1"
+      class="custom-btn"
+      @click="onButton1Click"
+    />
+    <Button
+      label="Button 2"
+      class="custom-btn"
+      @click="onButton2Click"
+    />
+  </div>
+    <div class="dialog-right-section"></div>
+  </div>
+</Dialog>
 </template>
 
 <route lang="yaml">
@@ -72,6 +145,8 @@ import { ref, computed } from 'vue';
 import Avatar from 'primevue/avatar';
 import SelectButton from 'primevue/selectbutton';
 import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue'
+import Dialog from 'primevue/dialog';
+const router = useRouter();
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -155,6 +230,20 @@ const filteredProjects = computed(() =>
 const runningProjects = computed(() =>
   allProjects.filter((p) => p.status === 'ongoing')
 );
+const showDialog = ref(false);              //  控制弹窗显示
+const selectedProject = ref(null);          //  存储当前点击的项目
+
+const openProjectDialog = (project) => {    //  点击卡片触发
+  selectedProject.value = project;
+  showDialog.value = true;
+};
+const onButton1Click = () => {
+  console.log('Button 1 clicked');
+};
+
+const onButton2Click = () => {
+  console.log('Button 2 clicked');
+};
 </script>
 
 <style scoped>
@@ -439,5 +528,91 @@ const runningProjects = computed(() =>
   font-size: 16px;
   font-weight: 500;
   color: #333;
+}
+
+.dialog-custom-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+}
+.dialog-back-button {
+  font-size: 18px;
+  color: #333;
+}
+.dialog-title {
+  font-size: 30px;
+  font-weight: bold;
+  color: #1e1e1e;
+}
+.floating-dialog-level {
+  position: absolute;
+  top: 28px;
+  right: 130px;
+  color: #2a2c52;
+  font-weight: bold;
+  font-size: 32px;
+  text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
+}
+.dialog-content-wrapper {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  padding: 4px 24px 24px 24px;
+  height: 100%;
+}
+.dialog-left-section {
+  flex: 1;
+  max-width: 75%;
+}
+.dialog-description-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.fake-avatar-space {
+  width: 48px;
+  height: 48px;
+}
+.image-placeholder {
+  width: 240px;
+  height: 160px;
+  background-color: #e0e0e0;
+  border-radius: 12px;
+}
+.dialog-images {
+  display: flex;
+  flex-direction: row;  /* 明确设置横向排列 */
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.dialog-left-buttons {
+  position: absolute;
+  left: 30px;
+  bottom: 30px;
+  display: flex;
+  gap: 18px; /* 按钮之间的间距 */
+}
+
+.custom-btn {
+  background-color: #2A2C55 !important; /* 按钮背景色 */
+  color: #FFFFFF !important;            /* 字体颜色 */
+  border: none !important;              /* 去掉边框 */
+  border-radius: 12px;
+  padding: 12px 30px;
+  font-weight: 500;
+  font-size: 16px;
+  box-shadow: 0 4px 12px rgba(42, 44, 85, 0.3); /* 默认阴影 */
+  transition: all 0.2s ease;
+}
+
+.custom-btn:hover {
+  transform: translateY(-2px); /* 向上位移 */
+  box-shadow: 0 6px 16px rgba(42, 44, 85, 0.4); /* hover 阴影增强 */
+}
+
+.custom-btn:focus {
+  outline: none !important; /* 去掉默认 outline */
+  box-shadow: 0 4px 12px rgba(42, 44, 85, 0.3) !important; /* 聚焦时保留普通阴影 */
 }
 </style>
