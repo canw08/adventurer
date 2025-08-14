@@ -1,5 +1,8 @@
 <template>
   <div class="announce-root">
+
+
+
     <!-- 铃铛 + 徽章 -->
     <div class="notification-wrapper">
       <Button icon="pi pi-bell" class="notify-bell" text rounded @click="toggle" />
@@ -8,43 +11,66 @@
       </span>
     </div>
 
-    <!-- 公告列表 -->
-    <OverlayPanel ref="op" class="announcement-panel">
-      <ul class="announcement-list">
-        <li
-          v-for="a in store.ordered"
-          :key="a.id"
-          class="announcement-item"
-          tabindex="0"
-          role="button"
-          @click="open(a)"
-          @keydown.enter.prevent="open(a)"
-          @keydown.space.prevent="open(a)"
-        >
-          <!-- 行头：头像 + 名称（每条都有自己的） -->
-          <div class="item-header">
-            <img
-              :src="dicebear(a.avatarSeed)"
-              alt="avatar"
-              class="avatar-img"
-            />
-            <div class="name-and-type">
-              <div class="name">{{ a.name || 'Bridgette-文碧之' }}</div>
-              <div class="event-type">{{ a.type || '事件类型' }}</div>
-            </div>
-            <span v-if="!a.read" class="dot-unread" aria-hidden="true"></span>
-          </div>
+  <!-- 公告列表 -->
+  <OverlayPanel ref="op" class="announcement-panel"     @hide="resetClearButton">
 
-          <!-- 简介 -->
-          <div class="event-desc line-clamp-2">
-            {{ a.content }}
-          </div>
+            <!-- 浮动的清除按钮（左上角） -->
+    <button
+      v-if="op?.visible"
+      class="floating-mark-all"
+      :class="{ expanded: expanded, done: done }"
+      @click.stop="handleClearClick"
+      :aria-label="buttonLabel"
+    >
+      <span v-if="!expanded">&times;</span>
+      <span v-else-if="expanded && !done">全部标记为已读</span>
+      <span v-else>✔</span>
+    </button>
 
-          <!-- 提示 -->
-          <div class="click-hint">点击查看详情</div>
-        </li>
-      </ul>
-    </OverlayPanel>
+    <ul class="announcement-list">
+      <li
+        v-for="a in store.ordered"
+        :key="a.id"
+        class="announcement-item"
+        tabindex="0"
+        role="button"
+        @click="open(a)"
+        @keydown.enter.prevent="open(a)"
+        @keydown.space.prevent="open(a)"
+      >
+        <!-- 行头：头像 + 名称 -->
+        <div class="item-header">
+          <img
+            :src="dicebear(a.name,a.avatarSeed)"
+            alt="avatar"
+            class="avatar-img"
+          />
+          <div class="name-and-type">
+            <div class="name">{{ a.name || 'Bridgette-文碧之' }}</div>
+            <div class="event-type">{{ a.type || '事件类型' }}</div>
+          </div>
+          <span v-if="!a.read" class="dot-unread" aria-hidden="true"></span>
+        </div>
+
+        <!-- 简介 -->
+        <div class="event-desc line-clamp-2">
+          {{ a.content }}
+        </div>
+
+        <!-- 提示 -->
+        <div class="click-hint">点击查看详情</div>
+      </li>
+    </ul>
+
+    <!-- 放在 <ul class="announcement-list">...</ul> 后面 -->
+    <div class="show-all-container">
+      <button class="show-all-btn" @click="showAll" aria-label="显示所有通知">
+        <span class="arrow-head" aria-hidden="true"></span>
+      </button>
+      <span class="show-all-text">显示所有通知</span>
+    </div>
+
+  </OverlayPanel>
 
     <!-- 详情弹窗 -->
     <Dialog v-model:visible="visible" modal :header="dlgHeader" :style="{ width: '520px' }" dismissableMask>
@@ -89,10 +115,59 @@ function fmt(iso){
 }
 
 /** 头像生成：缺省给一个固定种子，或从每条 item 的 avatarSeed 取 */
-function dicebear(seed){
+function dicebear(name, seed) {
   const s = seed || 'bridgette'
+
+  // 特殊处理 name = "bot"
+  if (name && name.toLowerCase() === 'bot') {
+    return `https://api.dicebear.com/9.x/bottts/svg?seed=${encodeURIComponent(s)}`
+  }
+
   return `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(s)}`
 }
+
+
+// 新增：事件 & 状态
+const emit = defineEmits(['showAll'])
+const cleared = ref(false)
+
+const expanded = ref(false) // 是否展开状态
+const done = ref(false)     // 是否完成状态
+
+const buttonLabel = computed(() => {
+  if (!expanded.value) return '清除通知'
+  if (expanded.value && !done.value) return '全部标记为已读'
+  return '已完成'
+})
+
+function handleClearClick() {
+  if (!expanded.value) {
+    // 第一次点击，展开显示“全部标记为已读”
+    expanded.value = true
+    done.value = false
+  } else if (!done.value) {
+    // 第二次点击，执行全部标记已读并显示对勾
+    for (const a of store.ordered) {
+      if (!a.read) store.markRead(a.id)
+    }
+    done.value = true
+  }
+}
+
+// 面板关闭时恢复原状
+function resetClearButton() {
+  expanded.value = false
+  done.value = false
+}
+
+
+
+// 新增：显示所有通知（向父组件抛出事件，并收起面板）
+function showAll() {
+  emit('showAll')
+  op.value?.hide()
+}
+
 </script>
 
 <style scoped>
@@ -225,4 +300,117 @@ function dicebear(seed){
   line-clamp: 2; -webkit-line-clamp: 2;
   -webkit-box-orient: vertical; overflow: hidden;
 }
+
+/* 修改：让容器成为定位上下文 */
+.announce-root {
+  position: relative;
+}
+
+/* 新增：浮动按钮（左上角、悬浮在外头） */
+.floating-mark-all {
+  position: absolute;
+  top: -10px;           /* 悬浮到外面一点 */
+  left: -10px;
+  z-index: 10;
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  box-shadow: 0 4px 10px rgba(0,0,0,.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+.floating-mark-all:hover { transform: scale(1.05); }
+
+/* 点击后变为“全部标记为已读”的胶囊态 */
+.floating-mark-all.cleared {
+  padding: 6px 10px;
+  width: auto;
+  height: auto;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* 新增：面板底部“显示所有通知”区域 */
+.show-all-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  padding: 10px 0 4px;
+}
+
+.show-all-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.show-all-btn:hover { background: #fff3e0; }
+
+/* 仅箭头头部（向下的三角形，没有箭杆） */
+.arrow-head {
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 8px solid #333; /* 向下箭头 */
+}
+
+.show-all-text {
+  font-size: 12px;
+  color: #555;
+}
+
+
+/* 默认 X 状态 */
+.floating-mark-all {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  z-index: 20;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  box-shadow: 0 4px 10px rgba(0,0,0,.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all .25s ease;
+}
+
+/* 展开状态（显示文字） */
+.floating-mark-all.expanded {
+  width: auto;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* 对勾状态 */
+.floating-mark-all.done {
+  color: green;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+
 </style>
