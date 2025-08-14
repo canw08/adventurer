@@ -1,69 +1,72 @@
 <template>
   <div class="p-field">
-    <label>Choose award</label>
+    <label class="choose-size-label">Choose award</label>
 
     <!-- EXP -->
-    <div class="award-item">
-      <span class="label">EXP</span>
-      <input
-        class="range exp-range"
-        type="range"
-        :min="expMin"
-        :max="expMax"
-        :step="expStep"
-        :value="expLocal"
-        :disabled="disabled"
-        @input="onExp(($event.target as HTMLInputElement).value)"
-        aria-label="EXP range"
-      />
-      <span class="val">{{ expLocal }}</span>
-    </div>
-    <small class="range-hint">
-      范围：{{ expMin }} - {{ expMax }} 点经验
-      <span v-if="disabled">（请先选择等级）</span>
-    </small>
+<div class="award-item">
+  <label>EXP</label>
+  <span class="min-val">{{ expMin }}</span>
+  <input
+    class="range exp-range"
+    type="range"
+    :min="expMin"
+    :max="expMax"
+    :step="expStep"
+    :value="expLocal"
+    :disabled="disabled"
+    @input="onExp(($event.target as HTMLInputElement).value)"
+    aria-label="EXP range"
+  />
+  <span class="max-val">{{ expMax }}</span>
+</div>
+<small class="range-hint">
+  当前：{{ expLocal }} 点经验
+  <span v-if="disabled">（请先选择等级）</span>
+</small>
 
-    <!-- coin -->
-    <div class="award-item" style="margin-top:8px">
-      <span class="label">coin</span>
-      <input
-        class="range coin-range"
-        type="range"
-        :min="coinMin"
-        :max="coinMax"
-        :step="coinStep"
-        :value="coinLocal"
-        :disabled="disabled"
-        @input="onCoin(($event.target as HTMLInputElement).value)"
-        aria-label="coin range"
-      />
-      <span class="val">{{ coinLocal }}</span>
-    </div>
-    <small class="range-hint">
-      范围：{{ coinMin }} - {{ coinMax }} 阿幺斯
-      <span v-if="disabled">（请先选择等级）</span>
-    </small>
+<!-- coin -->
+<div class="award-item" style="margin-top:8px">
+  <label>Coins</label>
+  <span class="min-val">{{ coinMin }}</span>
+  <input
+    class="range coin-range"
+    type="range"
+    :min="coinMin"
+    :max="coinMax"
+    :step="coinStep"
+    :value="coinLocal"
+    :disabled="disabled"
+    @input="onCoin(($event.target as HTMLInputElement).value)"
+    aria-label="coin range"
+  />
+  <span class="max-val">{{ coinMax }}</span>
+</div>
+<small class="range-hint">
+  当前：{{ coinLocal }} 阿幺斯
+  <span v-if="disabled">（请先选择等级）</span>
+</small>
 
-    <!-- 志愿者时长 -->
-    <div class="award-item" style="margin-top:12px">
-      <span class="label">Hours</span>
-      <input
-        class="range hours-range"
-        type="range"
-        :min="hoursMin"
-        :max="hoursMax"
-        :step="hoursStep"
-        :value="hoursLocal"
-        :disabled="disabled"
-        @input="onHours(($event.target as HTMLInputElement).value)"
-        aria-label="volunteer hours range"
-      />
-      <span class="val">{{ hoursLocal }} h</span>
-    </div>
-    <small class="range-hint">
-      范围：{{ hoursMin }} - {{ hoursMax }} 小时
-      <span v-if="disabled">（请先选择等级）</span>
-    </small>
+<!-- 志愿者时长 -->
+<div class="award-item" style="margin-top:12px">
+  <label>Hours</label>
+  <span class="min-val">{{ hoursMin }}</span>
+  <input
+    class="range hours-range"
+    type="range"
+    :min="hoursMin"
+    :max="hoursMax"
+    :step="hoursStep"
+    :value="hoursLocal"
+    :disabled="disabled"
+    @input="onHours(($event.target as HTMLInputElement).value)"
+    aria-label="volunteer hours range"
+  />
+  <span class="max-val">{{ hoursMax }}</span>
+</div>
+<small class="range-hint">
+  当前：{{ hoursLocal }} 小时
+  <span v-if="disabled">（请先选择等级）</span>
+</small>
   </div>
 </template>
 
@@ -111,23 +114,23 @@ const disabled = computed(() => !normalizeLevel(props.level))
 
 // 等级映射
 const levelRanges: Record<string, {exp:[number,number], coin:[number,number], hours:[number,number]}> = {
-  'F级':     { exp:[5,15],      coin:[10,20],    hours:[0.5, 1] },
-  'E级':     { exp:[30,50],     coin:[50,100],   hours:[1,   2] },
-  'D级':     { exp:[80,150],    coin:[100,150],  hours:[2,   3] },
-  'C级':     { exp:[250,400],   coin:[300,350],  hours:[3,   4] },
-  'B级':     { exp:[500,800],   coin:[400,600],  hours:[4,   6] },
-  'A级':     { exp:[1000,2000], coin:[800,1000], hours:[6,   8] },
-  'S级':     { exp:[3000,5000], coin:[2000,3000],hours:[8,  12] },
-  '定制':     { exp:[1,10000],  coin:[1,10000],  hours:[0.5,24] },
+  'F级':     { exp:[5,15],      coin:[10,20],    hours:[0,24] },
+  'E级':     { exp:[30,50],     coin:[50,100],   hours:[0,24] },
+  'D级':     { exp:[80,150],    coin:[100,150],  hours:[0,24] },
+  'C级':     { exp:[250,400],   coin:[300,350],  hours:[0,24] },
+  'B级':     { exp:[500,800],   coin:[400,600],  hours:[0,24] },
+  'A级':     { exp:[1000,2000], coin:[800,1000], hours:[0,24] },
+  'S级':     { exp:[3000,5000], coin:[2000,3000],hours:[0,24] },
+  '定制':     { exp:[1,10000],  coin:[1,10000],  hours:[0,24] },
 
   // 英文别名
-  'Level F': { exp:[5,15],      coin:[10,20],    hours:[0.5, 1] },
-  'Level E': { exp:[30,50],     coin:[50,100],   hours:[1,   2] },
-  'Level D': { exp:[80,150],    coin:[100,150],  hours:[2,   3] },
-  'Level C': { exp:[250,400],   coin:[300,350],  hours:[3,   4] },
-  'Level B': { exp:[500,800],   coin:[400,600],  hours:[4,   6] },
-  'Level A': { exp:[1000,2000], coin:[800,1000], hours:[6,   8] },
-  'Level S': { exp:[3000,5000], coin:[2000,3000],hours:[8,  12] }
+  'Level F': { exp:[5,15],      coin:[10,20],    hours:[0,24] },
+  'Level E': { exp:[30,50],     coin:[50,100],   hours:[0,24] },
+  'Level D': { exp:[80,150],    coin:[100,150],  hours:[0,24] },
+  'Level C': { exp:[250,400],   coin:[300,350],  hours:[0,24] },
+  'Level B': { exp:[500,800],   coin:[400,600],  hours:[0,24] },
+  'Level A': { exp:[1000,2000], coin:[800,1000], hours:[0,24] },
+  'Level S': { exp:[3000,5000], coin:[2000,3000],hours:[0,24] }
 }
 
 // 传入等级 -> 标准 key；返回 '' 表示未选择
@@ -210,7 +213,7 @@ function onHours(v:string){ hoursLocal.value = Math.min(hoursMax.value, Math.max
 
 <style scoped>
 /* 基础布局 */
-.award-item { display:flex; align-items:center; gap:10px; }
+.award-item { display:flex; align-items:center; gap:10px; width:500px;}
 .label { width:56px; color:#333; }
 .range { flex:1; }
 .val { width:80px; text-align:right; }
@@ -266,4 +269,17 @@ function onHours(v:string){ hoursLocal.value = Math.min(hoursMax.value, Math.max
 .hours-range::-moz-range-track              { background: #F3F4F6; }
 .hours-range::-webkit-slider-thumb { background: #64748B; }
 .hours-range::-moz-range-thumb      { background: #64748B; }
+
+.choose-size-label {
+  font-size: 20px;
+  font-weight: 300;
+}
+
+.min-val,
+.max-val {
+  width: 50px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 14px;
+}
 </style>
