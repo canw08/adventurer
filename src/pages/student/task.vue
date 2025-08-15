@@ -649,7 +649,7 @@ const applyFilter = () => {
   display: flex;
   align-items: center;
   color: #666;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 .dialog-icon {
   margin-right: 8px;
@@ -657,7 +657,8 @@ const applyFilter = () => {
 .dialog-author {
   display: flex;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  gap: 8px;
 }
 .author-name {
   font-weight: 500;
@@ -673,6 +674,7 @@ const applyFilter = () => {
   display: flex;
   gap: 12px;
   margin-bottom: 0px;
+  margin-left: calc(48px + 12px);
 }
 /* 图片区域就是你左侧最后一块：不要底部外边距 */
 .dialog-images { 
@@ -722,8 +724,8 @@ const applyFilter = () => {
 /* ✅ 保持分割线上下分别 48px，不受按钮影响 */
 .dialog-vertical-divider {
   position: absolute;
-  top: 48px;
-  bottom: 48px;
+  top: 0px;
+  bottom: 0px;
   left: 75%;
   width: 1px;
   background-color: #ccc;
@@ -732,12 +734,15 @@ const applyFilter = () => {
 }
 
 /* 占满内容区高度，不滚动；去掉底部内边距 */
+/* 2) 与 home 保持一致的内容留白（关键！）*/
 .dialog-content-wrapper {
-  position: relative !important;   /* 作为分割线的定位上下文 */
-  display: flex !important;
-  flex: 1 1 auto;
+  position: relative;               /* 作为分割线的定位上下文 */
+  display: flex;
+  gap: 24px;
+  padding: 4px 24px 24px 24px;      /* ← 与 home 保持一致的 padding */
   min-height: 0;
-  gap: 0;
+  height: 100%;
+  box-sizing: border-box;
 }
 .dialog-right-section {
   position: relative;
@@ -754,11 +759,12 @@ const applyFilter = () => {
   height: 100%;
 }
 /* ✅ 让按钮可相对内容区域绝对定位，且不撑高内容 */
-.project-dialog :deep(.p-dialog) {
-  display: flex;             
-  flex-direction: column;
-  height: 700px;             
-  max-height: 700px;         
+.project-dialog :deep(.p-dialog-content) {
+  padding: 0 !important;            /* 清空 PrimeVue 默认 padding，避免与 wrapper 叠加 */
+  height: auto !important;
+  position: relative;               /* 你原有的保持 */
+  overflow: hidden;                 /* 建议加，防止子元素溢出 */
+  box-sizing: border-box;
 }
 .project-dialog :deep(.p-dialog-content) {
   display: flex;             
@@ -810,23 +816,21 @@ const applyFilter = () => {
   line-height: 1.5;
   margin: 0;
 }
-/* .dialog-left-section {
-  flex: 1;
-  max-width: 75%;
+
+/* 3) 左右比例不变，但确保与分割线的 75% 对齐 */
+.dialog-left-section {
+  flex: 0 0 75%;
+  width: 75%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   word-wrap: break-word;
   word-break: break-word;
-} */
-.dialog-left-section {
-  flex: 0 0 75% !important;  /* 与 75% 分割线一致 */
-  max-width: 75% !important;
-  display: flex !important;
-  flex-direction: column !important;
-  min-height: 0 !important;
 }
 .dialog-right-section {
+  flex: 0 0 25%;
   position: relative;
   width: 25%;
-  flex: 0 0 25%;
   min-height: 0;
   overflow: hidden;
 }
@@ -955,5 +959,10 @@ const applyFilter = () => {
 .custom-btn:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 12px rgba(0, 0, 0, 0.25);
+}
+
+.author-name {
+  font-weight: 500;
+  font-size: 20px;
 }
 </style>
