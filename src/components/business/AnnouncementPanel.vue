@@ -1,8 +1,6 @@
 <template>
   <div class="announce-root">
 
-
-
     <!-- 铃铛 + 徽章 -->
     <div class="notification-wrapper">
       <Button icon="pi pi-bell" class="notify-bell" text rounded @click="toggle" />
@@ -11,66 +9,66 @@
       </span>
     </div>
 
-  <!-- 公告列表 -->
-  <OverlayPanel ref="op" class="announcement-panel"     @hide="resetClearButton">
+    <!-- 公告列表 -->
+    <OverlayPanel ref="op" class="announcement-panel" @hide="resetClearButton">
 
-            <!-- 浮动的清除按钮（左上角） -->
-    <button
-      v-if="op?.visible"
-      class="floating-mark-all"
-      :class="{ expanded: expanded, done: done }"
-      @click.stop="handleClearClick"
-      :aria-label="buttonLabel"
-    >
-      <span v-if="!expanded">&times;</span>
-      <span v-else-if="expanded && !done">全部标记为已读</span>
-      <span v-else>✔</span>
-    </button>
-
-    <ul class="announcement-list">
-      <li
-        v-for="a in store.ordered"
-        :key="a.id"
-        class="announcement-item"
-        tabindex="0"
-        role="button"
-        @click="open(a)"
-        @keydown.enter.prevent="open(a)"
-        @keydown.space.prevent="open(a)"
+      <!-- 浮动的清除按钮（左上角） -->
+      <button
+        v-if="op?.visible"
+        class="floating-mark-all"
+        :class="{ expanded: expanded, done: done }"
+        @click.stop="handleClearClick"
+        :aria-label="buttonLabel"
       >
-        <!-- 行头：头像 + 名称 -->
-        <div class="item-header">
-          <img
-            :src="dicebear(a.name,a.avatarSeed)"
-            alt="avatar"
-            class="avatar-img"
-          />
-          <div class="name-and-type">
-            <div class="name">{{ a.name || 'Bridgette-文碧之' }}</div>
-            <div class="event-type">{{ a.type || '事件类型' }}</div>
-          </div>
-          <span v-if="!a.read" class="dot-unread" aria-hidden="true"></span>
-        </div>
-
-        <!-- 简介 -->
-        <div class="event-desc line-clamp-2">
-          {{ a.content }}
-        </div>
-
-        <!-- 提示 -->
-        <div class="click-hint">点击查看详情</div>
-      </li>
-    </ul>
-
-    <!-- 放在 <ul class="announcement-list">...</ul> 后面 -->
-    <div class="show-all-container">
-      <button class="show-all-btn" @click="showAll" aria-label="显示所有通知">
-        <span class="arrow-head" aria-hidden="true"></span>
+        <span v-if="!expanded">&times;</span>
+        <span v-else-if="expanded && !done">{{ buttonLabel }}</span>
+        <span v-else>✔</span>
       </button>
-      <span class="show-all-text">显示所有通知</span>
-    </div>
 
-  </OverlayPanel>
+      <ul class="announcement-list">
+        <li
+          v-for="a in items"
+          :key="a.id"
+          class="announcement-item"
+          tabindex="0"
+          role="button"
+          @click="open(a)"
+          @keydown.enter.prevent="open(a)"
+          @keydown.space.prevent="open(a)"
+        >
+          <!-- 行头：头像 + 名称 -->
+          <div class="item-header">
+            <img
+              :src="dicebear(a.typeKey,a.avatarSeed)"
+              alt="avatar"
+              class="avatar-img"
+            />
+            <div class="name-and-type">
+              <div class="name">{{ a.displayName }}</div>
+              <div class="event-type">{{ a.typeLabel }}</div>
+            </div>
+            <span v-if="!a.read" class="dot-unread" aria-hidden="true"></span>
+          </div>
+
+          <!-- 简介 -->
+          <div class="event-desc line-clamp-2">
+            {{ a.content }}
+          </div>
+
+          <!-- 提示 -->
+          <div class="click-hint">{{ a.clickHint }}</div>
+        </li>
+      </ul>
+
+      <!-- 放在 <ul class="announcement-list">...</ul> 后面 -->
+      <div class="show-all-container">
+        <button class="show-all-btn" @click="showAll" :aria-label="t('notifications.showAll')">
+          <span class="arrow-head" aria-hidden="true"></span>
+        </button>
+        <span class="show-all-text">{{ t('notifications.showAll') }}</span>
+      </div>
+
+    </OverlayPanel>
 
     <!-- 详情弹窗 -->
     <Dialog v-model:visible="visible" modal :header="dlgHeader" :style="{ width: '520px' }" dismissableMask>
@@ -86,18 +84,38 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import Button from 'primevue/button'
 import OverlayPanel from 'primevue/overlaypanel'
 import Dialog from 'primevue/dialog'
 import { useAnnouncementStore } from '../../stores/announcement' // 确保路径正确
 
 const store = useAnnouncementStore()
+const { t } = useI18n()
+
+// 挂载时拉取 Mock 数据
+onMounted(() => {
+  store.fetchAll()
+})
 
 const op = ref()
 const visible = ref(false)
 const current = ref(null)
-const dlgHeader = computed(() => current.value ? `公告 - ${current.value.name || 'Bridgette-文碧之'}` : '公告详情')
+const dlgHeader = computed(() =>
+  current.value ? `公告 - ${current.value.name || t('notifications.systemName')}` : '公告详情'
+)
+
+// 视图数据：在不改变 store 的前提下做 i18n 映射与兜底
+const items = computed(() =>
+  store.ordered.map(a => ({
+    ...a,
+    displayName: a.name ?? t('notifications.systemName'),
+    typeLabel: t(`notifications.type.${a.typeKey || 'unknown'}`),
+    dateLabel: a.dateISO || t('common.na'),
+    clickHint: t('notifications.clickToView'),
+  }))
+)
 
 function toggle(e){
   op.value?.toggle(e)
@@ -119,15 +137,14 @@ function dicebear(name, seed) {
   const s = seed || 'bridgette'
 
   // 特殊处理 name = "bot"
-  if (name && name.toLowerCase() === 'bot') {
+  if (name && name.toLowerCase() === 'system') {
     return `https://api.dicebear.com/9.x/bottts/svg?seed=${encodeURIComponent(s)}`
   }
 
   return `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(s)}`
 }
 
-
-// 新增：事件 & 状态
+// 事件 & 状态
 const emit = defineEmits(['showAll'])
 const cleared = ref(false)
 
@@ -135,9 +152,9 @@ const expanded = ref(false) // 是否展开状态
 const done = ref(false)     // 是否完成状态
 
 const buttonLabel = computed(() => {
-  if (!expanded.value) return '清除通知'
-  if (expanded.value && !done.value) return '全部标记为已读'
-  return '已完成'
+  if (!expanded.value) return t('notifications.markAll')
+  if (expanded.value && !done.value) return t('notifications.markAll')
+  return '✔'
 })
 
 function handleClearClick() {
@@ -160,14 +177,11 @@ function resetClearButton() {
   done.value = false
 }
 
-
-
-// 新增：显示所有通知（向父组件抛出事件，并收起面板）
+// 显示所有通知（向父组件抛出事件，并收起面板）
 function showAll() {
   emit('showAll')
   op.value?.hide()
 }
-
 </script>
 
 <style scoped>
@@ -272,7 +286,6 @@ function showAll() {
   border-radius: 50%;
 }
 
-
 .dot-unread {
   width: 8px;
   height: 8px;
@@ -374,7 +387,6 @@ function showAll() {
   color: #555;
 }
 
-
 /* 默认 X 状态 */
 .floating-mark-all {
   position: absolute;
@@ -411,6 +423,4 @@ function showAll() {
   font-size: 14px;
   font-weight: bold;
 }
-
-
 </style>
