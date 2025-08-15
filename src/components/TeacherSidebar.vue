@@ -1,10 +1,10 @@
 <template>
   <div class="sidebar" v-if="userStore.userInfo">
     <div class="profile-header">
-      <Avatar
-        :image="userStore.userInfo.avatar || defaultAvatar"
-        shape="circle"
-        size="xlarge"
+      <img
+        :src="`https://api.dicebear.com/9.x/adventurer/svg?seed=${userStore.userInfo.avatar}`"
+        alt="User Avatar"
+        class="avatar-img"
       />
       <h2>{{ userStore.userInfo.nickname || userStore.userInfo.username }}</h2>
       <p class="user-id">ID：{{ userStore.userInfo.identifier }}</p>

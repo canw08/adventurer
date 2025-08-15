@@ -11,21 +11,7 @@
           <span class="running-label"> Running Quest</span>
         </span>
       </div>
-      <div class="bell-right-group">
-        <div class="notification-wrapper" @click="togglePanel($event)">
-          <Button icon="pi pi-bell" class="notify-bell" text rounded />
-          <span v-if="unreadCount > 0" class="notification-badge">{{ unreadCount }}</span>
-        </div>
-        <OverlayPanel ref="op" class="announcement-panel">
-          <div class="panel-title">📢 公告通知</div>
-          <ul class="announcement-list">
-            <li v-for="(item, index) in announcements" :key="index">
-              <div class="announcement-date">{{ item.date }}</div>
-              <div class="announcement-content">{{ item.content }}</div>
-            </li>
-          </ul>
-        </OverlayPanel>
-      </div>
+      <AnnouncementPanel />
     </div>
 
     <div class="main-subheader">
@@ -48,73 +34,84 @@
 
     <!-- 发布任务弹窗 -->
     <Dialog
-      header="Release a task"
       v-model:visible="showDialog"
       modal
-      class="p-fluid"
+      class="p-fluid my-task-dialog"
       :style="{ width: '1100px', maxWidth: '90vw' , height:'700px'}"
     >
+
+  <template #header>
+    <h2 class="dialog-header-title">Release a task</h2>
+  </template>
+
+
+    <div class="gapping">
       <!-- Choose level -->
-      <div class="p-field">
-        <label>Choose level</label>
-        <div class="level-options">
-          <div v-for="level in levels" :key="level" class="level-item">
-            <RadioButton
-              v-model="selectedLevel"
-              :inputId="level"
-              :value="level"
-              name="quest-level"
-            />
-            <label :for="level">{{ level }}</label>
+        <div class="p-field">
+          <label class="choose-size-label">Choose level</label>
+          <div class="level-options">
+            <div v-for="level in levels" :key="level" class="level-item">
+              <RadioButton
+                v-model="selectedLevel"
+                :inputId="level"
+                :value="level"
+                name="quest-level"
+              />
+              <label :for="level">{{ level }}</label>
+            </div>
           </div>
         </div>
       </div>
-
-      <!-- 选择奖励 -->
-        <AwardSliders
-          v-if="selectedLevel"
-          :level="selectedLevel === 'Design' ? '定制' : selectedLevel"
-          v-model:exp="exp"
-          v-model:coin="coin"
-          v-model:hours="hours"
-          :customRanges="selectedLevel === 'Design' ? customRanges : null"
-        />
-
-
-
-      <!-- 任务日期 -->
-      <div class="p-field">
-        <label for="date">Task Details</label>
-        <Calendar id="date" v-model="taskDate" dateFormat="mm/dd/yy" placeholder="MM/DD/YYYY" </Calendar>
+      <div class="gapping">
+        <!-- 选择奖励 -->
+          <AwardSliders
+            v-if="selectedLevel"
+            :level="selectedLevel === 'Design' ? '定制' : selectedLevel"
+            v-model:exp="exp"
+            v-model:coin="coin"
+            v-model:hours="hours"
+            :customRanges="selectedLevel === 'Design' ? customRanges : null"
+          />
       </div>
 
-
-      <!-- 新增：任务大标题 -->
-      <div class="p-field">
-        <InputText id="bigTitle" v-model="bigTitle" placeholder="Enter main title" style="width: 100%;" />
-      </div>
-
-      <!-- 富文本编辑表单（替换原 Textarea+自定义提交按钮） -->
-      <Form
-        v-slot="$form"
-        :resolver="resolver"
-        :initialValues="initialValues"
-        @submit="onFormSubmit"
-        class="flex flex-col gap-4"
-      >
-        <div class="flex flex-col gap-1">
-          <Editor name="content" editorStyle="height: 320px" />
-          <Message
-            v-if="$form?.content?.invalid"
-            severity="error"
-            size="small"
-            variant="simple"
-          >
-            {{ $form?.content?.error?.message }}
-          </Message>
+      <div class="gapping">
+        <!-- 任务日期 -->
+        <div class="p-field">
+          <label for="date" class="choose-size-label">Task Details</label>
+          <Calendar id="date" v-model="taskDate" dateFormat="mm/dd/yy" placeholder="MM/DD/YYYY" </Calendar>
         </div>
-        <Button type="submit" severity="secondary" label="Submit" />
-      </Form>
+      </div>
+
+      <div class="gapping">
+        <!-- 新增：任务大标题 -->
+        <div class="p-field">
+          <InputText id="bigTitle" v-model="bigTitle" placeholder="Enter main title" style="width: 100%;" />
+        </div>
+      </div>
+
+      <div class="gapping">
+        <!-- 富文本编辑表单（替换原 Textarea+自定义提交按钮） -->
+        <Form
+          v-slot="$form"
+          :resolver="resolver"
+          :initialValues="initialValues"
+          @submit="onFormSubmit"
+          class="flex flex-col gap-4"
+        >
+          <div class="flex flex-col gap-1">
+            <Editor name="content" editorStyle="height: 320px" />
+            <Message
+              v-if="$form?.content?.invalid"
+              severity="error"
+              size="small"
+              variant="simple"
+            >
+              {{ $form?.content?.error?.message }}
+            </Message>
+          </div>
+          <Button type="submit" severity="secondary" label="Submit" />
+        </Form>
+      </div>
     </Dialog>
  
 
@@ -159,23 +156,20 @@ meta:
 </route>
 
 <script setup>
+// src/mock/index.js
+import { useUserStore } from '../../stores/user';
+import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue'
 import AwardSliders from '../../components/AwardSliders.vue' // 确认相对路径
 
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
-import Avatar from 'primevue/avatar'
-import SelectButton from 'primevue/selectbutton'
-import OverlayPanel from 'primevue/overlaypanel'
-import Button from 'primevue/button'
-import Dialog from 'primevue/dialog'
-import RadioButton from 'primevue/radiobutton'
-import Calendar from 'primevue/calendar'
-import Editor from 'primevue/editor'
-import Message from 'primevue/message'
-import InputText from 'primevue/inputtext'
 
-const selectedLevel = ref('Design')   // 或 'Level F'
+
+import { onMounted } from 'vue';
+const userStore = useUserStore();
+
+const selectedLevel = ref('')   // 或 'Level F'
 const exp   = ref(0)
 const coin  = ref(0)
 const hours = ref(0)
@@ -270,7 +264,14 @@ const goToProfile = () => {
 
 /* 弹窗相关 */
 const showDialog = ref(false)
-const levels = ['Level F', 'Level E', 'Level D', 'Level C', 'Level B', 'Level A' , 'Level S' , 'Design']
+const levels = computed(() => {
+  const baseLevels = ['Level F', 'Level E', 'Level D', 'Level C', 'Level B', 'Level A', 'Level S']
+  // 如果是 boss，额外加 Design
+  if (userStore.userInfo.role === 'boss') {
+    baseLevels.push('Design')
+  }
+  return baseLevels
+})
 
 
 const taskDate = ref(null)
@@ -308,6 +309,14 @@ const onFormSubmit = () => {
 const editorContent = ref('')
 const contentError = ref('')
 
+
+onMounted(async () => {
+  try {
+    await userStore.fetchUser();
+  } catch {
+    // 可做错误提示
+  }
+});
 </script>
 
 <style scoped>
@@ -644,11 +653,21 @@ const contentError = ref('')
   align-items: center;
 }
 
-
-
-label {
-  display: block;
-  margin: 16px 0;
+.choose-size-label {
+  font-size: 20px;
+  font-weight: 300;
 }
+
+.gapping {
+  margin-bottom: 20px;
+}
+
+.dialog-header-title {
+  font-size: 28px;     /* 字体大小 */
+  font-weight: bold;   /* 粗细 */
+  color: #2A2C55;      /* 深蓝色 */
+  margin: 0;           /* 去掉默认 margin */
+}
+
 
 </style>
