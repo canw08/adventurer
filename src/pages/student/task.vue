@@ -1,180 +1,193 @@
 <template>
+  <!-- 右侧 -->
+  <div class="main-content">
+    <!-- 顶部栏 -->
+    <div class="main-header">
+      <div class="header-left-group">
+        <span class="header-left">Quest Board</span>
+        <div class="vertical-divider"></div>
+      </div>
+      <AnnouncementPanel />
+    </div>
 
-    <!-- 右侧 -->
-    <div class="main-content">
-      <div class="main-header">
-        <div class="header-left-group">
-          <span class="header-left">Quest Board</span>
-          <div class="vertical-divider"></div>
+    <!-- 次级标题与筛选按钮 -->
+    <div class="main-subheader">
+      <span class="greeting">Good morning, adventurer</span>
+      <div class="filter-buttons-wrapper small-toggle">
+        <div class="fake-select-wrapper">
+          <Button
+            label="Filter"
+            icon="pi pi-filter"
+            @click="showFilterDialog = true"
+            class="filter-button"
+          />
         </div>
-        <AnnouncementPanel />
       </div>
-      <div class="main-subheader">
-        <span class="greeting">Good morning, adventurer</span>
-         <div class="filter-buttons-wrapper small-toggle">
-           <div class="fake-select-wrapper">
-  <Button
-    label="Filter"
-    icon="pi pi-filter"
-    @click="showFilterDialog = true"
-    class="filter-button"
-/>
-</div>
-  </div>
-      </div>
+    </div>
 
-      <!-- ✅ 卡片列表 -->
-      <div class="main-body">
-        <div class="card-background"></div>
-        <div class="grid-container">
-          <div v-for="project in paginatedProjects" :key="project.id" class="task-card" @click="openProjectDialog(project)">
-            <!-- 上部图文 -->
-            <div class="task-main-content">
-              <div class="task-left">
-                <h3 class="task-title">{{ project.title }}</h3>
-                <div class="task-time">
-                  <i class="pi pi-clock"></i>
-                  <span>{{ project.date }}</span>
-                </div>
-                <div class="task-exp">{{ project.exp || 'N/A' }}</div>
+    <!-- ✅ 卡片区域容器（分页器将相对它的底部居中） -->
+    <div class="main-body">
+      <div class="card-background"></div>
+
+      <!-- 卡片网格 -->
+      <div class="grid-container">
+        <div
+          v-for="project in paginatedProjects"
+          :key="project.id"
+          class="task-card"
+          :class="{ 'assigned-card': project.status === 'assigned' }"
+          @click="openProjectDialog(project)"
+        >
+          <!-- 上部图文 -->
+          <div class="task-main-content">
+            <div class="task-left">
+              <h3 class="task-title">{{ project.title }}</h3>
+              <div class="task-time">
+                <i class="pi pi-clock"></i>
+                <span>{{ project.date }}</span>
               </div>
-              <div class="task-right">
-                <img :src="project.image" alt="Project Image" class="task-image" />
-              </div>
+              <div class="task-exp">{{ project.exp || 'N/A' }}</div>
             </div>
 
-            <div class="task-divider"></div>
+            <!-- 右侧图片（assigned 状态下会通过 CSS 隐藏） -->
+            <div class="task-right">
+              <img :src="project.image" alt="Project Image" class="task-image" />
+            </div>
+          </div>
 
-            <div class="task-footer">
-  <div class="avatar-wrapper">
-    <Avatar
-      :image="project.avatar"
-      shape="circle"
-      style="width: 40px; height: 40px"
-    />
-    <span class="avatar-name">{{ project.author }}</span>
-  </div>
-  <span class="task-level">Level {{ project.level }}</span>
-</div>
-</div>
+          <div class="task-divider"></div>
+
+          <!-- 底部头像与等级 -->
+          <div class="task-footer">
+            <div class="avatar-wrapper">
+              <Avatar
+                :image="project.avatar"
+                shape="circle"
+                style="width: 40px; height: 40px"
+              />
+              <span class="avatar-name">{{ project.author }}</span>
+            </div>
+            <span class="task-level">Level {{ project.level }}</span>
           </div>
         </div>
-        <div class="fixed-footer-wrapper">
-      <Paginator
-    :rows="rowsPerPage"
-    :totalRecords="filteredProjects.length"
-    :first="currentPage * rowsPerPage"
-    @page="(e) => currentPage = e.page"
-    style="background-color: white; border-radius: 12px; padding: 4px 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);"
-  />
-</div>
       </div>
-  <!-- ✅ 弹窗 -->
-  <Dialog
-  v-model:visible="showDialog"
-  modal
-  blockScroll
-  dismissableMask
-  :closable="false"
-  :style="{ width: '1100px', height: '700px', position: 'relative' }"
-  class="project-dialog"
->
-  <!-- 自定义 Header -->
-  <template #header>
-    <div class="dialog-custom-header">
-      <!-- 左侧返回按钮 -->
-      <div class="dialog-header-left">
-        <Button
-          icon="pi pi-arrow-left"
-          text
-          class="dialog-back-button"
-          @click="showDialog = false"
+
+      <!-- ✅ 分页器容器：相对 .main-body 绝对定位，底部居中 -->
+      <div class="fixed-footer-wrapper">
+        <Paginator
+          :rows="rowsPerPage"
+          :totalRecords="filteredProjects.length"
+          :first="currentPage * rowsPerPage"
+          @page="(e) => currentPage = e.page"
+          style="background-color: white; border-radius: 12px; padding: 4px 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);"
         />
-      </div>
-
-      <!-- 中间标题 -->
-      <div class="dialog-header-center">
-        <span class="dialog-title">{{ selectedProject?.title || '' }}</span>
-      </div>
-
-       <!-- 浮动右上角的等级标签 -->
-      <div class="floating-dialog-level">
-        Level {{ selectedProject?.level || '' }}
-      </div>
-    </div>
-  </template>
-
-  <!-- 弹窗主体内容区域 -->
-  <div class="dialog-content-wrapper">
-    <!-- 左侧内容区域 -->
-    <div class="dialog-left-section">
-      <div class="dialog-date">
-        <i class="pi pi-clock dialog-icon"></i>
-        <span>{{ selectedProject.date }}</span>
-      </div>
-
-      <div class="dialog-author">
-        <Avatar
-          image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
-          shape="circle"
-          size="large"
-          style="width: 40px; height: 40px"
-        />
-        <span class="author-name">{{ selectedProject?.author }}</span>
-      </div>
-
-     <div class="dialog-description-row">
-      <div class="fake-avatar-space"></div>
-      <p class="dialog-description">
-  {{ selectedProject?.description || '无任务说明' }}
-</p>
-   </div>
-
-      <div class="dialog-images">
-        <div class="image-placeholder"></div>
-        <div class="image-placeholder"></div>
       </div>
     </div>
 
-    <!-- 分隔线 -->
-    <div class="dialog-vertical-divider"></div>
+    <!-- ✅ 任务详情弹窗 -->
+    <Dialog
+      v-model:visible="showDialog"
+      modal
+      blockScroll
+      dismissableMask
+      :closable="false"
+      :style="{ width: '1100px', height: '700px', position: 'relative' }"
+      class="project-dialog"
+    >
+      <!-- 自定义 Header -->
+      <template #header>
+        <div class="dialog-custom-header">
+          <!-- 左侧返回按钮 -->
+          <div class="dialog-header-left">
+            <Button
+              icon="pi pi-arrow-left"
+              text
+              class="dialog-back-button"
+              @click="showDialog = false"
+            />
+          </div>
 
-    <!-- 右侧区域 -->
-    <div class="dialog-right-section"></div>
+          <!-- 中间标题 -->
+          <div class="dialog-header-center">
+            <span class="dialog-title">{{ selectedProject?.title || '' }}</span>
+          </div>
+
+          <!-- 浮动右上角的等级标签（仅显示，不可交互） -->
+          <div class="floating-dialog-level">
+            Level {{ selectedProject?.level || '' }}
+          </div>
+        </div>
+      </template>
+
+      <!-- 弹窗主体内容区域 -->
+      <div class="dialog-content-wrapper">
+        <!-- 左侧内容区域 -->
+        <div class="dialog-left-section">
+          <div class="dialog-date">
+            <i class="pi pi-clock dialog-icon"></i>
+            <span>{{ selectedProject?.date }}</span>
+          </div>
+
+          <div class="dialog-author">
+            <Avatar
+              image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
+              shape="circle"
+              size="large"
+              style="width: 40px; height: 40px"
+            />
+            <span class="author-name">{{ selectedProject?.author }}</span>
+          </div>
+
+          <div class="dialog-description-row">
+            <div class="fake-avatar-space"></div>
+            <p class="dialog-description">
+              {{ selectedProject?.description || '无任务说明' }}
+            </p>
+          </div>
+
+          <div class="dialog-images">
+            <div class="image-placeholder"></div>
+            <div class="image-placeholder"></div>
+          </div>
+        </div>
+
+        <!-- 分隔线 -->
+        <div class="dialog-vertical-divider"></div>
+
+        <!-- 右侧区域（留空占位，后续可扩展） -->
+        <div class="dialog-right-section"></div>
+      </div>
+
+      <!-- 接任务按钮（保持在 content 外层，绝对定位，不占高度） -->
+      <div class="absolute-accept-button">
+        <Button label="Accept" class="custom-btn" />
+      </div>
+    </Dialog>
+
+    <!-- ✅ 筛选弹窗（不包含 assigned，assigned 作为 ongoing 的分支） -->
+    <Dialog
+      v-model:visible="showFilterDialog"
+      modal
+      dismissableMask
+      header="Filter Tasks"
+      :style="{ width: '1100px', height: '700px', position: 'relative' }"
+    >
+      <!-- 筛选内容 -->
+      <div style="margin-bottom: 24px">
+        <span style="display: block; margin-bottom: 8px">Task Status</span>
+        <SelectButton
+          v-model="tempTab"
+          :options="['ongoing', 'completed']"
+          style="width: 100%"
+        />
+      </div>
+
+      <!-- 应用按钮 -->
+      <div class="absolute-apply-button">
+        <Button label="Apply" @click="applyFilter" class="apply-button" />
+      </div>
+    </Dialog>
   </div>
-
-  <!-- 接任务按钮（保持在 content 外层，绝对定位，不占高度） -->
-  <div class="absolute-accept-button">
-  <Button
-    label="Accept"
-    class="custom-btn"
-  />
-</div>
-</Dialog>
-
-<Dialog
-  v-model:visible="showFilterDialog"
-  modal
-  dismissableMask
-  header="Filter Tasks"
-  :style="{ width: '1100px', height: '700px', position: 'relative' }"
->
-  <!-- ✅ 筛选内容，比如 CascadeSelect 或 SelectButton -->
-  <div style="margin-bottom: 24px">
-    <span style="display: block; margin-bottom: 8px">Task Status</span>
-    <SelectButton
-      v-model="tempTab"
-      :options="['ongoing', 'completed']"
-      style="width: 100%"
-    />
-  </div>
-
-  <!-- ✅ 确认按钮 -->
-  <div class="absolute-apply-button">
- <Button label="Apply" @click="applyFilter" class="apply-button" />
-</div>
-</Dialog>
-
 </template>
 
 <route lang="yaml">
@@ -252,6 +265,42 @@ const allProjects = [
     id: 4,
     title: 'Design Posters for Art Festival',
     date: '15 August, 2025',
+    status: 'assigned',
+    image: 'https://picsum.photos/seed/poster/400/200',
+    exp: '350 exp',
+    level: 'B',
+    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
+    author: 'Xu Xuefeng',
+    description: '设计艺术节宣传海报，预计工作时间3小时，需要2位同学合作完成',
+  },
+  {
+    id: 5,
+    title: 'Design Posters for Art Festival',
+    date: '15 August, 2025',
+    status: 'ongoing',
+    image: 'https://picsum.photos/seed/poster/400/200',
+    exp: '350 exp',
+    level: 'B',
+    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
+    author: 'Xu Xuefeng',
+    description: '设计艺术节宣传海报，预计工作时间3小时，需要2位同学合作完成',
+  },
+  {
+    id: 6,
+    title: 'Design Posters for Art Festival',
+    date: '15 August, 2025',
+    status: 'ongoing',
+    image: 'https://picsum.photos/seed/poster/400/200',
+    exp: '350 exp',
+    level: 'B',
+    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
+    author: 'Xu Xuefeng',
+    description: '设计艺术节宣传海报，预计工作时间3小时，需要2位同学合作完成',
+  },
+  {
+    id: 5,
+    title: 'Design Posters for Art Festival',
+    date: '15 August, 2025',
     status: 'ongoing',
     image: 'https://picsum.photos/seed/poster/400/200',
     exp: '350 exp',
@@ -263,13 +312,17 @@ const allProjects = [
 ];
 
 const filteredProjects = computed(() =>
-  allProjects.filter((p) => p.status === activeTab.value)
+  allProjects.filter((p) =>
+    p.status === activeTab.value ||
+    (activeTab.value === 'ongoing' && p.status === 'assigned')
+  )
 );
+
 const goToProfile = () => {
   router.push('/student/task');
 };
 const currentPage = ref(0)
-const rowsPerPage = 2  
+const rowsPerPage = 4  
 
 const paginatedProjects = computed(() => {
   const start = currentPage.value * rowsPerPage;
@@ -282,6 +335,7 @@ const tempTab = ref(activeTab.value); // 用于筛选弹窗中临时选中
 const applyFilter = () => {
   activeTab.value = tempTab.value;
   showFilterDialog.value = false;
+  currentPage.value = 0; 
 };
 </script>
 
@@ -531,13 +585,14 @@ const applyFilter = () => {
   gap: 8px; 
 }
 .task-exp {
-  color: #003366; 
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); 
   font-size: 16px; 
   font-weight: bold;
   margin-bottom: 8px;
   text-align: left;
   width: 100%;
+   color: #81A0EF !important;               /* exp 填充色 */
+  -webkit-text-stroke: 1px #3A494D;
 }
 .task-teamwork {
   width: 100%; 
@@ -555,10 +610,11 @@ const applyFilter = () => {
 }
 
 .task-level {
-  color: #0099ff; 
   font-weight: bold;
   font-size: 22px;
   text-align: right;
+  color: #C3F9E6 !important;                /* level 填充色 */
+  -webkit-text-stroke: 1px #1BA5BF;
 }
 /* ✅ 横向卡片整体结构 */
 .task-card {
@@ -836,10 +892,14 @@ const applyFilter = () => {
 }
 .fixed-footer-wrapper {
   position: absolute;
-  bottom: 16px;
-  left: 50%;
+  bottom: 16px;               /* 靠近整个卡片区域底部 */
+  left: 50%;                  /* 水平居中 */
   transform: translateX(-50%);
   z-index: 10;
+  display: flex;
+  justify-content: center;
+  width: 100%;                 /* 占满整个卡片区域宽度 */
+  pointer-events: none;        /* 避免挡住其它元素点击 */
 }
 
 .footer-text {
@@ -964,5 +1024,82 @@ const applyFilter = () => {
 .author-name {
   font-weight: 500;
   font-size: 20px;
+}
+
+.assigned-card {
+  background-color: #D1EDF2 !important;
+}
+
+
+/* 卡片底色：A0C0C9 */
+.assigned-card {
+  background-color: #D1EDF2 !important;
+}
+
+/* 分割线颜色：B8DBEB */
+.assigned-card .task-divider {
+  background-color: #B8DBEB !important;
+}
+
+/* 标题 & 时间颜色：95B0B5 */
+.assigned-card .task-title {
+  color: #95B0B5 !important;
+}
+.assigned-card .task-time {
+  color: #95B0B5 !important;
+}
+
+/* exp：文字 BCD8DD，描边 A1BEC3 */
+.assigned-card .task-exp {
+  color: #BCD8DD !important;
+  -webkit-text-stroke: 1px #A1BEC3; /* 描边 */
+  text-shadow: none !important;     /* 若原来有阴影，这里关闭它，避免脏感 */
+}
+
+/* Level：底色 CCE8ED，描边 A1BEC3
+   注：这里用背景 + 文字描边，保留你原本字号与布局 */
+.assigned-card .task-level {
+  -webkit-text-stroke: 1px #A1BEC3; /* 描边 */
+  color: #CCE8ED !important;        /* 文字填充色 */
+  font-weight: bold;
+  font-size: 22px;
+  text-align: right;
+}
+
+/* （如果卡片里有 ID 文本）ID 颜色：000000
+   你的 ID 现在在侧边栏 .user-id；卡片里若也有相同类名则会生效；没有就不影响。 */
+.assigned-card .user-id {
+  color: #000000 !important;
+}
+/* ✅ 只对 assigned 状态的卡片加水印 */
+.assigned-card::before {
+  content: "Assigned";              /* 水印文字 */
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-20deg); /* 左高右低的角度 */
+  font-size: 48px;                   /* 文字大小，可调 */
+  font-weight: bold;
+  color: #A0C0C9;                    /* 文字颜色 */
+  opacity: 0.25;                     /* 透明度，让内容可见 */
+  pointer-events: none;              /* 不影响点击事件 */
+  white-space: nowrap;
+  z-index: 0;                        /* 在内容下面 */
+}
+
+/* 确保 task-card 是相对定位，让 ::before 能按卡片定位 */
+.task-card {
+  position: relative;
+}
+
+.assigned-card .task-right {
+  display: none !important;
+}
+.fixed-footer-wrapper .p-paginator {
+  pointer-events: auto;  /* 让分页器可以正常点击 */
+}
+.fixed-footer-wrapper {
+  pointer-events: auto !important;
+  z-index: 20 !important;         /* 保证在网格之上 */
 }
 </style>
