@@ -146,7 +146,7 @@ import Avatar from 'primevue/avatar';
 import SelectButton from 'primevue/selectbutton';
 import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue'
 import Dialog from 'primevue/dialog';
-const router = useRouter();
+
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()

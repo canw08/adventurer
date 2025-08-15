@@ -16,5 +16,13 @@
   "common": {
     "na": "N/A",
     "level": "Level"
+  },
+  "notifications": {
+    "systemName": "系统",
+    "type": { "system": "系统通知", "invite": "邀请通知", "unknown": "通知" },
+    "markAll": "全部标记为已读",
+    "showAll": "显示所有通知",
+    "clickToView": "点击查看详情"
   }
+
 }
