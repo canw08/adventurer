@@ -16,11 +16,11 @@
     :disabled="disabled"
     @input="onExp(($event.target as HTMLInputElement).value)"
     aria-label="EXP range"
+    :style="progressStyle(expLocal, expMin, expMax, '#F39536', '#FFF4EB')"
   />
   <span class="max-val">{{ expMax }}</span>
 </div>
-<small class="range-hint">
-  当前：{{ expLocal }} 点经验
+<small class="range-hint">{{ expLocal }}
   <span v-if="disabled">（请先选择等级）</span>
 </small>
 
@@ -38,11 +38,11 @@
     :disabled="disabled"
     @input="onCoin(($event.target as HTMLInputElement).value)"
     aria-label="coin range"
+    :style="progressStyle(coinLocal, coinMin, coinMax, '#F2D84A', '#FFFBE6')"
   />
   <span class="max-val">{{ coinMax }}</span>
 </div>
-<small class="range-hint">
-  当前：{{ coinLocal }} 阿幺斯
+<small class="range-hint">{{ coinLocal }}
   <span v-if="disabled">（请先选择等级）</span>
 </small>
 
@@ -60,11 +60,11 @@
     :disabled="disabled"
     @input="onHours(($event.target as HTMLInputElement).value)"
     aria-label="volunteer hours range"
+    :style="progressStyle(hoursLocal, hoursMin, hoursMax, '#64748B', '#F3F4F6')"
   />
   <span class="max-val">{{ hoursMax }}</span>
 </div>
-<small class="range-hint">
-  当前：{{ hoursLocal }} 小时
+<small class="range-hint">{{ hoursLocal }}
   <span v-if="disabled">（请先选择等级）</span>
 </small>
   </div>
@@ -209,11 +209,44 @@ watch(() => props.level, lvl => applyRange(lvl), { immediate: true })
 function onExp(v:string){   expLocal.value   = Math.min(expMax.value,   Math.max(expMin.value,   Number(v))); emit('update:exp',   expLocal.value) }
 function onCoin(v:string){  coinLocal.value  = Math.min(coinMax.value,  Math.max(coinMin.value,  Number(v))); emit('update:coin',  coinLocal.value) }
 function onHours(v:string){ hoursLocal.value = Math.min(hoursMax.value, Math.max(hoursMin.value, Number(v))); emit('update:hours', hoursLocal.value) }
+
+
+function progressStyle(val: number, min: number, max: number, fill: string, base: string) {
+  const pct = max === min ? 0 : ((Number(val) - Number(min)) / (Number(max) - Number(min))) * 100
+  return { background: `linear-gradient(to right, ${fill} ${pct}%, ${base} ${pct}%)` }
+}
+
 </script>
 
 <style scoped>
 /* 基础布局 */
 .award-item { display:flex; align-items:center; gap:10px; width:500px;}
+.award-item label {
+  width: 50px;            /* 左边 label 固定宽度 */
+  text-align: left;
+}
+
+.min-val, .max-val {
+  width: 40px;            /* 数字列固定宽度 */
+  text-align: center;
+}
+
+.min-val,
+.max-val {
+  width: 56px;
+  flex: 0 0 56px;
+  text-align: center;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum"; /* 数字等宽 */
+  
+  background-color: #EAF2FF; /* 浅蓝背景 */
+  border: 1px solid #C6D8FF; /* 边框颜色可调整 */
+  border-radius: 6px;        /* 圆角 */
+  padding: 2px 6px;          /* 内边距让框大一点 */
+  box-sizing: border-box;    /* 保证宽度计算包含内边距 */
+}
+
 .label { width:56px; color:#333; }
 .range { flex:1; }
 .val { width:80px; text-align:right; }
@@ -276,10 +309,24 @@ function onHours(v:string){ hoursLocal.value = Math.min(hoursMax.value, Math.max
 }
 
 .min-val,
-.max-val {
+.max-val,
+.range-hint {
   width: 50px;
   text-align: center;
   font-weight: bold;
   font-size: 14px;
 }
+
+/* 让伪元素轨道透明，别挡住我们设置在 input 本体上的渐变 */
+.range::-webkit-slider-runnable-track { 
+  height: 8px; 
+  border-radius: 4px; 
+  background: transparent; /* 关键：从原先的 #FFF4EB/#FFFBE6/#F3F4F6 改成透明 */
+}
+.range::-moz-range-track {
+  height: 8px;
+  border-radius: 4px;
+  background: transparent; /* 同上 */
+}
+
 </style>
