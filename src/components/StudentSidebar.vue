@@ -6,9 +6,10 @@
         alt="User Avatar"
         class="avatar-img"
       />
-      <h2>{{ userStore.userInfo.nickname || userStore.userInfo.username }}</h2>
-      <p class="user-id">ID：{{ userStore.userInfo.identifier }}</p>
+      <h2 class="user-name">{{ userStore.userInfo.nickname || userStore.userInfo.username }}</h2>
+      <p class="user-id">ID {{ userStore.userInfo.identifier }}</p>
     </div>
+
     <div class="menu-list">
       <div
         class="menu-button"
@@ -38,11 +39,18 @@
         <span class="label-text">Team</span>
       </div>
     </div>
+
+    <!-- 新增底部图片 -->
+    <div class="sidebar-footer">
+      <img src="../assets/sidebar.png" alt="Footer Image" class="footer-img" />
+    </div>
   </div>
+
   <div v-else>
     加载中...
   </div>
 </template>
+
 
 <script setup>
 import Avatar from 'primevue/avatar';
@@ -93,14 +101,20 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  margin-bottom: 32px;
+  margin-bottom: 0px;
+  margin-top: 40px;
+}
+.user-name
+{
+  margin-top: -2px;
 }
 .user-id {
-  background-color: #e0e0e0;
+  background-color: #e6e6e6;
   padding: 4px 10px;
   border-radius: 999px;
+  margin-top: -20px;
   font-size: 14px;
-  color: #333;
+  color: #a2a0a0;
 }
 .menu-list {
   width: 100%;
@@ -125,6 +139,7 @@ onMounted(async () => {
   transform: scale(1);
   position: relative;
   overflow: hidden;
+  z-index: 1
 }
 .menu-button:hover {
   transform: scale(1.03);
@@ -153,5 +168,28 @@ onMounted(async () => {
   border-radius: 50%;
   background-color: #fff;
 }
+
+.sidebar {
+  position: relative; /* 让子元素可以绝对定位 */
+}
+
+.sidebar-footer {
+  position: absolute;
+  bottom: 53px;    /* 往下移出 sidebar 底部，可以调大/调小 */
+  left: 50%;
+  transform: translateX(-50%) scale(1.5); /* 水平居中 + 放大 */
+
+  pointer-events: none; /* 👈 关键：让下面的按钮可点 */
+  z-index: 0; 
+}
+
+.footer-img {
+  width: 200px;   /* 控制宽度 */
+  height: auto;
+  pointer-events: none; /* 如果只作为装饰，不阻挡点击 */
+
+}
+
+
 
 </style>

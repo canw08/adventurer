@@ -3,7 +3,7 @@
     <label class="choose-size-label">Choose award</label>
 
     <!-- EXP -->
-<div class="award-item">
+<div class="award-item"  style="margin-top:12px">
   <label>EXP</label>
   <span class="min-val">{{ expMin }}</span>
   <input
@@ -18,15 +18,16 @@
     aria-label="EXP range"
     :style="progressStyle(expLocal, expMin, expMax, '#F39536', '#FFF4EB')"
   />
-  <span class="max-val">{{ expMax }}</span>
+    <small class="range-hint" :style="bubbleStyle(expLocal, expMin, expMax)">
+      {{ expLocal }} 
+      <span v-if="disabled">（请先选择等级）</span> 
+    </small>
+  <span class="max-val" >{{ expMax }}</span>
 </div>
-<small class="range-hint">{{ expLocal }}
-  <span v-if="disabled">（请先选择等级）</span>
-</small>
 
 <!-- coin -->
-<div class="award-item" style="margin-top:8px">
-  <label>Coins</label>
+<div class="award-item" style="margin-top:12px">
+  <label>COINS</label>
   <span class="min-val">{{ coinMin }}</span>
   <input
     class="range coin-range"
@@ -40,34 +41,37 @@
     aria-label="coin range"
     :style="progressStyle(coinLocal, coinMin, coinMax, '#F2D84A', '#FFFBE6')"
   />
+    <small class="range-hint" :style="bubbleStyle(coinLocal, coinMin, coinMax)">
+      {{ coinLocal }}
+      <span v-if="disabled">（请先选择等级）</span>
+    </small>
   <span class="max-val">{{ coinMax }}</span>
 </div>
-<small class="range-hint">{{ coinLocal }}
-  <span v-if="disabled">（请先选择等级）</span>
-</small>
 
 <!-- 志愿者时长 -->
 <div class="award-item" style="margin-top:12px">
-  <label>Hours</label>
-  <span class="min-val">{{ hoursMin }}</span>
-  <input
-    class="range hours-range"
-    type="range"
-    :min="hoursMin"
-    :max="hoursMax"
-    :step="hoursStep"
-    :value="hoursLocal"
-    :disabled="disabled"
-    @input="onHours(($event.target as HTMLInputElement).value)"
-    aria-label="volunteer hours range"
-    :style="progressStyle(hoursLocal, hoursMin, hoursMax, '#64748B', '#F3F4F6')"
-  />
-  <span class="max-val">{{ hoursMax }}</span>
-</div>
-<small class="range-hint">{{ hoursLocal }}
-  <span v-if="disabled">（请先选择等级）</span>
-</small>
+  <label>HOURS</label>
+    <span class="min-val">{{ hoursMin }}</span>
+      <input
+        class="range hours-range"
+        type="range"
+        :min="hoursMin"
+        :max="hoursMax"
+        :step="hoursStep"
+        :value="hoursLocal"
+        :disabled="disabled"
+        @input="onHours(($event.target as HTMLInputElement).value)"
+        aria-label="volunteer hours range"
+        :style="progressStyle(hoursLocal, hoursMin, hoursMax, '#64748B', '#F3F4F6')"
+      />
+      <small class="range-hint" :style="bubbleStyle(hoursLocal, hoursMin, hoursMax)">
+        {{ hoursLocal }} 
+        <span v-if="disabled">（请先选择等级）</span>
+      </small>
+    <span class="max-val">{{ hoursMax }}</span>
   </div>
+</div>
+
 </template>
 
 <script setup lang="ts">
@@ -216,11 +220,23 @@ function progressStyle(val: number, min: number, max: number, fill: string, base
   return { background: `linear-gradient(to right, ${fill} ${pct}%, ${base} ${pct}%)` }
 }
 
+function bubbleStyle(val: number, min: number, max: number) {
+//注意哥们，这里的奇怪的小数，我都不知道是干啥的，如果你读到了这里，且你是一个前端天才，那你帮我改一下吧，我这里的公式是在chat给我生成出来之后，一点一点实验出来的，这个傻逼56.777是这个世界上最傻逼的数字，希望后人能让这里变得更加漂亮么么么
+  const pct = max === min ? 0 : ((val - min) / (max - min)) * 56.777
+  const thumbWidth = 16 // 你的 slider thumb 宽度
+  const sideOffset = 138 // 左边 min 值框固定宽度
+
+  return {
+    left: `calc(${pct}% + ${sideOffset}px)`
+  }
+}
+
+
 </script>
 
 <style scoped>
 /* 基础布局 */
-.award-item { display:flex; align-items:center; gap:10px; width:500px;}
+.award-item { display:flex; align-items:center; gap:10px; width:500px; position: relative; margin-left: 2%; margin-top: 14px; /* 让气泡能绝对定位到轨道 */}
 .award-item label {
   width: 50px;            /* 左边 label 固定宽度 */
   text-align: left;
@@ -250,7 +266,19 @@ function progressStyle(val: number, min: number, max: number, fill: string, base
 .label { width:56px; color:#333; }
 .range { flex:1; }
 .val { width:80px; text-align:right; }
-.range-hint { display:block; margin-top:4px; color:#888; font-size:12px; }
+
+.range-hint { 
+  position: absolute;
+  top: 14px; /* 气泡距离轨道上方的高度 */
+  transform: translateX(-50%); /* 让气泡中心对齐 thumb 中心 */
+  color: #333;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+  
+}
 
 /* 禁用态可见性 */
 .range:disabled { opacity: .5; cursor: not-allowed; }
@@ -311,9 +339,10 @@ function progressStyle(val: number, min: number, max: number, fill: string, base
 .min-val,
 .max-val,
 .range-hint {
+/*这里的font-weight的10bold好像不是一个在这个世界存在的代码，所以后人会改的会读的可以改一下*/ 
   width: 50px;
   text-align: center;
-  font-weight: bold;
+  font-weight: 10bold;
   font-size: 14px;
 }
 

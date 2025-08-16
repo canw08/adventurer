@@ -1,8 +1,6 @@
 <template>
   <div class="announce-root">
 
-
-
     <!-- 铃铛 + 徽章 -->
     <div class="notification-wrapper">
       <Button icon="pi pi-bell" class="notify-bell" text rounded @click="toggle" />
@@ -11,142 +9,185 @@
       </span>
     </div>
 
-  <!-- 公告列表 -->
-  <OverlayPanel ref="op" class="announcement-panel"     @hide="resetClearButton">
+    <!-- 公告列表 -->
+    <OverlayPanel ref="op" class="announcement-panel" @hide="resetClearButton">
 
-            <!-- 浮动的清除按钮（左上角） -->
-    <button
-      v-if="op?.visible"
-      class="floating-mark-all"
-      :class="{ expanded: expanded, done: done }"
-      @click.stop="handleClearClick"
-      :aria-label="buttonLabel"
-    >
-      <span v-if="!expanded">&times;</span>
-      <span v-else-if="expanded && !done">全部标记为已读</span>
-      <span v-else>✔</span>
-    </button>
-
-    <ul class="announcement-list">
-      <li
-        v-for="a in store.ordered"
-        :key="a.id"
-        class="announcement-item"
-        tabindex="0"
-        role="button"
-        @click="open(a)"
-        @keydown.enter.prevent="open(a)"
-        @keydown.space.prevent="open(a)"
+      <!-- 浮动的清除按钮（左上角） -->
+      <button
+        v-if="op?.visible"
+        class="floating-mark-all"
+        :class="{ expanded: expanded, done: done }"
+        @click.stop="handleClearClick"
+        :aria-label="buttonLabel"
       >
-        <!-- 行头：头像 + 名称 -->
-        <div class="item-header">
-          <img
-            :src="dicebear(a.name,a.avatarSeed)"
-            alt="avatar"
-            class="avatar-img"
-          />
-          <div class="name-and-type">
-            <div class="name">{{ a.name || 'Bridgette-文碧之' }}</div>
-            <div class="event-type">{{ a.type || '事件类型' }}</div>
-          </div>
-          <span v-if="!a.read" class="dot-unread" aria-hidden="true"></span>
-        </div>
-
-        <!-- 简介 -->
-        <div class="event-desc line-clamp-2">
-          {{ a.content }}
-        </div>
-
-        <!-- 提示 -->
-        <div class="click-hint">点击查看详情</div>
-      </li>
-    </ul>
-
-    <!-- 放在 <ul class="announcement-list">...</ul> 后面 -->
-    <div class="show-all-container">
-      <button class="show-all-btn" @click="showAll" aria-label="显示所有通知">
-        <span class="arrow-head" aria-hidden="true"></span>
+        <span v-if="!expanded">&times;</span>
+        <span v-else-if="expanded && !done">{{ buttonLabel }}</span>
+        <span v-else>✔</span>
       </button>
-      <span class="show-all-text">显示所有通知</span>
-    </div>
 
-  </OverlayPanel>
+      <ul class="announcement-list">
+        <li
+          v-for="a in items"
+          :key="a.id"
+          class="announcement-item"
+          tabindex="0"
+          role="button"
+          @click="open(a)"
+          @keydown.enter.prevent="open(a)"
+          @keydown.space.prevent="open(a)"
+        >
+          <!-- 行头：头像 + 名称 -->
+          <div class="item-header">
+            <img
+              :src="dicebear(a.typeKey,a.avatarSeed)"
+              alt="avatar"
+              class="avatar-img"
+            />
+            <div class="name-and-type">
+              <div class="name">{{ a.displayName }}</div>
+              <div class="event-type">{{ a.typeLabel }}</div>
+            </div>
+            <span v-if="!a.read" class="dot-unread" aria-hidden="true"></span>
+          </div>
+
+          <!-- 简介 -->
+          <div class="event-desc line-clamp-2">
+            {{ a.content }}
+          </div>
+
+          <!-- 提示 -->
+          <div class="click-hint">{{ a.clickHint }}</div>
+        </li>
+      </ul>
+
+      <!-- 放在 <ul class="announcement-list">...</ul> 后面 -->
+      <div class="show-all-container">
+        <button class="show-all-btn" @click="showAll" :aria-label="t('notifications.showAll')">
+          <span class="arrow-head" aria-hidden="true"></span>
+        </button>
+        <span class="show-all-text">{{ t('notifications.showAll') }}</span>
+      </div>
+
+    </OverlayPanel>
 
     <!-- 详情弹窗 -->
-    <Dialog v-model:visible="visible" modal :header="dlgHeader" :style="{ width: '520px' }" dismissableMask>
-      <template v-if="current">
-        <div class="text-xs text-gray-500 mb-2">{{ fmt(current.dateISO) }}</div>
-        <div class="whitespace-pre-wrap leading-relaxed">{{ current.content }}</div>
-      </template>
-      <template #footer>
-        <Button label="关闭" @click="visible = false" />
-      </template>
-    </Dialog>
+    <component
+      v-if="activeDialog"
+      :is="activeDialog"
+      :key="current?.id"
+      v-model:visible="visible"
+      :announcement="current"
+      @close="visible = false"
+    />
+
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+/**
+ * 父组件完整 <script setup>
+ * - 按 typeKey 动态选择不同的弹窗子组件
+ * - 仍保留你现有的公告列表、标记已读、Show All 等逻辑
+ */
+
+import { ref, computed, onMounted, defineAsyncComponent } from 'vue'
+import { useI18n } from 'vue-i18n'
 import Button from 'primevue/button'
 import OverlayPanel from 'primevue/overlaypanel'
-import Dialog from 'primevue/dialog'
-import { useAnnouncementStore } from '../../stores/announcement' // 确保路径正确
+import { useAnnouncementStore } from '../../stores/announcement' // 按你的项目路径
+
+// === 异步加载各类弹窗（每种 typeKey 一个组件） ===
+const DialogSystem = defineAsyncComponent(() => import('./dialogs/AnnouncementDialogSystem.vue'))
+const DialogInvite   = defineAsyncComponent(() => import('./dialogs/AnnouncementDialogInvite.vue'))
+// const DialogPR     = defineAsyncComponent(() => import('./dialogs/AnnouncementDialogPR.vue'))
+// …根据需要继续扩展
+
+// 映射表：typeKey -> 组件
+const dialogRegistry = {
+  system: DialogSystem,
+  invite:   DialogInvite,
+  // pr:     DialogPR,
+  // unknown 或未注册类型都回退到 system
+}
 
 const store = useAnnouncementStore()
+const { t } = useI18n()
 
+// 首次挂载拉取数据
+onMounted(() => {
+  store.fetchAll()
+})
+
+// ===== 弹出面板（OverlayPanel）与当前公告 =====
 const op = ref()
-const visible = ref(false)
-const current = ref(null)
-const dlgHeader = computed(() => current.value ? `公告 - ${current.value.name || 'Bridgette-文碧之'}` : '公告详情')
+const visible = ref(false)     // 统一控制子弹窗显示/隐藏
+const current = ref(null)      // 当前被点击的公告项（原始对象）
 
+// 根据当前项的 typeKey 选择对应的弹窗组件；默认回退到 system
+const activeDialog = computed(() => {
+  if (!current.value) return null
+  return dialogRegistry[current.value.typeKey] ?? DialogSystem
+})
+
+// ===== 视图数据：在不改动 store 的前提下做 i18n/l10n 兜底 =====
+const items = computed(() =>
+  store.ordered.map(a => ({
+    ...a,
+    displayName: a.name ?? t('notifications.systemName'),
+    typeLabel: t(`notifications.type.${a.typeKey || 'unknown'}`),
+    dateLabel: a.dateISO || t('common.na'),
+    clickHint: t('notifications.clickToView'),
+  }))
+)
+
+// 打开/关闭 OverlayPanel
 function toggle(e){
   op.value?.toggle(e)
 }
 
+// 打开某一条公告对应的弹窗
 function open(a){
   current.value = a
   visible.value = true
   op.value?.hide()
-  if(!a.read) store.markRead(a.id)
+  if (!a.read) store.markRead(a.id)
 }
 
+// 日期格式化（与你原来的保持一致）
 function fmt(iso){
-  return new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: 'short', day: '2-digit' }).format(new Date(iso))
+  return new Intl.DateTimeFormat('zh-CN', {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit'
+  }).format(new Date(iso))
 }
 
-/** 头像生成：缺省给一个固定种子，或从每条 item 的 avatarSeed 取 */
+/** 头像：缺省给固定 seed；system 用 bottts，其他用 adventurer */
 function dicebear(name, seed) {
   const s = seed || 'bridgette'
-
-  // 特殊处理 name = "bot"
-  if (name && name.toLowerCase() === 'bot') {
+  if (name && name.toLowerCase() === 'system') {
     return `https://api.dicebear.com/9.x/bottts/svg?seed=${encodeURIComponent(s)}`
   }
-
   return `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(s)}`
 }
 
-
-// 新增：事件 & 状态
-const emit = defineEmits(['showAll'])
-const cleared = ref(false)
-
-const expanded = ref(false) // 是否展开状态
-const done = ref(false)     // 是否完成状态
+// ===== 浮动“全部标记为已读”按钮状态与逻辑 =====
+const expanded = ref(false) // 是否展开状态（显示“全部标记为已读”文字）
+const done = ref(false)     // 是否完成（打勾）
 
 const buttonLabel = computed(() => {
-  if (!expanded.value) return '清除通知'
-  if (expanded.value && !done.value) return '全部标记为已读'
-  return '已完成'
+  if (!expanded.value) return t('notifications.markAll')
+  if (expanded.value && !done.value) return t('notifications.markAll')
+  return '✔'
 })
 
 function handleClearClick() {
   if (!expanded.value) {
-    // 第一次点击，展开显示“全部标记为已读”
+    // 第一次点击：进入展开态
     expanded.value = true
     done.value = false
   } else if (!done.value) {
-    // 第二次点击，执行全部标记已读并显示对勾
+    // 第二次点击：执行全部标记为已读，进入完成态
     for (const a of store.ordered) {
       if (!a.read) store.markRead(a.id)
     }
@@ -154,21 +195,29 @@ function handleClearClick() {
   }
 }
 
-// 面板关闭时恢复原状
+// 面板收起时还原浮动按钮状态
 function resetClearButton() {
   expanded.value = false
   done.value = false
 }
 
-
-
-// 新增：显示所有通知（向父组件抛出事件，并收起面板）
+// ===== “显示所有通知”事件（抛给父级 / 页面容器） =====
+const emit = defineEmits(['showAll'])
 function showAll() {
   emit('showAll')
   op.value?.hide()
 }
 
+// ===== 对外暴露给模板使用的成员（可选，不暴露也能用） =====
+defineExpose({
+  toggle, open, fmt, dicebear,
+  activeDialog, visible, current,
+  items,
+  handleClearClick, resetClearButton, buttonLabel,
+  showAll,
+})
 </script>
+
 
 <style scoped>
 /* 根容器 */
@@ -272,7 +321,6 @@ function showAll() {
   border-radius: 50%;
 }
 
-
 .dot-unread {
   width: 8px;
   height: 8px;
@@ -374,7 +422,6 @@ function showAll() {
   color: #555;
 }
 
-
 /* 默认 X 状态 */
 .floating-mark-all {
   position: absolute;
@@ -411,6 +458,4 @@ function showAll() {
   font-size: 14px;
   font-weight: bold;
 }
-
-
 </style>
