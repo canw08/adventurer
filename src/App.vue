@@ -5,6 +5,7 @@ const route = useRoute()
 
 <template>
   <router-view :key="route.fullPath" />
+  <link href="https://fonts.googleapis.com/css2?family=Inria+Sans:wght@300;400;700&display=swap" rel="stylesheet">
 </template>
 
 <style>
@@ -14,5 +15,8 @@ html, body {
   overflow-y: hidden; /* 禁止上下滚动 */
 }
 
-
+/* src/styles/overrides.css */
+body, button, input, textarea, select {
+  font-family: 'Inria Sans', sans-serif !important;
+}
 </style>

@@ -4,7 +4,7 @@
   <div class="main-content">
     <div class="main-header">
       <div class="header-left-group">
-        <span class="header-left">Poested Assignments</span>
+        <span class="header-left">Posted Assignments</span>
         <div class="vertical-divider"></div>
         <span class="header-right">
           <span class="running-count">{{ runningProjects.length }}</span>
