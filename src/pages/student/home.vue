@@ -1,5 +1,4 @@
 <template>
-
     <!-- 右侧 -->
     <div class="main-content">
       <div class="main-header">
@@ -146,7 +145,7 @@ import Avatar from 'primevue/avatar';
 import SelectButton from 'primevue/selectbutton';
 import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue'
 import Dialog from 'primevue/dialog';
-
+import teamwork from '../../assets/team.png'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -178,7 +177,7 @@ const allProjects = [
     title: 'Volunteer Feeding Stray Cats',
     date: '5 July, 2025',
     status: 'ongoing',
-    image: 'https://picsum.photos/seed/cat/400/200',
+    image: teamwork,
     exp: '300 exp',
     level: 'E',
     avatar: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
@@ -190,7 +189,7 @@ const allProjects = [
     title: 'Organize Community Event',
     date: '12 June, 2025',
     status: 'ongoing',
-    image: 'https://picsum.photos/seed/book/400/200',
+    image: teamwork,
     exp: '400 exp',
     level: 'C',
     avatar: 'https://primefaces.org/cdn/primevue/images/avatar/onyamalimba.png',
@@ -202,7 +201,7 @@ const allProjects = [
     title: 'Schoolyard Cleanup Event',
     date: '20 May, 2025',
     status: 'completed',
-    image: 'https://picsum.photos/seed/school/400/200',
+    image: teamwork,
     exp: '250 exp',
     level: 'D',
     avatar: 'https://primefaces.org/cdn/primevue/images/avatar/ivanmagalhaes.png',
@@ -214,7 +213,7 @@ const allProjects = [
     title: 'Design Posters for Art Festival',
     date: '15 August, 2025',
     status: 'ongoing',
-    image: 'https://picsum.photos/seed/poster/400/200',
+    image: teamwork,
     exp: '350 exp',
     level: 'B',
     avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
@@ -491,10 +490,11 @@ const onButton2Click = () => {
   width: 100%;
 }
 .task-teamwork {
-  width: 100%; 
+  width: 90%; 
   border-bottom: 1px solid #ddd; 
   padding-bottom: 8px; 
   margin-bottom: 8px; 
+  margin-left: 15px;
 }
 .task-teamwork-image {
   width: 100%;
