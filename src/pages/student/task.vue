@@ -165,28 +165,54 @@
     </Dialog>
 
     <!-- ✅ 筛选弹窗（不包含 assigned，assigned 作为 ongoing 的分支） -->
-    <Dialog
-      v-model:visible="showFilterDialog"
-      modal
-      dismissableMask
-      header="Filter Tasks"
-      :style="{ width: '1100px', height: '700px', position: 'relative' }"
-    >
-      <!-- 筛选内容 -->
-      <div style="margin-bottom: 24px">
-        <span style="display: block; margin-bottom: 8px">Task Status</span>
-        <SelectButton
-          v-model="tempTab"
-          :options="['ongoing', 'completed']"
-          style="width: 100%"
-        />
-      </div>
+<Dialog
+  v-model:visible="showFilterDialog"
+  modal
+  dismissableMask
+  header="Filter Tasks"
+  class="filter-dialog"
+  appendTo="self"
+  :style="{ width: '1100px', height: '700px', position: 'relative' }"
+>
+  <!-- ⛔️ 移除原来的 “Task Status” 那一行文本 -->
 
-      <!-- 应用按钮 -->
-      <div class="absolute-apply-button">
-        <Button label="Apply" @click="applyFilter" class="apply-button" />
+  <!-- 状态切换：按钮文字离左右边框 10px -->
+  <div class="filter-section">
+    <div class="status-toggle-wrap">
+    <SelectButton
+      v-model="tempTab"
+      :options="['ongoing', 'completed']"
+      class="status-toggle"
+    />
+  </div>
+</div>
+  <!-- 新增：Choose level，多选样式与截图一致 -->
+  <div class="filter-section level-section">
+    <div class="level-label">Choose level</div>
+    <div class="level-row">
+      <div
+        v-for="opt in levelOptions"
+        :key="opt.value"
+        class="level-item"
+      >
+        <!-- PrimeVue Checkbox 多选 -->
+        <Checkbox
+          v-model="tempLevels"
+          :inputId="'lvl-' + opt.value"
+          :value="opt.value"
+        />
+        <label class="level-text" :for="'lvl-' + opt.value">
+          {{ opt.label }}
+        </label>
       </div>
-    </Dialog>
+    </div>
+  </div>
+
+  <!-- 应用按钮（保持你原有绝对定位不变） -->
+  <div class="absolute-apply-button">
+    <Button label="confirm"@click="confirmFilter" class="apply-button" />
+  </div>
+</Dialog>
   </div>
 </template>
 
@@ -196,34 +222,44 @@ meta:
 </route>
 
 <script setup>
+/**
+ * ✅ Vue 3 + PrimeVue 脚本区（纯 JS 版本）
+ * - 已包含：筛选弹窗（状态 + Level 多选）、列表分页、任务弹窗等
+ * - 不使用 TS 泛型；不重复声明变量；可直接替换到你的 <script setup> 中
+ */
+
 import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
+
 import Avatar from 'primevue/avatar';
 import Button from 'primevue/button';
-import { useRouter } from 'vue-router';
 import Dialog from 'primevue/dialog';
-import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue'
+import Checkbox from 'primevue/checkbox';
+import SelectButton from 'primevue/selectbutton';
 
+import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue';
+
+/* -------------------- 路由 -------------------- */
 const router = useRouter();
+const goToProfile = () => router.push('/student/task');
 
+/* -------------------- 任务弹窗 -------------------- */
 const showDialog = ref(false);
 const selectedProject = ref(null);
-
 const openProjectDialog = (project) => {
   selectedProject.value = project;
   showDialog.value = true;
 };
 
-const activeTab = ref('ongoing');
-const tabOptions = ref(['ongoing', 'completed']);
-
-
+/* -------------------- 顶部公告（保持与模板兼容） -------------------- */
 const op = ref(null);
 const unreadCount = ref(2);
 const togglePanel = (event) => {
-  op.value.toggle(event);
+  op.value?.toggle(event);
   unreadCount.value = 0;
 };
 
+/* -------------------- 数据源（演示） -------------------- */
 const allProjects = [
   {
     id: 1,
@@ -298,7 +334,8 @@ const allProjects = [
     description: '设计艺术节宣传海报，预计工作时间3小时，需要2位同学合作完成',
   },
   {
-    id: 5,
+    // 避免 v-for key 冲突：你的原始数据里 id:5 重复，这里改为 7
+    id: 7,
     title: 'Design Posters for Art Festival',
     date: '15 August, 2025',
     status: 'ongoing',
@@ -311,31 +348,52 @@ const allProjects = [
   }
 ];
 
-const filteredProjects = computed(() =>
-  allProjects.filter((p) =>
-    p.status === activeTab.value ||
-    (activeTab.value === 'ongoing' && p.status === 'assigned')
-  )
-);
+/* -------------------- 状态切换（ongoing/completed） -------------------- */
+const activeTab = ref('ongoing');      // 实际生效的状态
+const tabOptions = ref(['ongoing', 'completed']); // 备用
+const showFilterDialog = ref(false);   // Filter 弹窗显隐
+const tempTab = ref(activeTab.value);  // 弹窗内的临时状态选择
 
-const goToProfile = () => {
-  router.push('/student/task');
-};
-const currentPage = ref(0)
-const rowsPerPage = 4  
+/* -------------------- Level 多选筛选 -------------------- */
+const levelOptions = [
+  { label: 'Level A', value: 'A' },
+  { label: 'Level B', value: 'B' },
+  { label: 'Level C', value: 'C' },
+  { label: 'Level D', value: 'D' },
+  { label: 'Level E', value: 'E' },
+  { label: 'Level F', value: 'F' }
+];
+const selectedLevels = ref([]); // 生效中的 level 集合
+const tempLevels = ref([]);     // 弹窗内的临时 level 选择
 
+/* -------------------- 过滤 + 分页 -------------------- */
+// 先按状态过滤（ongoing 时包含 assigned），再按 level 过滤
+const filteredProjects = computed(() => {
+  const statusFiltered = allProjects.filter(
+    (p) =>
+      p.status === activeTab.value ||
+      (activeTab.value === 'ongoing' && p.status === 'assigned')
+  );
+  if (!selectedLevels.value || selectedLevels.value.length === 0) {
+    return statusFiltered;
+  }
+  return statusFiltered.filter((p) => selectedLevels.value.includes(p.level));
+});
+
+// 分页
+const currentPage = ref(0);
+const rowsPerPage = 4;
 const paginatedProjects = computed(() => {
   const start = currentPage.value * rowsPerPage;
   return filteredProjects.value.slice(start, start + rowsPerPage);
 });
 
-const showFilterDialog = ref(false);
-const tempTab = ref(activeTab.value); // 用于筛选弹窗中临时选中
-
+/* -------------------- 应用筛选（弹窗 Apply） -------------------- */
 const applyFilter = () => {
-  activeTab.value = tempTab.value;
+  activeTab.value = tempTab.value;              // 应用状态
+  selectedLevels.value = [...tempLevels.value]; // 应用 level
   showFilterDialog.value = false;
-  currentPage.value = 0; 
+  currentPage.value = 0;                        // 重置到第一页
 };
 </script>
 
@@ -814,24 +872,21 @@ const applyFilter = () => {
 :deep(.p-dialog) {
   height: 100%;
 }
-/* ✅ 让按钮可相对内容区域绝对定位，且不撑高内容 */
+/* ✅ 任务详情弹窗内容区样式 */
 .project-dialog :deep(.p-dialog-content) {
-  padding: 0 !important;            /* 清空 PrimeVue 默认 padding，避免与 wrapper 叠加 */
-  height: auto !important;
-  position: relative;               /* 你原有的保持 */
-  overflow: hidden;                 /* 建议加，防止子元素溢出 */
-  box-sizing: border-box;
-}
-.project-dialog :deep(.p-dialog-content) {
-  display: flex;             
+  /* PrimeVue 默认 padding 会和 wrapper 叠加，这里清掉 */
+  padding: 0 !important;
+  /* 保证布局灵活 */
+  display: flex;
   flex-direction: column;
-  flex: 1 1 auto;            
-  min-height: 0;             
-  overflow: hidden;          
+  flex: 1 1 auto;
+  min-height: 0;
+  /* 控制高度和滚动 */
+  height: auto !important;
+  overflow: hidden;
+  /* 避免溢出，保证绝对定位可用 */
+  position: relative; /* ⭐ 作为 .absolute-accept-button 的定位父级 */
   box-sizing: border-box;
-  padding-bottom: 0 !important; 
-  height: auto !important;   
-  position: relative;         /* ⭐ 新增：作为 .absolute-accept-button 的定位父级 */
 }
 
 /* ⭐ 新增：接任务按钮固定右下 & 不占文档流高度 */
@@ -1101,5 +1156,139 @@ const applyFilter = () => {
 .fixed-footer-wrapper {
   pointer-events: auto !important;
   z-index: 20 !important;         /* 保证在网格之上 */
+}
+/* —— Filter 弹窗中的分区留白 —— */
+.filter-section {
+  margin-bottom: 20px; /* 与下一组之间 20px */
+}
+
+/* —— 状态切换按钮：左右内边距=10px —— */
+.status-toggle :deep(.p-button) {
+  padding: 6px 10px !important; /* 关键：文字到边框 10px */
+  border-radius: 8px;
+}
+
+/* —— Level 组标题 —— */
+.level-label {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e1e1e;
+  margin-bottom: 10px;
+  margin-left: -10px;
+  margin-right: -10px;
+  margin-bottom: 10px;
+}
+
+/* —— Level 横排 —— */
+.level-row {
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 20px 10px;   /* 上下 20px，左右 10px */
+}
+
+/* 单个 level 项：复选框 + 文本 */
+.level-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 复选框样式 */
+.level-item :deep(.p-checkbox-box) {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid #c8d3e6;
+  transition: all .2s ease;
+}
+.level-item :deep(.p-checkbox-box.p-highlight) {
+  background: #3f5aa8;
+  border-color: #3f5aa8;
+}
+.level-item :deep(.p-checkbox-icon) {
+  font-size: 12px;
+  line-height: 1;
+  color: #fff;
+}
+
+/* 文本样式 */
+.level-text {
+  font-size: 18px;
+  color: #1e1e1e;
+}
+
+/* 2) 区块之间垂直间距 = 20px */
+.filter-section {
+  margin-bottom: 20px !important;        /* 组与组之间的间距 */
+}
+
+/* （可选）最后一组下面不要多余空隙 */
+.filter-section:last-of-type {
+  margin-bottom: 0 !important;
+}
+
+/* —— Filter 弹窗：内容区四周 24px 留白 —— */
+:deep(.filter-dialog) .p-dialog-content {
+  padding: 10px !important;
+  box-sizing: border-box;
+}
+
+
+/* 真正控制文字距边框的地方 */
+:deep(.filter-dialog) .p-selectbutton .p-button .p-button-label {
+  display: inline-block;
+  padding: 6px 10px !important;  /* 上下6px，左右10px = 你的需求 */
+  line-height: 1.2;
+}
+
+/* 如果有图标，去掉图标右侧多余间距（没有图标可留着也不影响） */
+:deep(.filter-dialog) .p-selectbutton .p-button .p-button-icon {
+  margin-right: 0 !important;
+}
+
+/* —— 两个筛选区块之间垂直间距 = 20px —— */
+:deep(.filter-dialog) .filter-section {
+  margin-bottom: 20px !important;
+}
+:deep(.filter-dialog) .filter-section:last-of-type {
+  margin-bottom: 0 !important;
+}
+/* 只改 Filter 弹窗标题字号 */
+:deep(.filter-dialog) .p-dialog-title {
+  font-size: 30px !important;
+  font-weight: 700;  /* 粗细可调整 */
+  color: #1e1e1e;    /* 可选：颜色 */
+}
+
+/* —— Level 部分 —— */
+.level-section {
+  padding: 0 20px;
+}
+
+/* —— 状态切换（ongoing/completed）与边框 10px —— */
+.status-toggle {
+  margin: 0 10px;   /* 左右与边框距离 10px */
+  width: calc(100% - 20px); /* 扣掉左右 10px */
+}
+/* 外层容器控制与边框 10px（不会受 scoped 限制） */
+.status-toggle-wrap {
+  margin: 0px;
+}
+
+/* 让 SelectButton 撑满容器（容器已扣了 10px 外边距） */
+:deep(.filter-dialog) .status-toggle {
+  width: 100% !important;
+}
+
+/* 按钮内文字到按钮边框 10px（你已有，可保留） */
+:deep(.filter-dialog) .p-selectbutton .p-button {
+  padding: 0 !important;
+  min-width: auto !important;
+}
+:deep(.filter-dialog) .p-selectbutton .p-button .p-button-label {
+  padding: 6px 10px !important;
+  line-height: 1.2;
 }
 </style>
