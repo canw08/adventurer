@@ -277,6 +277,7 @@ function bubbleStyle(val: number, min: number, max: number) {
   font-size: 12px;
   white-space: nowrap;
   pointer-events: none;
+  
 }
 
 /* 禁用态可见性 */
