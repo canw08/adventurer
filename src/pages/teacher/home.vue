@@ -44,14 +44,13 @@
     <h2 class="dialog-header-title">Release a task</h2>
   </template>
 
-
     <div class="gapping">
       <!-- Choose level -->
         <div class="p-field">
           <label class="choose-size-label">Choose level</label>
           <div class="level-options">
             <div v-for="level in levels" :key="level" class="level-item">
-              <RadioButton
+              <RadioButton 
                 v-model="selectedLevel"
                 :inputId="level"
                 :value="level"
@@ -76,9 +75,20 @@
 
       <div class="gapping">
         <!-- 任务日期 -->
-        <div class="p-field">
-          <label for="date" class="choose-size-label">Task Details</label>
-          <Calendar id="date" v-model="taskDate" dateFormat="mm/dd/yy" placeholder="MM/DD/YYYY" </Calendar>
+        <div class="p-field field-stack">
+          <label class="choose-size-label">Task Details</label>
+          <!-- 让输入框占满一行或指定宽度都可以 -->
+           <span class="p-float-label task-date-wrapper">
+            <Calendar
+              id="date"
+              v-model="taskDate"
+              inputId="taskDateInput"
+              dateFormat="mm/dd/yy"
+              placeholder="MM/DD/YYYY"
+              showIcon
+              class="task-date-input"
+            ></Calendar>
+          </span>
         </div>
       </div>
 
@@ -109,7 +119,7 @@
               {{ $form?.content?.error?.message }}
             </Message>
           </div>
-          <Button type="submit" severity="secondary" label="Submit" />
+          <Button class="submitPosition" type="submit" severity="secondary" label="Submit" />
         </Form>
       </div>
     </Dialog>
@@ -187,11 +197,6 @@ const togglePanel = (event) => {
   op.value.toggle(event)
   unreadCount.value = 0
 }
-
-const announcements = ref([
-  { date: '2025年6月26日', content: '你们是否发现周围有个集所有美德于一身的人？没错，他叫周心阳。' },
-  { date: '2025年6月25日', content: '系统将于今晚 10 点维护，请保存好数据。' },
-])
 
 const allProjects = [
   {
@@ -646,7 +651,8 @@ onMounted(async () => {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-top: 8px;
+  margin-top: 14px;
+  margin-left: 2%;
 }
 .level-item {
   display: flex;
@@ -656,10 +662,13 @@ onMounted(async () => {
 .choose-size-label {
   font-size: 20px;
   font-weight: 300;
+
 }
 
 .gapping {
   margin-bottom: 20px;
+  margin-left: 1%;
+  margin-right: 1%;
 }
 
 .dialog-header-title {
@@ -669,5 +678,78 @@ onMounted(async () => {
   margin: 0;           /* 去掉默认 margin */
 }
 
+.field-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;           /* 标题和输入之间的间距 */
+}
+
+
+/* PrimeVue Calendar 实际渲染的是一个 input，
+   若需要更强控制，也可以覆盖内部 input 宽度： */
+.field-stack :deep(.p-inputtext) {
+  width: 100%;
+}
+
+/* 让浮动 label 和输入框搭配 */
+.task-date-wrapper {
+ display:block; width:100%; max-width:640px;
+}
+
+.task-date-input { width:40%; }
+.task-date-wrapper :deep(.p-calendar){ width:40%; }
+.task-date-wrapper :deep(.p-inputtext){
+  width:100%;
+  font-size:18px;
+  padding:12px 44px 12px 12px; /* 右侧留给图标 */
+}
+
+/* 浮动 label 的字型（可选） */
+.task-date-wrapper :deep(label){
+  color:#2A3246;
+  font-weight:500;
+}
+
+.submitPosition{
+  margin-top: 14px;
+  font-size: 25px;
+  margin-left: 85%;
+  border-radius: 20px;
+  border-color: #003366;
+  background-color: #003366;
+  color: #fff;
+  padding-left: 4%;
+  padding-right: 4%;
+  margin-bottom: 16px;
+}
+
+/* ① PrimeVue 3.x：通过 input:checked 选中态改色 */
+:deep(.level-options .p-radiobutton .p-radiobutton-input:checked + .p-radiobutton-box) {
+  border-color: #2A2C55 !important;
+  background: #2A2C55 !important;
+}
+:deep(.level-options .p-radiobutton .p-radiobutton-input:checked + .p-radiobutton-box .p-radiobutton-icon) {
+  background: #ffffff !important; /* 中间小点白色 */
+  transform: scale(1);
+}
+
+/* ② PrimeVue 4.x：选中态会在盒子上挂 .p-highlight 或 data-p-highlight */
+:deep(.level-options .p-radiobutton .p-radiobutton-box.p-highlight),
+:deep(.level-options .p-radiobutton .p-radiobutton-box[data-p-highlight="true"]) {
+  border-color: #2A2C55 !important;
+  background: #2A2C55 !important;
+}
+:deep(.level-options .p-radiobutton .p-radiobutton-box.p-highlight .p-radiobutton-icon),
+:deep(.level-options .p-radiobutton .p-radiobutton-box[data-p-highlight="true"] .p-radiobutton-icon) {
+  background: #ffffff !important;
+}
+
+/* hover/focus 边框也保持深蓝（可选） */
+:deep(.level-options .p-radiobutton .p-radiobutton-box:hover),
+:deep(.level-options .p-radiobutton .p-radiobutton-box.p-focus) {
+  border-color: #2A2C55 !important;
+  box-shadow: 0 0 0 2px rgba(42,44,85,0.15);
+}
 
 </style>

@@ -3,7 +3,7 @@
     <label class="choose-size-label">Choose award</label>
 
     <!-- EXP -->
-<div class="award-item">
+<div class="award-item"  style="margin-top:12px">
   <label>EXP</label>
   <span class="min-val">{{ expMin }}</span>
   <input
@@ -26,8 +26,8 @@
 </div>
 
 <!-- coin -->
-<div class="award-item" style="margin-top:8px">
-  <label>Coins</label>
+<div class="award-item" style="margin-top:12px">
+  <label>COINS</label>
   <span class="min-val">{{ coinMin }}</span>
   <input
     class="range coin-range"
@@ -50,7 +50,7 @@
 
 <!-- 志愿者时长 -->
 <div class="award-item" style="margin-top:12px">
-  <label>Hours</label>
+  <label>HOURS</label>
     <span class="min-val">{{ hoursMin }}</span>
       <input
         class="range hours-range"
@@ -236,7 +236,7 @@ function bubbleStyle(val: number, min: number, max: number) {
 
 <style scoped>
 /* 基础布局 */
-.award-item { display:flex; align-items:center; gap:10px; width:500px; position: relative; /* 让气泡能绝对定位到轨道 */}
+.award-item { display:flex; align-items:center; gap:10px; width:500px; position: relative; margin-left: 2%; margin-top: 14px; /* 让气泡能绝对定位到轨道 */}
 .award-item label {
   width: 50px;            /* 左边 label 固定宽度 */
   text-align: left;
