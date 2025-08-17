@@ -15,6 +15,10 @@ html, body {
   overflow-y: hidden; /* 禁止上下滚动 */
 }
 
+.layout-container,
+.main-content {
+  font-family: 'Inria Sans', sans-serif !important;
+}
 /* src/styles/overrides.css */
 body, button, input, textarea, select {
   font-family: 'Inria Sans', sans-serif !important;

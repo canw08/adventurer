@@ -334,7 +334,6 @@ onMounted(async () => {
   display: flex;
   height: 100vh;
   background-color: #ffffff;
-  font-family: 'Segoe UI', sans-serif;
 }
 .sidebar {
   width: 300px;
