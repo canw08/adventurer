@@ -41,7 +41,7 @@ function login() {
   // TODO: 这里可先做校验/登录请求，成功后再触发黑场
   fading.value = true;            // 黑幕淡入
   setTimeout(() => {
-    router.push("/animation");         // TODO: 改成你的目标路由
+    router.push("/animations/login");         // TODO: 改成你的目标路由
   }, FADE_MS);
 }
 </script>

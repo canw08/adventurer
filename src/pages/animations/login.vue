@@ -42,7 +42,7 @@ const terminalLogs = ref([])
 
 const typingSpeed = 80        // 打字速度
 const sentencePause = 1500    // 每句话打完后停顿
-const deleteSpeed = 40        // 删除速度
+const deleteSpeed = 30       // 删除速度
 
 const fakeTerminalCommands = [
   '>>> INIT_PROTOCOL handshake_bot_01',
@@ -60,6 +60,7 @@ const fakeTerminalCommands = [
 ]
 
 const typeSentence = async (sentence) => {
+  
   displayedText.value = ''
   for (let i = 0; i < sentence.length; i++) {
     displayedText.value += sentence[i]
@@ -89,6 +90,8 @@ const runTerminalLog = async () => {
 }
 
 const runTypewriter = async () => {
+    await new Promise(resolve => setTimeout(resolve, 2500))
+
   while (true) {
     const index = currentSentenceIndex.value
     const sentence = sentences[index]
