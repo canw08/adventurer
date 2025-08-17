@@ -8,7 +8,7 @@
       <!-- 头像：可替换为你的用户头像地址 -->
       <img
         class="avatar glass-ring"
-        :src="`https://api.dicebear.com/9.x/adventurer/svg?seed=${randomStr}`"
+        :src="`https://api.dicebear.com/9.x/adventurer/svg?skinColor=ecad80,f2d3b1&seed=${randomStr}`"
         alt="你的头像"
         @error="onAvatarError"
       />
@@ -39,6 +39,11 @@
     <div class="blackout" :class="{ show: fading }"></div>
         <!-- 全屏 confetti 的发射锚点（看不见，仅作为动画起点） -->
     <span id="reward-anchor" class="reward-anchor" aria-hidden="true"></span>
+
+    <div
+      class="blackout"
+      :class="{ show: fading || entering }"
+    ></div>
   </div>
 </template>
 
@@ -54,8 +59,13 @@ const fading = ref(false)
 const FADE_MS = 800
 const randomStr = ref('')
 
+const entering = ref(true)   // 👈 新增：入场黑屏状态
+
+
 // --- vue-rewards: 创建 confetti 奖励 ---
 let fireConfetti = null
+
+
 
 onMounted(() => {
   const { reward } = useReward('reward-anchor', 'confetti', {
@@ -64,13 +74,17 @@ onMounted(() => {
     zIndex: 9998,          // 低于黑场(9999)，高于内容
     angle: 270,            // 从顶部往下喷
     spread: 360,           // 360° 扩散
-    lifetime: 900,         // 持续稍长
+    lifetime: 300,         // 持续稍长
     startVelocity: 20,     // 初速度大一点
-    elementCount: 220,     // 粒子数量加大
+    elementCount: 200,     // 粒子数量加大
     elementSize: 8,
     colors: ['#FFFFFF', '#FFD166', '#06D6A0', '#118AB2', '#EF476F'],
   })
   fireConfetti = reward
+
+  setTimeout(() => {
+    entering.value = false
+  }, FADE_MS)
 })
 
 function rollDice() {
@@ -92,7 +106,7 @@ function proceed() {
   // TODO: 这里可以做昵称校验或提交
   fading.value = true
   setTimeout(() => {
-    router.push('/animation') // TODO: 改成你的目标路由
+    router.push('/animations/setup') // TODO: 改成你的目标路由
   }, FADE_MS)
 }
 

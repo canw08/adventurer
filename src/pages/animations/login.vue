@@ -11,26 +11,29 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'   // ① 引入 router
+
+const router = useRouter()              // ② 实例化 router
 
 const sentences = [
-  '/你醒了……',
-  '/这里的阳光有点刺的你睁不开眼……',
-  '/恍惚间片片叶子被风缓缓卷起……仿佛在诉说这片大地过往的种种……',
-  '/一双细腻白皙的手轻扫过饱经风霜的石垣……',
-  '/一位……美少女？',
-  '/她和这里亘古不变的种种一样。',
-  '/过去在……未来也会在……',
-  '/现在……',
-  '哈喽..喂..莫西莫西... O.o?',
-  '哦哦你在啊，哈哈不好意思。',
-  '已经等你123456789天了（还真有人会来的啊）',
-  'Ciallo～(∠・▽< )⌒☆',
+  // '/你醒了……',
+  // '/这里的阳光有点刺的你睁不开眼……',
+  // '/恍惚间片片叶子被风缓缓卷起……仿佛在诉说这片大地过往的种种……',
+  // '/一双细腻白皙的手轻扫过饱经风霜的石垣……',
+  // '/一位……美少女？',
+  // '/她和这里亘古不变的种种一样。',
+  // '/过去在……未来也会在……',
+  // '/现在……',
+  // '哈喽..喂..莫西莫西... O.o?',
+  // '哦哦你在啊，哈哈不好意思。',
+  // '已经等你123456789天了（还真有人会来的啊）',
+  // 'Ciallo～(∠・▽< )⌒☆',
   '嗯……是这样的，我喜欢你。',
   '跟我结婚吧！（还不赶紧答应本天才美少女(▼ヘ▼#)）',
   '嘻嘻，既然同意了那就赶紧在契约上写你名字吧……不许反悔的！',
-  '/# 输入用户名',
-  '不愧是本美女看上的人（这么好骗的 ＜(￣▽￣)>）',
-  '唔……那先带你熟悉下这个世界吧。'
+  //   '/# 输入用户名',
+  // '不愧是本美女看上的人（这么好骗的 ＜(￣▽￣)>）',
+  // '唔……那先带你熟悉下这个世界吧。'
 ];
 
 
@@ -90,18 +93,17 @@ const runTerminalLog = async () => {
 }
 
 const runTypewriter = async () => {
-    await new Promise(resolve => setTimeout(resolve, 2500))
+  await new Promise(resolve => setTimeout(resolve, 2500))
 
-  while (true) {
-    const index = currentSentenceIndex.value
-    const sentence = sentences[index]
-    await typeSentence(sentence)
-
-
-    await deleteSentence()
-    currentSentenceIndex.value = (index + 1) % sentences.length
+  for (let i = 0; i < sentences.length; i++) {
+    await typeSentence(sentences[i])
+    await deleteSentence()   // ✅ 每一句都删掉，包括最后一句
   }
+
+  // ✨ 删除完最后一句后跳转
+  router.push('/student/setup')   // 修改成你要去的页面
 }
+
 
 onMounted(() => {
   runTypewriter()
