@@ -3,7 +3,7 @@
     "title": "营地",
     "runningQuest": "进行中的任务\n"
   },
-  "greetings": {
+  "greetings-student": {
     "night": "你不要命了，冒险者？",
     "morning": "早上好，冒险者",
     "afternoon": "下午好，冒险者",

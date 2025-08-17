@@ -3,7 +3,7 @@
     <label class="choose-size-label">Choose award</label>
 
     <!-- EXP -->
-<div class="award-item"  style="margin-top:12px">
+<div class="award-item">
   <label>EXP</label>
   <span class="min-val">{{ expMin }}</span>
   <input
@@ -16,7 +16,7 @@
     :disabled="disabled"
     @input="onExp(($event.target as HTMLInputElement).value)"
     aria-label="EXP range"
-    :style="progressStyle(expLocal, expMin, expMax, '#F39536', '#FFF4EB')"
+    :style="progressStyle(expLocal, expMin, expMax)"
   />
     <small class="range-hint" :style="bubbleStyle(expLocal, expMin, expMax)">
       {{ expLocal }} 
@@ -26,7 +26,7 @@
 </div>
 
 <!-- coin -->
-<div class="award-item" style="margin-top:12px">
+<div class="award-item">
   <label>COINS</label>
   <span class="min-val">{{ coinMin }}</span>
   <input
@@ -39,7 +39,7 @@
     :disabled="disabled"
     @input="onCoin(($event.target as HTMLInputElement).value)"
     aria-label="coin range"
-    :style="progressStyle(coinLocal, coinMin, coinMax, '#F2D84A', '#FFFBE6')"
+    :style="progressStyle(coinLocal, coinMin, coinMax)"
   />
     <small class="range-hint" :style="bubbleStyle(coinLocal, coinMin, coinMax)">
       {{ coinLocal }}
@@ -49,7 +49,7 @@
 </div>
 
 <!-- 志愿者时长 -->
-<div class="award-item" style="margin-top:12px">
+<div class="award-item">
   <label>HOURS</label>
     <span class="min-val">{{ hoursMin }}</span>
       <input
@@ -62,7 +62,7 @@
         :disabled="disabled"
         @input="onHours(($event.target as HTMLInputElement).value)"
         aria-label="volunteer hours range"
-        :style="progressStyle(hoursLocal, hoursMin, hoursMax, '#64748B', '#F3F4F6')"
+        :style="progressStyle(hoursLocal, hoursMin, hoursMax)"
       />
       <small class="range-hint" :style="bubbleStyle(hoursLocal, hoursMin, hoursMax)">
         {{ hoursLocal }} 
@@ -215,10 +215,11 @@ function onCoin(v:string){  coinLocal.value  = Math.min(coinMax.value,  Math.max
 function onHours(v:string){ hoursLocal.value = Math.min(hoursMax.value, Math.max(hoursMin.value, Number(v))); emit('update:hours', hoursLocal.value) }
 
 
-function progressStyle(val: number, min: number, max: number, fill: string, base: string) {
+function progressStyle(val: number, min: number, max: number) {
   const pct = max === min ? 0 : ((Number(val) - Number(min)) / (Number(max) - Number(min))) * 100
-  return { background: `linear-gradient(to right, ${fill} ${pct}%, ${base} ${pct}%)` }
+  return { background: `linear-gradient(to right, var(--fill) ${pct}%, var(--base) ${pct}%)` }
 }
+
 
 function bubbleStyle(val: number, min: number, max: number) {
 //注意哥们，这里的奇怪的小数，我都不知道是干啥的，如果你读到了这里，且你是一个前端天才，那你帮我改一下吧，我这里的公式是在chat给我生成出来之后，一点一点实验出来的，这个傻逼56.777是这个世界上最傻逼的数字，希望后人能让这里变得更加漂亮么么么
@@ -237,6 +238,7 @@ function bubbleStyle(val: number, min: number, max: number) {
 <style scoped>
 /* 基础布局 */
 .award-item { display:flex; align-items:center; gap:10px; width:500px; position: relative; margin-left: 2%; margin-top: 14px; /* 让气泡能绝对定位到轨道 */}
+
 .award-item label {
   width: 50px;            /* 左边 label 固定宽度 */
   text-align: left;
@@ -264,7 +266,7 @@ function bubbleStyle(val: number, min: number, max: number) {
 }
 
 .label { width:56px; color:#333; }
-.range { flex:1; }
+.range { flex:1;}
 .val { width:80px; text-align:right; }
 
 .range-hint { 
@@ -287,47 +289,38 @@ function bubbleStyle(val: number, min: number, max: number) {
 .range {
   appearance: none;
   -webkit-appearance: none;
-  height: 8px;
-  background: #eee;
-  border-radius: 4px;
+  height: 16px;
+  border-radius: 8px;
   outline: none;
+  cursor: pointer;
+  background: var(--base); /* 默认底色，progressStyle 会覆盖成渐变 */
 }
-.range::-webkit-slider-runnable-track { height: 8px; border-radius: 4px; }
-.range::-moz-range-track              { height: 8px; border-radius: 4px; }
+
 .range::-webkit-slider-thumb {
   appearance: none;
   -webkit-appearance: none;
   height: 16px; width: 16px;
   border-radius: 50%;
-  border: 2px solid #fff;
-  margin-top: -4px;
   cursor: pointer;
 }
 .range::-moz-range-thumb {
   height: 16px; width: 16px;
   border-radius: 50%;
-  border: 2px solid #fff;
   cursor: pointer;
 }
 
 /* 主题色：EXP（#F39536） */
-.exp-range { background: #FFF4EB; border: 2px solid #F39536; }
-.exp-range::-webkit-slider-runnable-track { background: #FFF4EB; }
-.exp-range::-moz-range-track              { background: #FFF4EB; }
+.exp-range { background: #FFF4EB}
 .exp-range::-webkit-slider-thumb { background: #F39536; }
 .exp-range::-moz-range-thumb      { background: #F39536; }
 
 /* 主题色：coin（#F2D84A） */
-.coin-range { background: #FFFBE6; border: 2px solid #F2D84A; }
-.coin-range::-webkit-slider-runnable-track { background: #FFFBE6; }
-.coin-range::-moz-range-track              { background: #FFFBE6; }
+.coin-range { background: #FFFBE6}
 .coin-range::-webkit-slider-thumb { background: #F2D84A; }
 .coin-range::-moz-range-thumb      { background: #F2D84A; }
 
 /* hours：中性配色 */
-.hours-range { background: #F3F4F6; border: 2px solid #CBD5E1; }
-.hours-range::-webkit-slider-runnable-track { background: #F3F4F6; }
-.hours-range::-moz-range-track              { background: #F3F4F6; }
+.hours-range { background: #F3F4F6}
 .hours-range::-webkit-slider-thumb { background: #64748B; }
 .hours-range::-moz-range-thumb      { background: #64748B; }
 
@@ -346,16 +339,8 @@ function bubbleStyle(val: number, min: number, max: number) {
   font-size: 14px;
 }
 
-/* 让伪元素轨道透明，别挡住我们设置在 input 本体上的渐变 */
-.range::-webkit-slider-runnable-track { 
-  height: 8px; 
-  border-radius: 4px; 
-  background: transparent; /* 关键：从原先的 #FFF4EB/#FFFBE6/#F3F4F6 改成透明 */
-}
-.range::-moz-range-track {
-  height: 8px;
-  border-radius: 4px;
-  background: transparent; /* 同上 */
-}
+.exp-range  { --fill: #F39536; --base: #D9D9D9; }
+.coin-range { --fill: #F2D84A; --base: #D9D9D9; }
+.hours-range{ --fill: #64748B; --base: #D9D9D9; }
 
 </style>

@@ -186,7 +186,7 @@ const period = computed(() => {
 })
 
 // greetingKey 必须是字符串
-const greetingKey = computed(() => `greetings.${period.value}`)
+const greetingKey = computed(() => `greetings-student.${period.value}`)
 
 const allProjects = [
   {

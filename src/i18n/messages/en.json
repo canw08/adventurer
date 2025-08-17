@@ -3,11 +3,17 @@
     "title": "Quest Log",
     "runningQuest": "Running Quest"
   },
-  "greetings": {
+  "greetings-student": {
     "night": "Burning the midnight oil, adventurer?",
     "morning": "Good morning, adventurer",
     "afternoon": "Good afternoon, adventurer",
     "evening": "Good evening, adventurer"
+  },
+  "greetings-teacher": {
+    "night": "Burning the midnight oil, teacher?",
+    "morning": "Good morning, teacher",
+    "afternoon": "Good afternoon, teacher",
+    "evening": "Good evening, teacher"
   },
   "tabs": {
     "ongoing": "Ongoing",
