@@ -19,7 +19,7 @@
         <div class="stat-carpet">
           <img :src="tokenIcon" alt="token" class="stat-icon pixelated" />
           <!-- carpet 是矢量/平滑背景，不用像素化 -->
-          <img :src="carpetImgA" alt="" class="carpet-img" />
+          <img :src="carpetImgA" alt="" class="carpet-img pixelated" />
           <span class="stat-text">{{ tokenText }}</span>
         </div>
       </div>
@@ -27,8 +27,8 @@
       <!-- 时间 -->
       <div class="stat-pill" v-ripple>
         <div class="stat-carpet">
-          <img :src="timeIcon" alt="time" class="stat-icon pixelated" />
-          <img :src="carpetImgB" alt="" class="carpet-img" />
+          <img :src="timeIcon" alt="time" class="stat-icon pixelated stat-icon-time" />
+          <img :src="carpetImgB" alt="" class="carpet-img pixelated" />
           <span class="stat-text">{{ timeText }}</span>
         </div>
       </div>
@@ -189,7 +189,7 @@ onMounted(async () => {
   gap: 16px;
   margin-top: 12px;
   padding: 0 8px;
-  margin-left: 3px
+  margin-left: -2px
 }
 
 /* 单个“icon + carpet + 文本” */
@@ -212,6 +212,7 @@ onMounted(async () => {
   width: 32px;
   height: 32px;
   z-index: 2;                  /* 在carpet之上 */
+  margin-left: 3px
 }
 
 /* 像素化：最近邻缩放（现代浏览器）+ 兼容项 */
@@ -237,7 +238,7 @@ onMounted(async () => {
   position: absolute;
   top: 50%;
   left: 0;
-  height: 100%;
+  height: 110%;
   width: auto;
   transform: translateY(-50%);
   object-fit: contain;
