@@ -210,7 +210,7 @@
 
   <!-- 应用按钮（保持你原有绝对定位不变） -->
   <div class="absolute-apply-button">
-    <Button label="confirm"@click="confirmFilter" class="apply-button" />
+    <Button label="confirm" @click="confirmFilter" class="apply-button" />
   </div>
 </Dialog>
   </div>
@@ -222,13 +222,8 @@ meta:
 </route>
 
 <script setup>
-/**
- * ✅ Vue 3 + PrimeVue 脚本区（纯 JS 版本）
- * - 已包含：筛选弹窗（状态 + Level 多选）、列表分页、任务弹窗等
- * - 不使用 TS 泛型；不重复声明变量；可直接替换到你的 <script setup> 中
- */
 
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 import Avatar from 'primevue/avatar';
@@ -356,12 +351,14 @@ const tempTab = ref(activeTab.value);  // 弹窗内的临时状态选择
 
 /* -------------------- Level 多选筛选 -------------------- */
 const levelOptions = [
-  { label: 'Level A', value: 'A' },
-  { label: 'Level B', value: 'B' },
-  { label: 'Level C', value: 'C' },
-  { label: 'Level D', value: 'D' },
+  { label: 'Level F', value: 'F' },
   { label: 'Level E', value: 'E' },
-  { label: 'Level F', value: 'F' }
+  { label: 'Level D', value: 'D' },
+  { label: 'Level C', value: 'C' },
+  { label: 'Level B', value: 'B' },
+  { label: 'Level A', value: 'A' },
+  { label: 'Level S', value: 'S' },
+  { label: 'Level S*', value: 'S*' },
 ];
 const selectedLevels = ref([]); // 生效中的 level 集合
 const tempLevels = ref([]);     // 弹窗内的临时 level 选择
@@ -388,12 +385,21 @@ const paginatedProjects = computed(() => {
   return filteredProjects.value.slice(start, start + rowsPerPage);
 });
 
+watch(showFilterDialog, (v) => {
+  if (v) {
+    tempTab.value = activeTab.value;
+    tempLevels.value = [...selectedLevels.value];
+  }
+});
 /* -------------------- 应用筛选（弹窗 Apply） -------------------- */
 const applyFilter = () => {
   activeTab.value = tempTab.value;              // 应用状态
   selectedLevels.value = [...tempLevels.value]; // 应用 level
   showFilterDialog.value = false;
   currentPage.value = 0;                        // 重置到第一页
+};
+const confirmFilter = () => {
+  applyFilter();
 };
 </script>
 
@@ -578,10 +584,7 @@ const applyFilter = () => {
   font-size: 18px;
   color: #333;
 }
-.small-toggle {
-  transform: scale(0.9);
-  transform-origin: right center;
-}
+
 .tab-toggle ::v-deep(.p-button) {
   padding: 6px 16px;
   font-size: 14px;
@@ -617,6 +620,10 @@ const applyFilter = () => {
  grid-template-columns: repeat(2, 1fr);
   gap: 40px;
   padding: 40px;
+}
+.author-name {
+  font-weight: 500;
+  font-size: 20px;
 }
 
 /* task-card 样式用于 projects */
@@ -680,6 +687,8 @@ const applyFilter = () => {
   flex-direction: column;
   height: auto;
   padding: 16px;
+  padding-top: 16px;      /* 保持原上边距 */
+  padding-bottom: 8px;
   background-color: white;
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
@@ -689,7 +698,7 @@ const applyFilter = () => {
 }
 .task-main-content {
   display: flex;
-  flex: 3;
+  flex: 5;
   flex-direction: row;
   gap: 16px;
 }
@@ -698,14 +707,25 @@ const applyFilter = () => {
   justify-content: space-between;
   align-items: center;
   flex: 1;
+  margin-top: 0px;
+  padding: 0px 0;
 }
-
+/* 分割线以下区域整体居中对齐 */
+.task-footer {
+  flex: 1;                          /* 占满剩余高度 */
+  display: flex;
+  justify-content: space-between;   /* 左右分布：左边头像/名字，右边等级 */
+  align-items: center;              /* 垂直居中 */
+  margin-top: 0;                    /* 去掉多余间距 */
+  padding: 0px 0;                   /* 左右留点内边距 */
+  box-sizing: border-box;
+}
 .task-divider {
   width: 100%;
   height: 1px;
   background-color: #e1e8f5;
-  margin-top: 1px;
-  margin-bottom: 8px;
+  margin-top: 0px;
+  margin-bottom: 4px;
 }
 
 .task-left,
@@ -774,30 +794,19 @@ const applyFilter = () => {
   margin-bottom: 16px;
   gap: 8px;
 }
-.author-name {
-  font-weight: 500;
-  font-size: 20px;
-}
 .dialog-description {
   color: #666;
   font-size: 16px;
   line-height: 1.5;
   margin-bottom: 16px;
 }
+/* 图片区域就是你左侧最后一块：不要底部外边距 */
 .dialog-images {
   display: flex;
-  gap: 12px;
-  margin-bottom: 0px;
-  margin-left: calc(48px + 12px);
-}
-/* 图片区域就是你左侧最后一块：不要底部外边距 */
-.dialog-images { 
+  flex-direction: row;     /* 横向排列 */
+  gap: 16px;               /* 图片之间的水平间距 */
+  margin-top: 12px;        /* 跟上面内容分开一点 */
   margin-bottom: 0 !important; 
-}
-
-/* 如果最后一块不是图片，也能兜底把最后一个直接子元素的 margin 去掉 */
-.dialog-left-section > *:last-child {
-  margin-bottom: 0 !important;
 }
 .image-placeholder {
   width: 240px;
@@ -857,11 +866,6 @@ const applyFilter = () => {
   min-height: 0;
   height: 100%;
   box-sizing: border-box;
-}
-.dialog-right-section {
-  position: relative;
-  width: 25%; /* 与分割线对齐 */
-  min-height: 100%;
 }
 
 .fixed-accept-button {
@@ -947,16 +951,16 @@ const applyFilter = () => {
 }
 .fixed-footer-wrapper {
   position: absolute;
-  bottom: 16px;               /* 靠近整个卡片区域底部 */
-  left: 50%;                  /* 水平居中 */
-  transform: translateX(-50%);
-  z-index: 10;
+  bottom: 16px;          /* 贴近卡片区域底部 */
+  right: 16px;           /* 🔽 改为靠右对齐 */
+  left: auto;            /* ❌ 取消之前的居中 */
+  transform: none;       /* ❌ 去掉居中位移 */
   display: flex;
-  justify-content: center;
-  width: 100%;                 /* 占满整个卡片区域宽度 */
-  pointer-events: none;        /* 避免挡住其它元素点击 */
+  justify-content: flex-end; /* 内容靠右 */
+  width: auto;           /* 宽度随内容 */
+  pointer-events: auto !important;
+  z-index: 20 !important;
 }
-
 .footer-text {
   background-color: #ffffff;
   padding: 8px 16px;
@@ -973,11 +977,6 @@ const applyFilter = () => {
   border: 1px solid #c5d4ea;
   border-radius: 12px;
   background-color: white;
-}
-
-.small-toggle {
-  transform: scale(0.9);
-  transform-origin: right center;
 }
 
 .tab-toggle ::v-deep(.p-button) {
@@ -997,13 +996,6 @@ const applyFilter = () => {
   color: #333;
 }
 
-.task-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 4px;
-}
-
 .filter-button.p-button {
   font-size: 14px !important;
   font-weight: 500;
@@ -1019,11 +1011,6 @@ const applyFilter = () => {
   justify-content: center;
   box-shadow: none !important;
   gap: 8px;
-}
-
-.small-toggle {
-  transform: scale(0.9);
-  transform-origin: right center;
 }
 
 .filter-button {
@@ -1053,8 +1040,13 @@ const applyFilter = () => {
   transition: background-color 0.3s, transform 0.2s;
 }
 .apply-button:hover {
-  background-color: #1e1f3e; /* 深一点作为悬停色 */
+  background-color: #2A2C52; /* 深一点作为悬停色 */
   transform: translateY(-1px);
+}
+.apply-button:active {
+  background-color: #2A2C52 !important;  /* 固定颜色 */
+  color: #ffffff !important;             /* 固定文字颜色 */
+  box-shadow: 0 4px 12px rgba(42, 44, 82, 0.2); /* 保持统一阴影 */
 }
 .absolute-apply-button {
   position: absolute;
@@ -1081,12 +1073,6 @@ const applyFilter = () => {
   font-size: 20px;
 }
 
-.assigned-card {
-  background-color: #D1EDF2 !important;
-}
-
-
-/* 卡片底色：A0C0C9 */
 .assigned-card {
   background-color: #D1EDF2 !important;
 }
@@ -1157,10 +1143,6 @@ const applyFilter = () => {
   pointer-events: auto !important;
   z-index: 20 !important;         /* 保证在网格之上 */
 }
-/* —— Filter 弹窗中的分区留白 —— */
-.filter-section {
-  margin-bottom: 20px; /* 与下一组之间 20px */
-}
 
 /* —— 状态切换按钮：左右内边距=10px —— */
 .status-toggle :deep(.p-button) {
@@ -1173,10 +1155,7 @@ const applyFilter = () => {
   font-size: 20px;
   font-weight: 600;
   color: #1e1e1e;
-  margin-bottom: 10px;
-  margin-left: -10px;
-  margin-right: -10px;
-  margin-bottom: 10px;
+  margin:10px -10px;
 }
 
 /* —— Level 横排 —— */
@@ -1224,33 +1203,18 @@ const applyFilter = () => {
   margin-bottom: 20px !important;        /* 组与组之间的间距 */
 }
 
-/* （可选）最后一组下面不要多余空隙 */
-.filter-section:last-of-type {
-  margin-bottom: 0 !important;
-}
-
 /* —— Filter 弹窗：内容区四周 24px 留白 —— */
 :deep(.filter-dialog) .p-dialog-content {
   padding: 10px !important;
   box-sizing: border-box;
-}
-
-
-/* 真正控制文字距边框的地方 */
-:deep(.filter-dialog) .p-selectbutton .p-button .p-button-label {
-  display: inline-block;
-  padding: 6px 10px !important;  /* 上下6px，左右10px = 你的需求 */
-  line-height: 1.2;
-}
-
-/* 如果有图标，去掉图标右侧多余间距（没有图标可留着也不影响） */
-:deep(.filter-dialog) .p-selectbutton .p-button .p-button-icon {
-  margin-right: 0 !important;
+  overflow: hidden !important;
+  max-height: none !important;
 }
 
 /* —— 两个筛选区块之间垂直间距 = 20px —— */
 :deep(.filter-dialog) .filter-section {
   margin-bottom: 20px !important;
+  overflow: visible !important;
 }
 :deep(.filter-dialog) .filter-section:last-of-type {
   margin-bottom: 0 !important;
@@ -1288,7 +1252,13 @@ const applyFilter = () => {
   min-width: auto !important;
 }
 :deep(.filter-dialog) .p-selectbutton .p-button .p-button-label {
+  display: inline-block;
   padding: 6px 10px !important;
   line-height: 1.2;
+}
+.tab-toggle :deep(.p-button) {
+  padding: 6px 16px;
+  font-size: 14px;
+  border-radius: 0;
 }
 </style>
