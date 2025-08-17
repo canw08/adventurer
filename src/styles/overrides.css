@@ -1,0 +1,11 @@
+/* 改 PrimeVue aura 主题的焦点高亮主色 */
+:root {
+  --p-focus-ring-color: #2A2C55 !important;
+}
+
+/* 保险起见，再兜底一层常见输入型组件的焦点样式 */
+.p-inputwrapper-focus > .p-inputtext,
+.p-inputtext:focus {
+  border-color: #2A2C55 !important;
+  box-shadow: 0 0 0 0.5px #2A2C55 !important;
+}

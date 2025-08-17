@@ -60,78 +60,95 @@
         </div>
       </div>
     </div>
+
+    <!-- 弹窗 -->
     <Dialog
-  v-model:visible="showDialog"
-  modal
-  dismissableMask
-  :closable="false"
-  :style="{ width: '1100px', height: '700px', position: 'relative' }"
-  class="project-dialog"
->
-  <template #header>
-    <div class="dialog-custom-header">
-      <div class="dialog-header-left">
-        <Button
-          icon="pi pi-arrow-left"
-          text
-          class="dialog-back-button"
-          @click="showDialog = false"
-        />
-      </div>
-      <div class="dialog-header-center">
-        <span class="dialog-title">{{ selectedProject?.title || '' }}</span>
-      </div>
-      <div class="floating-dialog-level">
-        Level {{ selectedProject?.level || '' }}
-      </div>
-    </div>
-  </template>
+      v-model:visible="showDialog"
+      modal
+      dismissableMask
+      :closable="false"
+      :style="{ width: '1100px', height: '700px', position: 'relative' }"
+      class="project-dialog"
+    >
+      <template #header>
+        <div class="dialog-custom-header">
+          <div class="dialog-header-left">
+            <Button
+              icon="pi pi-arrow-left"
+              text
+              class="dialog-back-button"
+              @click="showDialog = false"
+            />
+          </div>
+          <div class="dialog-header-center">
+            <span class="dialog-title">{{ selectedProject?.title || '' }}</span>
+          </div>
+          <div class="floating-dialog-level">
+            Level {{ selectedProject?.level || '' }}
+          </div>
+        </div>
+      </template>
 
-  <div class="dialog-content-wrapper">
-    <div class="dialog-left-section">
-      <div class="dialog-date">
-        <i class="pi pi-clock dialog-icon"></i>
-        <span>{{ selectedProject?.date || '' }}</span>
-      </div>
+      <div class="dialog-content-wrapper">
+        <div class="dialog-left-section">
+          <div class="dialog-vertical-divider"></div>
+          <div class="dialog-date">
+            <i class="pi pi-clock dialog-icon"></i>
+            <span>{{ selectedProject?.date || '' }}</span>
+          </div>
 
-      <div class="dialog-author">
-        <Avatar
-          :image="selectedProject?.avatar || 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png'"
-          shape="circle"
-          size="large"
-          style="width: 40px; height: 40px"
-        />
-        <span class="author-name">{{ selectedProject?.author || '' }}</span>
-      </div>
+          <div class="dialog-author">
+            <Avatar
+              :image="selectedProject?.avatar || 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png'"
+              shape="circle"
+              size="large"
+              style="width: 40px; height: 40px"
+            />
+            <span class="author-name">{{ selectedProject?.author || '' }}</span>
+          </div>
 
-      <div class="dialog-description-row">
-        <div class="fake-avatar-space"></div>
-        <p class="dialog-description">
-          {{ selectedProject?.description || '无任务说明' }}
-        </p>
-      </div>
+          <div class="dialog-description-row">
+            <div class="fake-avatar-space"></div>
+            <p class="dialog-description">
+              {{ selectedProject?.description || '无任务说明' }}
+            </p>
+          </div>
 
-      <div class="dialog-images">
-        <div class="image-placeholder"></div>
-        <div class="image-placeholder"></div>
+          <div class="dialog-images">
+            <div class="image-placeholder"></div>
+            <div class="image-placeholder"></div>
+          </div>
+          <!-- 左下角按钮组（保留原有） -->
+        </div>
+
+        <div class="dialog-left-buttons">
+          <Button
+            label="Button 1"
+            class="custom-btn"
+            @click="onButton1Click"
+          />
+          <Button
+            label="Button 2"
+            class="custom-btn"
+            @click="onButton2Click"
+          />
+        </div>
+
+        <div class="dialog-right-section"></div>
+
+        <!-- ★ 新增：右下角 Assigned + 绑定ID(这里显示作者名) + 头像 -->
+        <div class="assigned-box">
+          <span class="assigned-label">Mandator</span>
+          <span class="assigned-name">{{ selectedProject?.mandator || '' }}</span>
+          <Avatar
+            :image="selectedProject?.avatar || 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png'"
+            shape="circle"
+            style="width: 48px; height: 48px"
+          />
+        </div>
+        <!-- ★ 新增结束 -->
       </div>
-      <!-- 左下角按钮组 -->
-    </div>
-<div class="dialog-left-buttons">
-    <Button
-      label="Button 1"
-      class="custom-btn"
-      @click="onButton1Click"
-    />
-    <Button
-      label="Button 2"
-      class="custom-btn"
-      @click="onButton2Click"
-    />
-  </div>
-    <div class="dialog-right-section"></div>
-  </div>
-</Dialog>
+    </Dialog>
 </template>
 
 <route lang="yaml">
@@ -183,6 +200,7 @@ const allProjects = [
     avatar: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
     author: 'Amy Elsner',
     description: '中午十二点，在三棵树集合喂猫，时长为1小时，需要5–6人',
+    mandator: 'John Doe',
   },
   {
     id: 2,
@@ -195,6 +213,7 @@ const allProjects = [
     avatar: 'https://primefaces.org/cdn/primevue/images/avatar/onyamalimba.png',
     author: 'Onya Malimba',
     description: '下午两点，在活动中心组织志愿者会议，需要3人负责接待',
+    mandator: 'John Doe',
   },
   {
     id: 3,
@@ -207,6 +226,7 @@ const allProjects = [
     avatar: 'https://primefaces.org/cdn/primevue/images/avatar/ivanmagalhaes.png',
     author: 'Ivan Magalhaes',
     description: '早上九点集合，清理学校操场，需要10人，时长2小时',
+    mandator: 'John Doe',
   },
   {
     id: 4,
@@ -219,6 +239,7 @@ const allProjects = [
     avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
     author: 'Xu Xuefeng',
     description: '设计艺术节宣传海报，预计工作时间3小时，需要2位同学合作完成',
+    mandator: 'John Doe',
   }
 ];
 
@@ -585,6 +606,7 @@ const onButton2Click = () => {
   flex-direction: row;  /* 明确设置横向排列 */
   gap: 12px;
   margin-bottom: 20px;
+  margin-left: calc(48px + 12px);
 }
 .dialog-left-buttons {
   position: absolute;
@@ -615,4 +637,59 @@ const onButton2Click = () => {
   outline: none !important; /* 去掉默认 outline */
   box-shadow: 0 4px 12px rgba(42, 44, 85, 0.3) !important; /* 聚焦时保留普通阴影 */
 }
+.dialog-vertical-divider {
+  position: absolute;
+  top: 100px;
+  bottom: 100px;
+  left: 75%;
+  width: 1px;
+  background-color: #ccc;
+  border-radius: 1px;
+  z-index: 10;
+}
+
+.dialog-date {
+  display: flex;
+  align-items: center;
+  color: #666;
+  margin-bottom: 12px;
+}
+.dialog-icon {
+  margin-right: 8px;
+}
+
+.dialog-author {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+.author-name {
+  font-weight: 500;
+  font-size: 20px;
+}
+
+/* ★ 新增：右下角 Assigned 模块 */
+.assigned-box {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;             /* 文本与头像间距 */
+  z-index: 1100;         /* 高于分割线和内容 */
+}
+.assigned-label {
+  font-size: 18px;
+  color: #b8b8b8;        /* 灰色 */
+  font-weight: 600;
+}
+.assigned-id {
+  font-size: 22px;
+  font-weight: 800;      /* 黑体粗 */
+  color: #000;
+  letter-spacing: 0.5px;
+}
+/* ★ 新增结束 */
+
 </style>

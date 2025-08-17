@@ -1,180 +1,219 @@
 <template>
+  <!-- 右侧 -->
+  <div class="main-content">
+    <!-- 顶部栏 -->
+    <div class="main-header">
+      <div class="header-left-group">
+        <span class="header-left">Quest Board</span>
+        <div class="vertical-divider"></div>
+      </div>
+      <AnnouncementPanel />
+    </div>
 
-    <!-- 右侧 -->
-    <div class="main-content">
-      <div class="main-header">
-        <div class="header-left-group">
-          <span class="header-left">Quest Board</span>
-          <div class="vertical-divider"></div>
+    <!-- 次级标题与筛选按钮 -->
+    <div class="main-subheader">
+      <span class="greeting">Good morning, adventurer</span>
+      <div class="filter-buttons-wrapper small-toggle">
+        <div class="fake-select-wrapper">
+          <Button
+            label="Filter"
+            icon="pi pi-filter"
+            @click="showFilterDialog = true"
+            class="filter-button"
+          />
         </div>
-        <AnnouncementPanel />
       </div>
-      <div class="main-subheader">
-        <span class="greeting">Good morning, adventurer</span>
-         <div class="filter-buttons-wrapper small-toggle">
-           <div class="fake-select-wrapper">
-  <Button
-    label="Filter"
-    icon="pi pi-filter"
-    @click="showFilterDialog = true"
-    class="filter-button"
-/>
-</div>
-  </div>
-      </div>
+    </div>
 
-      <!-- ✅ 卡片列表 -->
-      <div class="main-body">
-        <div class="card-background"></div>
-        <div class="grid-container">
-          <div v-for="project in paginatedProjects" :key="project.id" class="task-card" @click="openProjectDialog(project)">
-            <!-- 上部图文 -->
-            <div class="task-main-content">
-              <div class="task-left">
-                <h3 class="task-title">{{ project.title }}</h3>
-                <div class="task-time">
-                  <i class="pi pi-clock"></i>
-                  <span>{{ project.date }}</span>
-                </div>
-                <div class="task-exp">{{ project.exp || 'N/A' }}</div>
+    <!-- ✅ 卡片区域容器（分页器将相对它的底部居中） -->
+    <div class="main-body">
+      <div class="card-background"></div>
+
+      <!-- 卡片网格 -->
+      <div class="grid-container">
+        <div
+          v-for="project in paginatedProjects"
+          :key="project.id"
+          class="task-card"
+          :class="{ 'assigned-card': project.status === 'assigned' }"
+          @click="openProjectDialog(project)"
+        >
+          <!-- 上部图文 -->
+          <div class="task-main-content">
+            <div class="task-left">
+              <h3 class="task-title">{{ project.title }}</h3>
+              <div class="task-time">
+                <i class="pi pi-clock"></i>
+                <span>{{ project.date }}</span>
               </div>
-              <div class="task-right">
-                <img :src="project.image" alt="Project Image" class="task-image" />
-              </div>
+              <div class="task-exp">{{ project.exp || 'N/A' }}</div>
             </div>
 
-            <div class="task-divider"></div>
+            <!-- 右侧图片（assigned 状态下会通过 CSS 隐藏） -->
+            <div class="task-right">
+              <img :src="project.image" alt="Project Image" class="task-image" />
+            </div>
+          </div>
 
-            <div class="task-footer">
-  <div class="avatar-wrapper">
-    <Avatar
-      :image="project.avatar"
-      shape="circle"
-      style="width: 40px; height: 40px"
-    />
-    <span class="avatar-name">{{ project.author }}</span>
-  </div>
-  <span class="task-level">Level {{ project.level }}</span>
-</div>
-</div>
+          <div class="task-divider"></div>
+
+          <!-- 底部头像与等级 -->
+          <div class="task-footer">
+            <div class="avatar-wrapper">
+              <Avatar
+                :image="project.avatar"
+                shape="circle"
+                style="width: 40px; height: 40px"
+              />
+              <span class="avatar-name">{{ project.author }}</span>
+            </div>
+            <span class="task-level">Level {{ project.level }}</span>
           </div>
         </div>
-        <div class="fixed-footer-wrapper">
-      <Paginator
-    :rows="rowsPerPage"
-    :totalRecords="filteredProjects.length"
-    :first="currentPage * rowsPerPage"
-    @page="(e) => currentPage = e.page"
-    style="background-color: white; border-radius: 12px; padding: 4px 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);"
-  />
-</div>
       </div>
-  <!-- ✅ 弹窗 -->
-  <Dialog
-  v-model:visible="showDialog"
-  modal
-  blockScroll
-  dismissableMask
-  :closable="false"
-  :style="{ width: '1100px', height: '700px', position: 'relative' }"
-  class="project-dialog"
->
-  <!-- 自定义 Header -->
-  <template #header>
-    <div class="dialog-custom-header">
-      <!-- 左侧返回按钮 -->
-      <div class="dialog-header-left">
-        <Button
-          icon="pi pi-arrow-left"
-          text
-          class="dialog-back-button"
-          @click="showDialog = false"
+
+      <!-- ✅ 分页器容器：相对 .main-body 绝对定位，底部居中 -->
+      <div class="fixed-footer-wrapper">
+        <Paginator
+          :rows="rowsPerPage"
+          :totalRecords="filteredProjects.length"
+          :first="currentPage * rowsPerPage"
+          @page="(e) => currentPage = e.page"
+          style="background-color: white; border-radius: 12px; padding: 4px 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);"
         />
-      </div>
-
-      <!-- 中间标题 -->
-      <div class="dialog-header-center">
-        <span class="dialog-title">{{ selectedProject?.title || '' }}</span>
-      </div>
-
-       <!-- 浮动右上角的等级标签 -->
-      <div class="floating-dialog-level">
-        Level {{ selectedProject?.level || '' }}
-      </div>
-    </div>
-  </template>
-
-  <!-- 弹窗主体内容区域 -->
-  <div class="dialog-content-wrapper">
-    <!-- 左侧内容区域 -->
-    <div class="dialog-left-section">
-      <div class="dialog-date">
-        <i class="pi pi-clock dialog-icon"></i>
-        <span>{{ selectedProject.date }}</span>
-      </div>
-
-      <div class="dialog-author">
-        <Avatar
-          image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
-          shape="circle"
-          size="large"
-          style="width: 40px; height: 40px"
-        />
-        <span class="author-name">{{ selectedProject?.author }}</span>
-      </div>
-
-     <div class="dialog-description-row">
-      <div class="fake-avatar-space"></div>
-      <p class="dialog-description">
-  {{ selectedProject?.description || '无任务说明' }}
-</p>
-   </div>
-
-      <div class="dialog-images">
-        <div class="image-placeholder"></div>
-        <div class="image-placeholder"></div>
       </div>
     </div>
 
-    <!-- 分隔线 -->
-    <div class="dialog-vertical-divider"></div>
+    <!-- ✅ 任务详情弹窗 -->
+    <Dialog
+      v-model:visible="showDialog"
+      modal
+      blockScroll
+      dismissableMask
+      :closable="false"
+      :style="{ width: '1100px', height: '700px', position: 'relative' }"
+      class="project-dialog"
+    >
+      <!-- 自定义 Header -->
+      <template #header>
+        <div class="dialog-custom-header">
+          <!-- 左侧返回按钮 -->
+          <div class="dialog-header-left">
+            <Button
+              icon="pi pi-arrow-left"
+              text
+              class="dialog-back-button"
+              @click="showDialog = false"
+            />
+          </div>
 
-    <!-- 右侧区域 -->
-    <div class="dialog-right-section"></div>
-  </div>
+          <!-- 中间标题 -->
+          <div class="dialog-header-center">
+            <span class="dialog-title">{{ selectedProject?.title || '' }}</span>
+          </div>
 
-  <!-- 接任务按钮（保持在 content 外层，绝对定位，不占高度） -->
-  <div class="absolute-accept-button">
-  <Button
-    label="Accept"
-    class="custom-btn"
-  />
-</div>
-</Dialog>
+          <!-- 浮动右上角的等级标签（仅显示，不可交互） -->
+          <div class="floating-dialog-level">
+            Level {{ selectedProject?.level || '' }}
+          </div>
+        </div>
+      </template>
 
+      <!-- 弹窗主体内容区域 -->
+      <div class="dialog-content-wrapper">
+        <!-- 左侧内容区域 -->
+        <div class="dialog-left-section">
+          <div class="dialog-date">
+            <i class="pi pi-clock dialog-icon"></i>
+            <span>{{ selectedProject?.date }}</span>
+          </div>
+
+          <div class="dialog-author">
+            <Avatar
+              image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
+              shape="circle"
+              size="large"
+              style="width: 40px; height: 40px"
+            />
+            <span class="author-name">{{ selectedProject?.author }}</span>
+          </div>
+
+          <div class="dialog-description-row">
+            <div class="fake-avatar-space"></div>
+            <p class="dialog-description">
+              {{ selectedProject?.description || '无任务说明' }}
+            </p>
+          </div>
+
+          <div class="dialog-images">
+            <div class="image-placeholder"></div>
+            <div class="image-placeholder"></div>
+          </div>
+        </div>
+
+        <!-- 分隔线 -->
+        <div class="dialog-vertical-divider"></div>
+
+        <!-- 右侧区域（留空占位，后续可扩展） -->
+        <div class="dialog-right-section"></div>
+      </div>
+
+      <!-- 接任务按钮（保持在 content 外层，绝对定位，不占高度） -->
+      <div class="absolute-accept-button">
+        <Button label="Accept" class="custom-btn" />
+      </div>
+    </Dialog>
+
+    <!-- ✅ 筛选弹窗（不包含 assigned，assigned 作为 ongoing 的分支） -->
 <Dialog
   v-model:visible="showFilterDialog"
   modal
   dismissableMask
   header="Filter Tasks"
+  class="filter-dialog"
+  appendTo="self"
   :style="{ width: '1100px', height: '700px', position: 'relative' }"
 >
-  <!-- ✅ 筛选内容，比如 CascadeSelect 或 SelectButton -->
-  <div style="margin-bottom: 24px">
-    <span style="display: block; margin-bottom: 8px">Task Status</span>
+  <!-- ⛔️ 移除原来的 “Task Status” 那一行文本 -->
+
+  <!-- 状态切换：按钮文字离左右边框 10px -->
+  <div class="filter-section">
+    <div class="status-toggle-wrap">
     <SelectButton
       v-model="tempTab"
       :options="['ongoing', 'completed']"
-      style="width: 100%"
+      class="status-toggle"
     />
   </div>
-
-  <!-- ✅ 确认按钮 -->
-  <div class="absolute-apply-button">
- <Button label="Apply" @click="applyFilter" class="apply-button" />
 </div>
-</Dialog>
+  <!-- 新增：Choose level，多选样式与截图一致 -->
+  <div class="filter-section level-section">
+    <div class="level-label">Choose level</div>
+    <div class="level-row">
+      <div
+        v-for="opt in levelOptions"
+        :key="opt.value"
+        class="level-item"
+      >
+        <!-- PrimeVue Checkbox 多选 -->
+        <Checkbox
+          v-model="tempLevels"
+          :inputId="'lvl-' + opt.value"
+          :value="opt.value"
+        />
+        <label class="level-text" :for="'lvl-' + opt.value">
+          {{ opt.label }}
+        </label>
+      </div>
+    </div>
+  </div>
 
+  <!-- 应用按钮（保持你原有绝对定位不变） -->
+  <div class="absolute-apply-button">
+    <Button label="confirm"@click="confirmFilter" class="apply-button" />
+  </div>
+</Dialog>
+  </div>
 </template>
 
 <route lang="yaml">
@@ -183,34 +222,44 @@ meta:
 </route>
 
 <script setup>
+/**
+ * ✅ Vue 3 + PrimeVue 脚本区（纯 JS 版本）
+ * - 已包含：筛选弹窗（状态 + Level 多选）、列表分页、任务弹窗等
+ * - 不使用 TS 泛型；不重复声明变量；可直接替换到你的 <script setup> 中
+ */
+
 import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
+
 import Avatar from 'primevue/avatar';
 import Button from 'primevue/button';
-import { useRouter } from 'vue-router';
 import Dialog from 'primevue/dialog';
-import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue'
+import Checkbox from 'primevue/checkbox';
+import SelectButton from 'primevue/selectbutton';
 
+import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue';
+
+/* -------------------- 路由 -------------------- */
 const router = useRouter();
+const goToProfile = () => router.push('/student/task');
 
+/* -------------------- 任务弹窗 -------------------- */
 const showDialog = ref(false);
 const selectedProject = ref(null);
-
 const openProjectDialog = (project) => {
   selectedProject.value = project;
   showDialog.value = true;
 };
 
-const activeTab = ref('ongoing');
-const tabOptions = ref(['ongoing', 'completed']);
-
-
+/* -------------------- 顶部公告（保持与模板兼容） -------------------- */
 const op = ref(null);
 const unreadCount = ref(2);
 const togglePanel = (event) => {
-  op.value.toggle(event);
+  op.value?.toggle(event);
   unreadCount.value = 0;
 };
 
+/* -------------------- 数据源（演示） -------------------- */
 const allProjects = [
   {
     id: 1,
@@ -252,6 +301,43 @@ const allProjects = [
     id: 4,
     title: 'Design Posters for Art Festival',
     date: '15 August, 2025',
+    status: 'assigned',
+    image: 'https://picsum.photos/seed/poster/400/200',
+    exp: '350 exp',
+    level: 'B',
+    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
+    author: 'Xu Xuefeng',
+    description: '设计艺术节宣传海报，预计工作时间3小时，需要2位同学合作完成',
+  },
+  {
+    id: 5,
+    title: 'Design Posters for Art Festival',
+    date: '15 August, 2025',
+    status: 'ongoing',
+    image: 'https://picsum.photos/seed/poster/400/200',
+    exp: '350 exp',
+    level: 'B',
+    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
+    author: 'Xu Xuefeng',
+    description: '设计艺术节宣传海报，预计工作时间3小时，需要2位同学合作完成',
+  },
+  {
+    id: 6,
+    title: 'Design Posters for Art Festival',
+    date: '15 August, 2025',
+    status: 'ongoing',
+    image: 'https://picsum.photos/seed/poster/400/200',
+    exp: '350 exp',
+    level: 'B',
+    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
+    author: 'Xu Xuefeng',
+    description: '设计艺术节宣传海报，预计工作时间3小时，需要2位同学合作完成',
+  },
+  {
+    // 避免 v-for key 冲突：你的原始数据里 id:5 重复，这里改为 7
+    id: 7,
+    title: 'Design Posters for Art Festival',
+    date: '15 August, 2025',
     status: 'ongoing',
     image: 'https://picsum.photos/seed/poster/400/200',
     exp: '350 exp',
@@ -262,26 +348,52 @@ const allProjects = [
   }
 ];
 
-const filteredProjects = computed(() =>
-  allProjects.filter((p) => p.status === activeTab.value)
-);
-const goToProfile = () => {
-  router.push('/student/task');
-};
-const currentPage = ref(0)
-const rowsPerPage = 2  
+/* -------------------- 状态切换（ongoing/completed） -------------------- */
+const activeTab = ref('ongoing');      // 实际生效的状态
+const tabOptions = ref(['ongoing', 'completed']); // 备用
+const showFilterDialog = ref(false);   // Filter 弹窗显隐
+const tempTab = ref(activeTab.value);  // 弹窗内的临时状态选择
 
+/* -------------------- Level 多选筛选 -------------------- */
+const levelOptions = [
+  { label: 'Level A', value: 'A' },
+  { label: 'Level B', value: 'B' },
+  { label: 'Level C', value: 'C' },
+  { label: 'Level D', value: 'D' },
+  { label: 'Level E', value: 'E' },
+  { label: 'Level F', value: 'F' }
+];
+const selectedLevels = ref([]); // 生效中的 level 集合
+const tempLevels = ref([]);     // 弹窗内的临时 level 选择
+
+/* -------------------- 过滤 + 分页 -------------------- */
+// 先按状态过滤（ongoing 时包含 assigned），再按 level 过滤
+const filteredProjects = computed(() => {
+  const statusFiltered = allProjects.filter(
+    (p) =>
+      p.status === activeTab.value ||
+      (activeTab.value === 'ongoing' && p.status === 'assigned')
+  );
+  if (!selectedLevels.value || selectedLevels.value.length === 0) {
+    return statusFiltered;
+  }
+  return statusFiltered.filter((p) => selectedLevels.value.includes(p.level));
+});
+
+// 分页
+const currentPage = ref(0);
+const rowsPerPage = 4;
 const paginatedProjects = computed(() => {
   const start = currentPage.value * rowsPerPage;
   return filteredProjects.value.slice(start, start + rowsPerPage);
 });
 
-const showFilterDialog = ref(false);
-const tempTab = ref(activeTab.value); // 用于筛选弹窗中临时选中
-
+/* -------------------- 应用筛选（弹窗 Apply） -------------------- */
 const applyFilter = () => {
-  activeTab.value = tempTab.value;
+  activeTab.value = tempTab.value;              // 应用状态
+  selectedLevels.value = [...tempLevels.value]; // 应用 level
   showFilterDialog.value = false;
+  currentPage.value = 0;                        // 重置到第一页
 };
 </script>
 
@@ -531,13 +643,14 @@ const applyFilter = () => {
   gap: 8px; 
 }
 .task-exp {
-  color: #003366; 
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); 
   font-size: 16px; 
   font-weight: bold;
   margin-bottom: 8px;
   text-align: left;
   width: 100%;
+   color: #81A0EF !important;               /* exp 填充色 */
+  -webkit-text-stroke: 1px #3A494D;
 }
 .task-teamwork {
   width: 100%; 
@@ -555,10 +668,11 @@ const applyFilter = () => {
 }
 
 .task-level {
-  color: #0099ff; 
   font-weight: bold;
   font-size: 22px;
   text-align: right;
+  color: #C3F9E6 !important;                /* level 填充色 */
+  -webkit-text-stroke: 1px #1BA5BF;
 }
 /* ✅ 横向卡片整体结构 */
 .task-card {
@@ -649,7 +763,7 @@ const applyFilter = () => {
   display: flex;
   align-items: center;
   color: #666;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 .dialog-icon {
   margin-right: 8px;
@@ -657,7 +771,8 @@ const applyFilter = () => {
 .dialog-author {
   display: flex;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  gap: 8px;
 }
 .author-name {
   font-weight: 500;
@@ -673,6 +788,7 @@ const applyFilter = () => {
   display: flex;
   gap: 12px;
   margin-bottom: 0px;
+  margin-left: calc(48px + 12px);
 }
 /* 图片区域就是你左侧最后一块：不要底部外边距 */
 .dialog-images { 
@@ -722,8 +838,8 @@ const applyFilter = () => {
 /* ✅ 保持分割线上下分别 48px，不受按钮影响 */
 .dialog-vertical-divider {
   position: absolute;
-  top: 48px;
-  bottom: 48px;
+  top: 0px;
+  bottom: 0px;
   left: 75%;
   width: 1px;
   background-color: #ccc;
@@ -732,12 +848,15 @@ const applyFilter = () => {
 }
 
 /* 占满内容区高度，不滚动；去掉底部内边距 */
+/* 2) 与 home 保持一致的内容留白（关键！）*/
 .dialog-content-wrapper {
-  position: relative !important;   /* 作为分割线的定位上下文 */
-  display: flex !important;
-  flex: 1 1 auto;
+  position: relative;               /* 作为分割线的定位上下文 */
+  display: flex;
+  gap: 24px;
+  padding: 4px 24px 24px 24px;      /* ← 与 home 保持一致的 padding */
   min-height: 0;
-  gap: 0;
+  height: 100%;
+  box-sizing: border-box;
 }
 .dialog-right-section {
   position: relative;
@@ -753,23 +872,21 @@ const applyFilter = () => {
 :deep(.p-dialog) {
   height: 100%;
 }
-/* ✅ 让按钮可相对内容区域绝对定位，且不撑高内容 */
-.project-dialog :deep(.p-dialog) {
-  display: flex;             
-  flex-direction: column;
-  height: 700px;             
-  max-height: 700px;         
-}
+/* ✅ 任务详情弹窗内容区样式 */
 .project-dialog :deep(.p-dialog-content) {
-  display: flex;             
+  /* PrimeVue 默认 padding 会和 wrapper 叠加，这里清掉 */
+  padding: 0 !important;
+  /* 保证布局灵活 */
+  display: flex;
   flex-direction: column;
-  flex: 1 1 auto;            
-  min-height: 0;             
-  overflow: hidden;          
+  flex: 1 1 auto;
+  min-height: 0;
+  /* 控制高度和滚动 */
+  height: auto !important;
+  overflow: hidden;
+  /* 避免溢出，保证绝对定位可用 */
+  position: relative; /* ⭐ 作为 .absolute-accept-button 的定位父级 */
   box-sizing: border-box;
-  padding-bottom: 0 !important; 
-  height: auto !important;   
-  position: relative;         /* ⭐ 新增：作为 .absolute-accept-button 的定位父级 */
 }
 
 /* ⭐ 新增：接任务按钮固定右下 & 不占文档流高度 */
@@ -810,32 +927,34 @@ const applyFilter = () => {
   line-height: 1.5;
   margin: 0;
 }
-/* .dialog-left-section {
-  flex: 1;
-  max-width: 75%;
+
+/* 3) 左右比例不变，但确保与分割线的 75% 对齐 */
+.dialog-left-section {
+  flex: 0 0 75%;
+  width: 75%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   word-wrap: break-word;
   word-break: break-word;
-} */
-.dialog-left-section {
-  flex: 0 0 75% !important;  /* 与 75% 分割线一致 */
-  max-width: 75% !important;
-  display: flex !important;
-  flex-direction: column !important;
-  min-height: 0 !important;
 }
 .dialog-right-section {
+  flex: 0 0 25%;
   position: relative;
   width: 25%;
-  flex: 0 0 25%;
   min-height: 0;
   overflow: hidden;
 }
 .fixed-footer-wrapper {
   position: absolute;
-  bottom: 16px;
-  left: 50%;
+  bottom: 16px;               /* 靠近整个卡片区域底部 */
+  left: 50%;                  /* 水平居中 */
   transform: translateX(-50%);
   z-index: 10;
+  display: flex;
+  justify-content: center;
+  width: 100%;                 /* 占满整个卡片区域宽度 */
+  pointer-events: none;        /* 避免挡住其它元素点击 */
 }
 
 .footer-text {
@@ -955,5 +1074,221 @@ const applyFilter = () => {
 .custom-btn:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 12px rgba(0, 0, 0, 0.25);
+}
+
+.author-name {
+  font-weight: 500;
+  font-size: 20px;
+}
+
+.assigned-card {
+  background-color: #D1EDF2 !important;
+}
+
+
+/* 卡片底色：A0C0C9 */
+.assigned-card {
+  background-color: #D1EDF2 !important;
+}
+
+/* 分割线颜色：B8DBEB */
+.assigned-card .task-divider {
+  background-color: #B8DBEB !important;
+}
+
+/* 标题 & 时间颜色：95B0B5 */
+.assigned-card .task-title {
+  color: #95B0B5 !important;
+}
+.assigned-card .task-time {
+  color: #95B0B5 !important;
+}
+
+/* exp：文字 BCD8DD，描边 A1BEC3 */
+.assigned-card .task-exp {
+  color: #BCD8DD !important;
+  -webkit-text-stroke: 1px #A1BEC3; /* 描边 */
+  text-shadow: none !important;     /* 若原来有阴影，这里关闭它，避免脏感 */
+}
+
+/* Level：底色 CCE8ED，描边 A1BEC3
+   注：这里用背景 + 文字描边，保留你原本字号与布局 */
+.assigned-card .task-level {
+  -webkit-text-stroke: 1px #A1BEC3; /* 描边 */
+  color: #CCE8ED !important;        /* 文字填充色 */
+  font-weight: bold;
+  font-size: 22px;
+  text-align: right;
+}
+
+/* （如果卡片里有 ID 文本）ID 颜色：000000
+   你的 ID 现在在侧边栏 .user-id；卡片里若也有相同类名则会生效；没有就不影响。 */
+.assigned-card .user-id {
+  color: #000000 !important;
+}
+/* ✅ 只对 assigned 状态的卡片加水印 */
+.assigned-card::before {
+  content: "Assigned";              /* 水印文字 */
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-20deg); /* 左高右低的角度 */
+  font-size: 48px;                   /* 文字大小，可调 */
+  font-weight: bold;
+  color: #A0C0C9;                    /* 文字颜色 */
+  opacity: 0.25;                     /* 透明度，让内容可见 */
+  pointer-events: none;              /* 不影响点击事件 */
+  white-space: nowrap;
+  z-index: 0;                        /* 在内容下面 */
+}
+
+/* 确保 task-card 是相对定位，让 ::before 能按卡片定位 */
+.task-card {
+  position: relative;
+}
+
+.assigned-card .task-right {
+  display: none !important;
+}
+.fixed-footer-wrapper .p-paginator {
+  pointer-events: auto;  /* 让分页器可以正常点击 */
+}
+.fixed-footer-wrapper {
+  pointer-events: auto !important;
+  z-index: 20 !important;         /* 保证在网格之上 */
+}
+/* —— Filter 弹窗中的分区留白 —— */
+.filter-section {
+  margin-bottom: 20px; /* 与下一组之间 20px */
+}
+
+/* —— 状态切换按钮：左右内边距=10px —— */
+.status-toggle :deep(.p-button) {
+  padding: 6px 10px !important; /* 关键：文字到边框 10px */
+  border-radius: 8px;
+}
+
+/* —— Level 组标题 —— */
+.level-label {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e1e1e;
+  margin-bottom: 10px;
+  margin-left: -10px;
+  margin-right: -10px;
+  margin-bottom: 10px;
+}
+
+/* —— Level 横排 —— */
+.level-row {
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 20px 10px;   /* 上下 20px，左右 10px */
+}
+
+/* 单个 level 项：复选框 + 文本 */
+.level-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 复选框样式 */
+.level-item :deep(.p-checkbox-box) {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid #c8d3e6;
+  transition: all .2s ease;
+}
+.level-item :deep(.p-checkbox-box.p-highlight) {
+  background: #3f5aa8;
+  border-color: #3f5aa8;
+}
+.level-item :deep(.p-checkbox-icon) {
+  font-size: 12px;
+  line-height: 1;
+  color: #fff;
+}
+
+/* 文本样式 */
+.level-text {
+  font-size: 18px;
+  color: #1e1e1e;
+}
+
+/* 2) 区块之间垂直间距 = 20px */
+.filter-section {
+  margin-bottom: 20px !important;        /* 组与组之间的间距 */
+}
+
+/* （可选）最后一组下面不要多余空隙 */
+.filter-section:last-of-type {
+  margin-bottom: 0 !important;
+}
+
+/* —— Filter 弹窗：内容区四周 24px 留白 —— */
+:deep(.filter-dialog) .p-dialog-content {
+  padding: 10px !important;
+  box-sizing: border-box;
+}
+
+
+/* 真正控制文字距边框的地方 */
+:deep(.filter-dialog) .p-selectbutton .p-button .p-button-label {
+  display: inline-block;
+  padding: 6px 10px !important;  /* 上下6px，左右10px = 你的需求 */
+  line-height: 1.2;
+}
+
+/* 如果有图标，去掉图标右侧多余间距（没有图标可留着也不影响） */
+:deep(.filter-dialog) .p-selectbutton .p-button .p-button-icon {
+  margin-right: 0 !important;
+}
+
+/* —— 两个筛选区块之间垂直间距 = 20px —— */
+:deep(.filter-dialog) .filter-section {
+  margin-bottom: 20px !important;
+}
+:deep(.filter-dialog) .filter-section:last-of-type {
+  margin-bottom: 0 !important;
+}
+/* 只改 Filter 弹窗标题字号 */
+:deep(.filter-dialog) .p-dialog-title {
+  font-size: 30px !important;
+  font-weight: 700;  /* 粗细可调整 */
+  color: #1e1e1e;    /* 可选：颜色 */
+}
+
+/* —— Level 部分 —— */
+.level-section {
+  padding: 0 20px;
+}
+
+/* —— 状态切换（ongoing/completed）与边框 10px —— */
+.status-toggle {
+  margin: 0 10px;   /* 左右与边框距离 10px */
+  width: calc(100% - 20px); /* 扣掉左右 10px */
+}
+/* 外层容器控制与边框 10px（不会受 scoped 限制） */
+.status-toggle-wrap {
+  margin: 0px;
+}
+
+/* 让 SelectButton 撑满容器（容器已扣了 10px 外边距） */
+:deep(.filter-dialog) .status-toggle {
+  width: 100% !important;
+}
+
+/* 按钮内文字到按钮边框 10px（你已有，可保留） */
+:deep(.filter-dialog) .p-selectbutton .p-button {
+  padding: 0 !important;
+  min-width: auto !important;
+}
+:deep(.filter-dialog) .p-selectbutton .p-button .p-button-label {
+  padding: 6px 10px !important;
+  line-height: 1.2;
 }
 </style>

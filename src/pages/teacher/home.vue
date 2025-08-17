@@ -4,7 +4,7 @@
   <div class="main-content">
     <div class="main-header">
       <div class="header-left-group">
-        <span class="header-left">Poested Assignments</span>
+        <span class="header-left">Posted Assignments</span>
         <div class="vertical-divider"></div>
         <span class="header-right">
           <span class="running-count">{{ runningProjects.length }}</span>
@@ -78,7 +78,8 @@
         <div class="p-field field-stack">
           <label class="choose-size-label">Task Details</label>
           <!-- 让输入框占满一行或指定宽度都可以 -->
-           <span class="p-float-label task-date-wrapper">
+          <div class="pos">
+           <span class="p-float-label">
             <Calendar
               id="date"
               v-model="taskDate"
@@ -89,12 +90,13 @@
               class="task-date-input"
             ></Calendar>
           </span>
+          </div>
         </div>
       </div>
 
       <div class="gapping">
         <!-- 新增：任务大标题 -->
-        <div class="p-field">
+        <div class="p-field pos">
           <InputText id="bigTitle" v-model="bigTitle" placeholder="Enter main title" style="width: 100%;" />
         </div>
       </div>
@@ -108,7 +110,7 @@
           @submit="onFormSubmit"
           class="flex flex-col gap-4"
         >
-          <div class="flex flex-col gap-1">
+          <div class="flex flex-col gap-1 pos">
             <Editor name="content" editorStyle="height: 320px" />
             <Message
               v-if="$form?.content?.invalid"
@@ -168,6 +170,8 @@ meta:
 <script setup>
 // src/mock/index.js
 import { useUserStore } from '../../stores/user';
+import '../../styles/overrides.css'
+
 import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue'
 import AwardSliders from '../../components/AwardSliders.vue' // 确认相对路径
 
@@ -330,7 +334,6 @@ onMounted(async () => {
   display: flex;
   height: 100vh;
   background-color: #ffffff;
-  font-family: 'Segoe UI', sans-serif;
 }
 .sidebar {
   width: 300px;
@@ -668,7 +671,7 @@ onMounted(async () => {
 .gapping {
   margin-bottom: 20px;
   margin-left: 1%;
-  margin-right: 1%;
+  margin-right: 3%;
 }
 
 .dialog-header-title {
@@ -685,19 +688,13 @@ onMounted(async () => {
   gap: 12px;           /* 标题和输入之间的间距 */
 }
 
-
 /* PrimeVue Calendar 实际渲染的是一个 input，
    若需要更强控制，也可以覆盖内部 input 宽度： */
 .field-stack :deep(.p-inputtext) {
   width: 100%;
 }
 
-/* 让浮动 label 和输入框搭配 */
-.task-date-wrapper {
- display:block; width:100%; max-width:640px;
-}
-
-.task-date-input { width:40%; }
+.task-date-input { width:100%; }
 .task-date-wrapper :deep(.p-calendar){ width:40%; }
 .task-date-wrapper :deep(.p-inputtext){
   width:100%;
@@ -713,7 +710,7 @@ onMounted(async () => {
 
 .submitPosition{
   margin-top: 14px;
-  font-size: 25px;
+  font-size: 20px;
   margin-left: 85%;
   border-radius: 20px;
   border-color: #003366;
@@ -751,5 +748,33 @@ onMounted(async () => {
   border-color: #2A2C55 !important;
   box-shadow: 0 0 0 2px rgba(42,44,85,0.15);
 }
+
+/* 覆盖 Dialog 内 Calendar 获得焦点时的边框 & 外圈高亮颜色 */
+.my-task-dialog :deep(.p-calendar .p-inputtext:enabled:focus),
+.my-task-dialog :deep(.p-calendar.p-inputwrapper-focus .p-inputtext),
+.my-task-dialog :deep(.p-inputwrapper-focus > .p-inputtext) {
+  border-color: #2A2C55 !important;
+  box-shadow: 0 0 0 2px #2A2C55 !important; /* 覆盖主题绿色外圈 */
+  outline: none !important;
+}
+
+/* showIcon 时右侧按钮的 focus 外圈也统一一下（可选） */
+.my-task-dialog :deep(.p-calendar.p-inputwrapper-focus .p-button),
+.my-task-dialog :deep(.p-calendar .p-button:enabled:focus) {
+  border-color: #2A2C55 !important;
+  box-shadow: 0 0 0 2px #2A2C55 !important;
+}
+
+
+.pos{
+  margin-left: 2%;
+}
+
+:deep(.p-editor .ql-editor.ql-blank::before) {
+  content: "Enter your assignment description......";
+  color: #999;
+  position: absolute;
+}
+
 
 </style>
