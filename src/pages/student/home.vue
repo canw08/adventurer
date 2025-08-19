@@ -1,154 +1,202 @@
 <template>
-    <!-- 右侧 -->
-    <div class="main-content">
-      <div class="main-header">
-        <div class="header-left-group">
-          <span class="header-left">{{ $t('questLog.title') }}</span>
-          <div class="vertical-divider"></div>
-          <span class="header-right">
-            <span class="running-count">{{ runningProjects.length }}</span>
-            <span class="running-label"> {{ $t('questLog.runningQuest') }}</span>
-          </span>
-        </div>
-        <AnnouncementPanel />
+  <!-- 右侧 -->
+  <div class="main-content">
+    <div class="main-header">
+      <div class="header-left-group">
+        <span class="header-left">{{ $t('questLog.title') }}</span>
+        <div class="vertical-divider"></div>
+        <span class="header-right">
+          <span class="running-count">{{ runningProjects.length }}</span>
+          <span class="running-label"> {{ $t('questLog.runningQuest') }}</span>
+        </span>
       </div>
+      <AnnouncementPanel />
+    </div>
 
-      <div class="main-subheader">
-        <span class="greeting">{{ $t(greetingKey) }}</span>
-        <div class="filter-buttons-wrapper small-toggle">
-          <SelectButton
-            v-model="activeTab"
-            :options="tabOptions"
-            optionLabel="label"
-            optionValue="value"
-            class="tab-toggle"
-          />
-        </div>
+    <div class="main-subheader">
+      <span class="greeting">{{ $t(greetingKey) }}</span>
+      <div class="filter-buttons-wrapper small-toggle">
+        <SelectButton
+          v-model="activeTab"
+          :options="tabOptions"
+          optionLabel="label"
+          optionValue="value"
+          class="tab-toggle"
+        />
       </div>
+    </div>
 
-      <!-- 主体卡片区域 -->
-      <div class="main-body">
-        <div class="grid-container">
-          <!-- Projects 使用 task-card 样式 -->
-          <div
-            v-for="project in filteredProjects"
-            :key="project.id"
-            class="task-card"
-            @click="openProjectDialog(project)"
-          >
-            <h3 class="task-title">{{ project.title }}</h3>
-            <div class="task-time">
-              <i class="pi pi-clock"></i>
-              <span>{{ project.date }}</span>
+    <!-- 主体卡片区域 -->
+    <div class="main-body">
+      <div class="grid-container">
+        <!-- Projects 使用 task-card 样式 -->
+        <div
+          v-for="project in filteredProjects"
+          :key="project.id"
+          class="task-card"
+          @click="openProjectDialog(project)"
+        >
+          <h3 class="task-title">{{ project.title }}</h3>
+          <div class="task-time">
+            <i class="pi pi-clock"></i>
+            <span>{{ project.date }}</span>
+          </div>
+          <div class="task-exp">{{ project.exp || $t('common.na') }}</div>
+          <div class="task-teamwork">
+            <img :src="project.image" alt="Project Image" class="task-teamwork-image" />
+          </div>
+          <div class="task-footer">
+            <div class="avatar-wrapper">
+              <Avatar
+                :image="project.avatar"
+                shape="circle"
+                style="width: 40px; height: 40px"
+              />
+              <span class="avatar-name">{{ project.author }}</span>
             </div>
-            <div class="task-exp">{{ project.exp || $t('common.na') }}</div>
-            <div class="task-teamwork">
-              <img :src="project.image" alt="Project Image" class="task-teamwork-image" />
-            </div>
-            <div class="task-footer">
-              <div class="avatar-wrapper">
-                <Avatar
-                  :image="project.avatar"
-                  shape="circle"
-                  style="width: 40px; height: 40px"
-                />
-                <span class="avatar-name">{{ project.author }}</span>
-              </div>
-              <span class="task-level">{{ $t('common.level') }} {{ project.level }}</span>
-            </div>
+            <span class="task-level">{{ $t('common.level') }} {{ project.level }}</span>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- 弹窗 -->
-    <Dialog
-      v-model:visible="showDialog"
-      modal
-      dismissableMask
-      :closable="false"
-      :style="{ width: '1100px', height: '700px', position: 'relative' }"
-      class="project-dialog"
-    >
-      <template #header>
-        <div class="dialog-custom-header">
-          <div class="dialog-header-left">
-            <Button
-              icon="pi pi-arrow-left"
-              text
-              class="dialog-back-button"
-              @click="showDialog = false"
-            />
-          </div>
-          <div class="dialog-header-center">
-            <span class="dialog-title">{{ selectedProject?.title || '' }}</span>
-          </div>
-          <div class="floating-dialog-level">
-            Level {{ selectedProject?.level || '' }}
-          </div>
-        </div>
-      </template>
-
-      <div class="dialog-content-wrapper">
-        <div class="dialog-left-section">
-          <div class="dialog-vertical-divider"></div>
-          <div class="dialog-date">
-            <i class="pi pi-clock dialog-icon"></i>
-            <span>{{ selectedProject?.date || '' }}</span>
-          </div>
-
-          <div class="dialog-author">
-            <Avatar
-              :image="selectedProject?.avatar || 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png'"
-              shape="circle"
-              size="large"
-              style="width: 40px; height: 40px"
-            />
-            <span class="author-name">{{ selectedProject?.author || '' }}</span>
-          </div>
-
-          <div class="dialog-description-row">
-            <div class="fake-avatar-space"></div>
-            <p class="dialog-description">
-              {{ selectedProject?.description || '无任务说明' }}
-            </p>
-          </div>
-
-          <div class="dialog-images">
-            <div class="image-placeholder"></div>
-            <div class="image-placeholder"></div>
-          </div>
-          <!-- 左下角按钮组（保留原有） -->
-        </div>
-
-        <div class="dialog-left-buttons">
-          <Button
-            label="Button 1"
-            class="custom-btn"
-            @click="onButton1Click"
-          />
-          <Button
-            label="Button 2"
-            class="custom-btn"
-            @click="onButton2Click"
-          />
-        </div>
-
-        <div class="dialog-right-section"></div>
-
-        <!-- ★ 新增：右下角 Assigned + 绑定ID(这里显示作者名) + 头像 -->
-        <div class="assigned-box">
-          <span class="assigned-label">Mandator</span>
-          <span class="assigned-name">{{ selectedProject?.mandator || '' }}</span>
-          <Avatar
-            :image="selectedProject?.avatar || 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png'"
-            shape="circle"
-            style="width: 48px; height: 48px"
-          />
-        </div>
-        <!-- ★ 新增结束 -->
+<!-- 弹窗 -->
+<Dialog
+  v-model:visible="showDialog"
+  modal
+  dismissableMask
+  :closable="false"
+  :style="{ width: '1100px', height: '700px', position: 'relative' }"
+  class="project-dialog"
+>
+  <template #header>
+    <div class="dialog-custom-header">
+      <div class="dialog-header-left">
+        <Button
+          icon="pi pi-arrow-left"
+          text
+          class="dialog-back-button"
+          @click="showDialog = false"
+        />
       </div>
-    </Dialog>
+      <div class="dialog-header-center">
+        <span class="dialog-title">{{ selectedProject?.title || '' }}</span>
+      </div>
+      <div class="floating-dialog-level">
+        Level {{ selectedProject?.level || '' }}
+      </div>
+    </div>
+  </template>
+
+  <!-- ① 内容包裹层：先开 -->
+  <div class="dialog-content-wrapper">
+    <div class="dialog-left-section">
+      <div class="dialog-vertical-divider"></div>
+
+      <div class="dialog-date">
+        <i class="pi pi-clock dialog-icon"></i>
+        <span>{{ selectedProject?.date || '' }}</span>
+      </div>
+
+      <div class="dialog-author">
+        <Avatar
+          :image="selectedProject?.avatar || 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png'"
+          shape="circle"
+          size="large"
+          style="width: 40px; height: 40px"
+        />
+        <span class="author-name">{{ selectedProject?.author || '' }}</span>
+      </div>
+
+      <div class="dialog-description-row">
+        <div class="fake-avatar-space"></div>
+        <p class="dialog-description">
+          {{ selectedProject?.description || '无任务说明' }}
+        </p>
+      </div>
+
+      <div class="dialog-images">
+        <div class="image-placeholder"></div>
+        <div class="image-placeholder"></div>
+      </div>
+    </div>
+
+    <!-- ✅ 只保留这一组按钮（使用 OverlayPanel） -->
+    <div class="dialog-left-buttons">
+      <Button
+        label="Ask for leave"
+        class="custom-btn"
+        @click="toggleLeavePanel($event)"
+      />
+      <Button
+        label="Prompt"
+        class="custom-btn"
+        @click="onButton2Click"
+      />
+    </div>
+
+    <div class="dialog-right-section"></div>
+
+    <!-- 右下角 Mandator -->
+    <div class="assigned-box">
+      <span class="assigned-label">Mandator</span>
+      <span class="assigned-name">{{ selectedProject?.mandator || '' }}</span>
+      <Avatar
+        :image="selectedProject?.avatar || 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png'"
+        shape="circle"
+        style="width: 48px; height: 48px"
+      />
+    </div>
+  </div>
+  <!-- ② 内容包裹层：先关 ↑ 这一行必须在 OverlayPanel 之前 -->
+
+  <!-- ③ OverlayPanel 放在 Dialog 内、content-wrapper 外 -->
+<!-- 二次弹窗：更大、圆角、上方一点点 -->
+<OverlayPanel
+  ref="leavePanel"
+  class="leave-overlay"
+  appendTo="body"
+  :dismissable="true"
+  :showCloseIcon="false"
+>
+  <div class="leave-form">
+    <!-- 顶部：左头像 + 右 申请理由（单行） -->
+    <div class="leave-top">
+      <Avatar
+        :image="selectedProject?.avatar || 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png'"
+        shape="circle"
+        style="width: 56px; height: 56px"
+      />
+      <InputText
+        v-model="leaveTitle"
+        class="leave-title-input"
+        placeholder="申请理由（简要）"
+      />
+    </div>
+
+    <!-- 中部：详情理由（多行） -->
+    <div class="leave-middle">
+      <Textarea
+        v-model="leaveDetail"
+        class="leave-detail-textarea"
+        :autoResize="true"
+        rows="6"
+        placeholder="详情理由（时间范围、交接说明等）"
+      />
+    </div>
+
+    <!-- 底部：右下角 Submit -->
+    <div class="leave-bottom">
+      <Button
+        label="Submit"
+        class="custom-btn"
+        @click="submitLeave"
+      />
+    </div>
+  </div>
+</OverlayPanel>
+</Dialog>
 </template>
 
 <route lang="yaml">
@@ -157,13 +205,22 @@ meta:
 </route>
 
 <script setup>
-import { ref, computed } from 'vue';
-import Avatar from 'primevue/avatar';
-import SelectButton from 'primevue/selectbutton';
+/**
+ * 说明：
+ * - 已移除 showLeaveDialog / 二级 Dialog；
+ * - 只保留 OverlayPanel，并通过 toggle(event) 定位到按钮；
+ * - 合并 confirmLeave，避免重复定义。
+ */
+import { ref, computed } from 'vue'
+import Avatar from 'primevue/avatar'
+import SelectButton from 'primevue/selectbutton'
 import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue'
-import Dialog from 'primevue/dialog';
+import Dialog from 'primevue/dialog'
+import OverlayPanel from 'primevue/overlaypanel'
 import teamwork from '../../assets/team.png'
 import { useI18n } from 'vue-i18n'
+import InputText from 'primevue/inputtext'
+import Textarea from 'primevue/textarea'
 
 const { t } = useI18n()
 
@@ -173,19 +230,17 @@ const tabOptions = ref([
   { label: t('tabs.completed'), value: 'completed' }
 ])
 
-const op = ref(null);
-const unreadCount = ref(2);
+const op = ref(null)
+const unreadCount = ref(2)
 const togglePanel = (event) => {
-  op.value.toggle(event);
-  unreadCount.value = 0;
-};
+  op.value.toggle(event)
+  unreadCount.value = 0
+}
 
 const period = computed(() => {
   const h = new Date().getHours()
   return h < 4 ? 'night' : h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening'
 })
-
-// greetingKey 必须是字符串
 const greetingKey = computed(() => `greetings-student.${period.value}`)
 
 const allProjects = [
@@ -241,29 +296,62 @@ const allProjects = [
     description: '设计艺术节宣传海报，预计工作时间3小时，需要2位同学合作完成',
     mandator: 'John Doe',
   }
-];
-
+]
 
 const filteredProjects = computed(() =>
   allProjects.filter((p) => p.status === activeTab.value)
-);
+)
 const runningProjects = computed(() =>
   allProjects.filter((p) => p.status === 'ongoing')
-);
-const showDialog = ref(false);              //  控制弹窗显示
-const selectedProject = ref(null);          //  存储当前点击的项目
+)
 
-const openProjectDialog = (project) => {    //  点击卡片触发
-  selectedProject.value = project;
-  showDialog.value = true;
-};
-const onButton1Click = () => {
-  console.log('Button 1 clicked');
-};
+const showDialog = ref(false)
+const selectedProject = ref(null)
+const openProjectDialog = (project) => {
+  selectedProject.value = project
+  showDialog.value = true
+}
 
 const onButton2Click = () => {
-  console.log('Button 2 clicked');
-};
+  console.log('Prompt clicked')
+}
+
+/* ===== Ask for leave（OverlayPanel 实现） ===== */
+const leavePanel = ref(null)
+
+/** 切换弹层显示（基于点击事件做锚点） */
+const toggleLeavePanel = (event) => {
+  leavePanel.value?.toggle(event)
+}
+
+/** 确认请假：接入业务逻辑后关闭弹层 */
+const confirmLeave = () => {
+  console.log('Leave confirmed for project:', selectedProject.value?.title)
+  leavePanel.value?.hide()
+}
+// 表单数据（请假标题 & 详情）
+const leaveTitle = ref('') 
+const leaveDetail = ref('')
+
+/** 提交请假 */
+const submitLeave = () => {
+  // 简单校验，你可按需替换为真实校验/请求
+  if (!leaveTitle.value.trim()) {
+    console.warn('申请理由不能为空')
+    return
+  }
+  console.log('Submit leave:', {
+    project: selectedProject.value?.title,
+    title: leaveTitle.value,
+    detail: leaveDetail.value
+  })
+  // TODO: 调用 API / 写入状态 …
+
+  // 重置并关闭
+  leaveTitle.value = ''
+  leaveDetail.value = ''
+  leavePanel.value?.hide()
+}
 </script>
 
 <style scoped>
@@ -691,5 +779,79 @@ const onButton2Click = () => {
   letter-spacing: 0.5px;
 }
 /* ★ 新增结束 */
+/* 二次弹窗：更大、圆角、上移一点；左右留白相等由 padding 控制 */
+.leave-overlay {
+  background: #fff;
+  padding: 20px 24px;            /* 左右相等的留白 */
+  box-shadow: 0 12px 32px rgba(0,0,0,0.16);
+  transform: translateY(-14px);  /* “上面一点点” */
+  max-width: 720px;              /* 约束最大宽度 */
+}
 
+/* 可选小三角（若不需要删掉本块） */
+.leave-overlay::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 40px;                    /* 让小三角指向按钮中心，可微调 */
+  border-width: 10px 10px 0 10px;
+  border-style: solid;
+  border-color: #fff transparent transparent transparent;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.08));
+}
+
+/* 网格：顶部(auto) / 中部(1fr) / 底部(auto) → Submit 能固定在右下角 */
+.leave-form {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 16px;
+  min-width: 560px;              /* 再大一点 */
+  min-height: 360px;             /* 再高一点，中间更好写 */
+  box-sizing: border-box;
+}
+
+/* 顶部：头像 + 申请理由；垂直中心对齐保证和头像中心并齐 */
+.leave-top {
+  display: grid;
+  grid-template-columns: 56px 1fr;  /* 左头像 56px，右输入自适应 */
+  align-items: center;              /* 关键：与头像中心对齐 */
+  column-gap: 14px;
+}
+
+/* 单行输入高度与头像中心对齐更稳： */
+.leave-title-input :deep(input),
+.leave-title-input input {
+  width: 100%;
+  height: 44px;                    /* 单行固定高，便于对齐头像中心 */
+  line-height: 44px;
+  box-sizing: border-box;
+  border: 1px solid #F2F2F2
+}
+
+/* 中间：详情理由（多行）；宽度 100%，左右留白由 overlay padding 决定=相等 */
+.leave-middle,
+.leave-detail-textarea,
+.leave-detail-textarea :deep(textarea),
+.leave-detail-textarea textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #F2F2F2
+}
+
+/* 底部：Submit 固定在右下角 */
+.leave-bottom {
+  display: flex;
+  justify-content: flex-end;       /* 右对齐 */
+  align-items: center;
+}
+
+/* 可选：让弹窗在更大屏下也显大一些 */
+@media (min-width: 992px) {
+  .leave-form { min-width: 350px; min-height: 260px; }
+}
+/* Vue3 + scoped 写法 */
+:deep(.p-overlaypanel) {
+  border-radius: 999px !important;  /* 超大圆角就会成椭圆气泡了 */
+  overflow: hidden;                 /* 防止内部方角内容溢出 */
+}
 </style>
