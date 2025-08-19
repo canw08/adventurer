@@ -7,7 +7,7 @@
   <label>EXP</label>
   <span class="min-val">{{ expMin }}</span>
   <input
-    class="range exp-range"
+    class="range exp-range pixelated"
     type="range"
     :min="expMin"
     :max="expMax"
@@ -30,7 +30,7 @@
   <label>COINS</label>
   <span class="min-val">{{ coinMin }}</span>
   <input
-    class="range coin-range"
+    class="range coin-range pixelated"
     type="range"
     :min="coinMin"
     :max="coinMax"
@@ -52,8 +52,9 @@
 <div class="award-item">
   <label>HOURS</label>
     <span class="min-val">{{ hoursMin }}</span>
+
       <input
-        class="range hours-range"
+        class="range hours-range pixelated"
         type="range"
         :min="hoursMin"
         :max="hoursMax"
@@ -71,12 +72,10 @@
     <span class="max-val">{{ hoursMax }}</span>
   </div>
 </div>
-
 </template>
 
 <script setup lang="ts">
 import { ref, watch, withDefaults, computed } from 'vue'
-
 const props = withDefaults(defineProps<{
   level?: string                    // 父组件传入的等级；允许空字符串
   exp: number
@@ -220,35 +219,28 @@ function progressStyle(val: number, min: number, max: number) {
   return { background: `linear-gradient(to right, var(--fill) ${pct}%, var(--base) ${pct}%)` }
 }
 
-
 function bubbleStyle(val: number, min: number, max: number) {
-//注意哥们，这里的奇怪的小数，我都不知道是干啥的，如果你读到了这里，且你是一个前端天才，那你帮我改一下吧，我这里的公式是在chat给我生成出来之后，一点一点实验出来的，这个傻逼56.777是这个世界上最傻逼的数字，希望后人能让这里变得更加漂亮么么么
-  const pct = max === min ? 0 : ((val - min) / (max - min)) * 56.777
-  const thumbWidth = 16 // 你的 slider thumb 宽度
+//注意哥们，这里的奇怪的小数，我都不知道是干啥的，如果你读到了这里，且你是一个前端天才，那你帮我改一下吧，我这里的公式是在chat给我生成出来之后，一点一点实验出来的，这个傻逼56是这个世界上最傻逼的数字，希望后人能让这里变得更加漂亮么么么
+  const pct = max === min ? 0 : ((val - min) / (max - min)) * 56
   const sideOffset = 138 // 左边 min 值框固定宽度
-
   return {
     left: `calc(${pct}% + ${sideOffset}px)`
   }
 }
-
 
 </script>
 
 <style scoped>
 /* 基础布局 */
 .award-item { display:flex; align-items:center; gap:10px; width:500px; position: relative; margin-left: 2%; margin-top: 14px; /* 让气泡能绝对定位到轨道 */}
-
 .award-item label {
   width: 50px;            /* 左边 label 固定宽度 */
   text-align: left;
 }
-
 .min-val, .max-val {
   width: 40px;            /* 数字列固定宽度 */
   text-align: center;
 }
-
 .min-val,
 .max-val {
   width: 56px;
@@ -257,7 +249,6 @@ function bubbleStyle(val: number, min: number, max: number) {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum"; /* 数字等宽 */
-  
   background-color: #EAF2FF; /* 浅蓝背景 */
   border: 1px solid #C6D8FF; /* 边框颜色可调整 */
   border-radius: 6px;        /* 圆角 */
@@ -268,29 +259,21 @@ function bubbleStyle(val: number, min: number, max: number) {
 .label { width:56px; color:#333; }
 .range { flex:1;}
 .val { width:80px; text-align:right; }
-
 .range-hint { 
   position: absolute;
-  top: 14px; /* 气泡距离轨道上方的高度 */
-  transform: translateX(-50%); /* 让气泡中心对齐 thumb 中心 */
+  top: 20px; /* 气泡距离轨道上方的高度 */
+  transform: translateX(-45%); /* 让气泡中心对齐 thumb 中心 */
   color: #333;
-  padding: 2px 6px;
-  border-radius: 6px;
   font-size: 12px;
-  white-space: nowrap;
-  pointer-events: none;
-  
 }
-
 /* 禁用态可见性 */
 .range:disabled { opacity: .5; cursor: not-allowed; }
-
 /* 自定义滑杆样式（兼容 WebKit + Firefox） */
 .range {
   appearance: none;
   -webkit-appearance: none;
   height: 16px;
-  border-radius: 8px;
+  border-radius: 10px;
   outline: none;
   cursor: pointer;
   background: var(--base); /* 默认底色，progressStyle 会覆盖成渐变 */
@@ -300,35 +283,68 @@ function bubbleStyle(val: number, min: number, max: number) {
   appearance: none;
   -webkit-appearance: none;
   height: 16px; width: 16px;
-  border-radius: 50%;
   cursor: pointer;
 }
 .range::-moz-range-thumb {
   height: 16px; width: 16px;
-  border-radius: 50%;
   cursor: pointer;
 }
 
-/* 主题色：EXP（#F39536） */
-.exp-range { background: #FFF4EB}
-.exp-range::-webkit-slider-thumb { background: #F39536; }
-.exp-range::-moz-range-thumb      { background: #F39536; }
+.exp-range::-webkit-slider-thumb { 
+  appearance: none;
+  -webkit-appearance: none;
+  height: 24px;
+  width: 24px;
+  border: none;
+  background: url('../assets/icon/exp.png') no-repeat center;
+  background-size: contain;
+  cursor: pointer; }
+.exp-range::-moz-range-thumb      { 
+  height: 24px;
+  width: 24px;
+  border: none;
+  background: url('../assets/icon/exp.png') no-repeat center;
+  background-size: contain;
+  cursor: pointer; }
 
-/* 主题色：coin（#F2D84A） */
-.coin-range { background: #FFFBE6}
-.coin-range::-webkit-slider-thumb { background: #F2D84A; }
-.coin-range::-moz-range-thumb      { background: #F2D84A; }
-
-/* hours：中性配色 */
-.hours-range { background: #F3F4F6}
-.hours-range::-webkit-slider-thumb { background: #64748B; }
-.hours-range::-moz-range-thumb      { background: #64748B; }
-
+.coin-range::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 24px;
+  width: 24px;
+  border: none;
+  background: url('../assets/icon/token.png') no-repeat center;
+  background-size: contain;
+  cursor: pointer; }
+.coin-range::-moz-range-thumb      { 
+  appearance: none;
+  -webkit-appearance: none;
+  height: 24px;
+  width: 24px;
+  border: none;
+  background: url('../assets/icon/token.png') no-repeat center;
+  background-size: contain;
+  cursor: pointer;}
+.hours-range::-webkit-slider-thumb { 
+  appearance: none;
+  -webkit-appearance: none;
+  height: 24px;
+  width: 24px;
+  border: none;
+  background: url('../assets/icon/time.png') no-repeat center;
+  background-size: contain;
+  cursor: pointer;}
+.hours-range::-moz-range-thumb { 
+  height: 24px;
+  width: 24px;
+  border: none;
+  background: url('../assets/icon/time.png') no-repeat center;
+  background-size: contain;
+  cursor: pointer; }
 .choose-size-label {
   font-size: 20px;
   font-weight: 300;
 }
-
 .min-val,
 .max-val,
 .range-hint {
@@ -338,9 +354,18 @@ function bubbleStyle(val: number, min: number, max: number) {
   font-weight: 10bold;
   font-size: 14px;
 }
-
-.exp-range  { --fill: #F39536; --base: #D9D9D9; }
+.exp-range  { --fill: #11AF9B; --base: #D9D9D9; }
 .coin-range { --fill: #F2D84A; --base: #D9D9D9; }
 .hours-range{ --fill: #64748B; --base: #D9D9D9; }
-
+.award-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;          /* 图标和文字的间距 */
+  width: 80px;       /* 给它一个固定宽度，避免错位 */
+}
+.award-icon {
+  width: 20px;       /* 图标大小，可以调 */
+  height: 20px;
+  object-fit: contain;
+}
 </style>

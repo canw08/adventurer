@@ -705,7 +705,6 @@ onMounted(async () => {
   display: flex;
   gap: 18px; /* 按钮之间的间距 */
 }
-
 .custom-btn {
   background-color: #2A2C55 !important; /* 按钮背景色 */
   color: #FFFFFF !important;            /* 字体颜色 */
@@ -737,7 +736,6 @@ onMounted(async () => {
   border-radius: 1px;
   z-index: 10;
 }
-
 .dialog-date {
   display: flex;
   align-items: center;
@@ -747,7 +745,6 @@ onMounted(async () => {
 .dialog-icon {
   margin-right: 8px;
 }
-
 .dialog-author {
   display: flex;
   align-items: center;
@@ -860,7 +857,6 @@ onMounted(async () => {
   font-size:18px;
   padding:12px 44px 12px 12px; /* 右侧留给图标 */
 }
-
 /* 浮动 label 的字型（可选） */
 .task-date-wrapper :deep(label){
   color:#2A3246;
