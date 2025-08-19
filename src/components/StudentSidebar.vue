@@ -32,6 +32,7 @@
       </div>
 
       <h2 class="user-name">{{ userStore.userInfo.nickname || userStore.userInfo.username }}</h2>
+      
       <p class="user-id">ID {{ userStore.userInfo.identifier }}</p>
     </div>
 
@@ -67,7 +68,7 @@
         v-ripple
       >
         <i class="pi pi-book icon"></i>
-        <span class="label-text">Home</span>
+        <span class="label-text">{{ t('sidebar.home') }}</span>
       </div>
       <div
         class="menu-button"
@@ -76,7 +77,7 @@
         v-ripple
       >
         <i class="pi pi-user icon"></i>
-        <span class="label-text">Board</span>
+        <span class="label-text">{{ t('sidebar.board') }}</span>
       </div>
       <div
         class="menu-button"
@@ -84,8 +85,8 @@
         @click="goToTeam"
         v-ripple
       >
-        <i class="pi pi-user icon"></i>
-        <span class="label-text">Team</span>
+        <i class="pi pi-cog icon"></i>
+        <span class="label-text">{{ t('sidebar.settings') }}</span>
       </div>
     </div>
   </div>
@@ -99,7 +100,9 @@ import { useRouter, useRoute } from 'vue-router'
 import 'primeicons/primeicons.css'
 import { onMounted, computed, ref } from 'vue' // 👈 加上 ref
 import { useUserStore } from '../stores/user'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const router = useRouter();
 const route = useRoute();
 const userStore = useUserStore();
