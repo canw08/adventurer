@@ -95,10 +95,10 @@
 </template>
 
 <script setup>
-import Knob from 'primevue/knob'               // 👈 新增
+import Knob from 'primevue/knob'
 import { useRouter, useRoute } from 'vue-router'
 import 'primeicons/primeicons.css'
-import { onMounted, computed, ref } from 'vue' // 👈 加上 ref
+import { onMounted, computed, ref } from 'vue'
 import { useUserStore } from '../stores/user'
 import { useI18n } from 'vue-i18n'
 
@@ -119,19 +119,19 @@ const toggleExp = () => { showExp.value = !showExp.value }
 
 
 const tokenText = computed(() => {
-  const v = userStore?.userInfo?.token ?? userStore?.userInfo?.coins ?? 0;
+  const v = userStore?.userInfo?.tokens ?? 0;
   return `${v} ₷` ;
 });
 const timeText = computed(() => {
-  const hours = userStore?.userInfo?.hours ?? userStore?.userInfo?.time ?? 0;
+  const hours = userStore?.userInfo?.volunteerTime ?? 0;
   return `${hours} h`;
 });
 
 const currentExp = computed(() =>
-  Number(userStore?.userInfo?.exp ?? userStore?.userInfo?.token ?? userStore?.userInfo?.coins ?? 500)
+  Number(userStore?.userInfo?.experience ?? 200 - userStore?.userInfo?.current_level_xp ?? 100)
 )
 const nextExp = computed(() =>
-  Math.max(1, Number(userStore?.userInfo?.expNext ?? 1000)) // 防止除零
+  Math.max(1, Number(userStore?.userInfo?.next_level_xp ?? 1000) - userStore?.userInfo?.current_level_xp ?? 100) // 防止除零
 )
 
 const percent = computed(() => {
@@ -218,7 +218,7 @@ onMounted(async () => {
 .menu-button.active { background-color: #2a2c56; color: #fff; }
 
 .icon { margin-right: 30px; font-size: 1.2em; }
-.label-text { transform: translateY(-3px); display: inline-block; font-size: 20.5px; }
+.label-text { transform: translateY(-1px); display: inline-block; font-size: 20.5px; }
 
 .avatar-img {
   width: 96px;

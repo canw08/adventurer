@@ -160,24 +160,27 @@
         <div class="dialog-vertical-divider"></div>
 
        <!-- 右侧占位区域（25%） -->
-<div class="dialog-right-section">
-  <!-- 为浮动的 Level 预留等高空间，保证与第一条进度条的距离 = 进度条间距 -->
-  <div class="right-level-spacer" aria-hidden="true">
-    Level {{ selectedProject?.level || '' }}
-  </div>
+        <div class="dialog-right-section">
+          <!-- 为浮动的 Level 预留等高空间，保证与第一条进度条的距离 = 进度条间距 -->
+          <div class="right-level-spacer" aria-hidden="true">
+            Level {{ selectedProject?.level || '' }}
+          </div>
 
-  <!-- 纵向 3 条进度条：EXP / Coin / Hour（显示具体数值） -->
-  <div class="right-metrics">
-    <div v-for="m in metricsBound" :key="m.key" class="metric-item">
-      <div class="metric-label">{{ m.label }}</div>
-
-      <!-- 进度用百分比驱动，内部插槽显示具体数值 -->
-      <ProgressBar :value="m.pct" class="metric-bar">
-        <span class="metric-text">{{ m.raw }}{{ m.unit }}</span>
-      </ProgressBar>
-    </div>
-  </div>
-</div>
+          <!-- 纵向 3 条进度条：EXP / Coin / Hour（显示具体数值） -->
+          <div class="right-metrics">
+            <div v-for="m in metricsBound" :key="m.key" class="metric-item">
+              <!-- 上行：icon + 进度条 -->
+              <div class="metric-row">
+                <img :src="m.icon" alt="" class="metric-icon pixelated click-wiggle" />
+                <ProgressBar :value="m.pct" class="metric-bar" :style="{ height: '28px','--bar-color': m.color }">
+                  <span class="metric-text">{{ m.raw }}{{ m.unit }}</span>
+                </ProgressBar>
+              </div>
+              <!-- 下行：label -->
+              <div class="metric-label">{{ m.label }}</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- 接任务按钮（固定右下角） -->
@@ -428,9 +431,9 @@ const toNumber = (v) => {
 
 // 统一的上限与单位（可按业务调整）
 const METRIC_DEFS = [
-  { key: 'exp',  label: 'EXP',  max: 500, unit: ''  },
-  { key: 'coin', label: 'Coin', max: 100, unit: ''  },
-  { key: 'hour', label: 'Hour', max: 10,  unit: 'h' },
+  { key: 'exp',  label: 'EXP',  max: 500, unit: '', icon: new URL('../../assets/icon/exp.png', import.meta.url).href, color: '#F58B40'},
+  { key: 'coin', label: 'Coin', max: 100, unit: '', icon: new URL('../../assets/icon/token.png', import.meta.url).href , color: '#FBE838'},
+  { key: 'hour', label: 'Hour', max: 10,  unit: 'h', icon: new URL('../../assets/icon/time.png', import.meta.url).href , color: '#65D6ef'},
 ];
 
 // 计算：为模板提供 { key,label,raw,max,unit,pct }（pct 仅用于进度条宽度）
@@ -834,16 +837,18 @@ const metricsBound = computed(() => {
   position: relative;
 }
 
+
 /* 分隔线（与 75% 对齐） */
 .dialog-vertical-divider {
   position: absolute;
-  top: 0;
-  bottom: 0;
+  top: 0px;
+  bottom: 0px;
   left: 75%;
   width: 1px;
   background-color: #ccc;
   border-radius: 1px;
   z-index: 10;
+  height: 100%; 
 }
 
 /* =========================
@@ -1050,43 +1055,70 @@ const metricsBound = computed(() => {
   display: flex;
   flex-direction: column;
   gap: var(--metric-gap);     /* 三条之间的间距 */
-  margin-top: var(--metric-gap); /* 与 Level 的距离，= gap */
+  margin-top: -45px; /* 与 Level 的距离，= gap */
 }
+.metric-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #FFf;
+}
+.pixelated {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  image-rendering: -moz-crisp-edges;
+  -ms-interpolation-mode: nearest-neighbor; /* legacy IE */
+}
+
 .metric-item {
   display: flex;
-  flex-direction: column;
-  gap: 6px;                   /* 标签与条之间的小间距 */
+  flex-direction: column;   /* 上下布局：第一行 icon+bar，第二行 label */
+  gap: 4px;
 }
+
+.metric-row {
+  display: flex;
+  align-items: center;
+  gap: 0px;                 /* icon 和 bar 的距离 */
+}
+
+.metric-icon {
+  width: 45px;
+  height: 45px;
+  flex-shrink: 0;           /* 图标固定大小，不会被压缩 */
+  margin-right: -18px;
+  z-index: 2;
+}
+
+.metric-bar {
+  flex: 1;                  /* 占满剩余空间 */
+  z-index: 1;
+}
+
 .metric-label {
+  text-align: left;       /* label 居中到 icon 下方 */
   font-size: 13px;
-  color: #5a6275;
   font-weight: 600;
+  margin-left: 10px;
+  color: #5a6275;
 }
 .metric-bar :deep(.p-progressbar) {
-  height: 14px;
+  height: 24px;             /* 改这里就能调整高度 */
   border-radius: 999px;
   overflow: hidden;
   background: #eef2fb;
 }
+
 .metric-bar :deep(.p-progressbar-value) {
-  /* 保持主题色；需要固定色可解注释： */
-  /* background: #3f5aa8 !important; */
   border-radius: 999px;
+  background-color: var(--bar-color, #3b82f6); /* 默认蓝色 */
 }
-.metric-bar :deep(.p-progressbar-label) {
-  font-size: 12px;
-  font-weight: 600;
-  color: #1e1e1e;
-}
-/* 让插槽里的数字在进度条中居中显示，并设置文字样式 */
+
+/* 内容居中即可，不要再设高度覆盖 */
 .metric-bar :deep(.p-progressbar .p-progressbar-content) {
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.metric-text {
-  font-size: 12px;
-  font-weight: 600;
-  color: #1e1e1e;
-}
+
+
 </style>
