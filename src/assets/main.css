@@ -1,0 +1,29 @@
+/* ======================
+   通用点击晃动效果
+   ====================== */
+
+/* 普通元素：点击轻微左右旋转 */
+.click-wiggle:active {
+  animation: wiggle 0.25s ease;
+}
+
+@keyframes wiggle {
+  0%   { transform: rotate(0deg); }
+  25%  { transform: rotate(-12deg); }
+  50%  { transform: rotate(10deg); }
+  75%  { transform: rotate(-6deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* 像你的 .stat-icon 这种有 translateY(-50%) 定位的 */
+.click-wiggle-y50:active {
+  animation: wiggleY50 0.25s ease;
+}
+
+@keyframes wiggleY50 {
+  0%   { transform: translateY(-50%) rotate(0deg); }
+  25%  { transform: translateY(-50%) rotate(-12deg); }
+  50%  { transform: translateY(-50%) rotate(10deg); }
+  75%  { transform: translateY(-50%) rotate(-6deg); }
+  100% { transform: translateY(-50%) rotate(0deg); }
+}

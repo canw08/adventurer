@@ -12,6 +12,7 @@ import Ripple from 'primevue/ripple'
 import { createPinia } from 'pinia';
 import { i18n } from './i18n'
 import ConfirmationService from 'primevue/confirmationservice'
+import './assets/main.css'
 
 
 const pinia = createPinia();

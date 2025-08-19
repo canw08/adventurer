@@ -42,7 +42,7 @@
         <!-- 像素png：加 pixelated 类 + 整数倍 32x32 -->
 
         <div class="stat-carpet">
-          <img :src="tokenIcon" alt="token" class="stat-icon pixelated" />
+          <img :src="tokenIcon" alt="token" class="stat-icon pixelated click-wiggle-y50" />
           <!-- carpet 是矢量/平滑背景，不用像素化 -->
           <img :src="carpetImgA" alt="" class="carpet-img pixelated" />
           <span class="stat-text">{{ tokenText }}</span>
@@ -52,7 +52,7 @@
       <!-- 时间 -->
       <div class="stat-pill" v-ripple>
         <div class="stat-carpet">
-          <img :src="timeIcon" alt="time" class="stat-icon pixelated stat-icon-time" />
+          <img :src="timeIcon" alt="time" class="stat-icon pixelated stat-icon-time click-wiggle-y50" />
           <img :src="carpetImgB" alt="" class="carpet-img pixelated" />
           <span class="stat-text">{{ timeText }}</span>
         </div>
@@ -256,7 +256,7 @@ onMounted(async () => {
   width: 32px;
   height: 32px;
   z-index: 2;                  /* 在carpet之上 */
-  margin-left: 3px
+  margin-left: 3px;
 }
 
 /* 像素化：最近邻缩放（现代浏览器）+ 兼容项 */
@@ -370,7 +370,4 @@ onMounted(async () => {
   opacity: 0;
   transform: translate(-50%, -6px);
 }
-
-
-
 </style>
