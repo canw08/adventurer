@@ -1,5 +1,5 @@
 <template>
-  <!-- 右侧 -->
+  <!-- 右侧主容器 -->
   <div class="main-content">
     <!-- 顶部栏 -->
     <div class="main-header">
@@ -7,12 +7,14 @@
         <span class="header-left">Quest Board</span>
         <div class="vertical-divider"></div>
       </div>
+      <!-- 公告组件（保持原有交互与样式） -->
       <AnnouncementPanel />
     </div>
 
     <!-- 次级标题与筛选按钮 -->
     <div class="main-subheader">
       <span class="greeting">Good morning, adventurer</span>
+
       <div class="filter-buttons-wrapper small-toggle">
         <div class="fake-select-wrapper">
           <Button
@@ -25,8 +27,9 @@
       </div>
     </div>
 
-    <!-- ✅ 卡片区域容器（分页器将相对它的底部居中） -->
+    <!-- ✅ 卡片区域容器（分页器固定在该容器的右下角） -->
     <div class="main-body">
+      <!-- 背景层 -->
       <div class="card-background"></div>
 
       <!-- 卡片网格 -->
@@ -40,31 +43,31 @@
         >
           <!-- 上部图文 -->
           <div class="task-main-content">
+            <!-- 左侧文本 -->
             <div class="task-left">
               <h3 class="task-title">{{ project.title }}</h3>
+
               <div class="task-time">
                 <i class="pi pi-clock"></i>
                 <span>{{ project.date }}</span>
               </div>
+
               <div class="task-exp">{{ project.exp || 'N/A' }}</div>
             </div>
 
-            <!-- 右侧图片（assigned 状态下会通过 CSS 隐藏） -->
+            <!-- 右侧图片（assigned 状态通过 CSS 隐藏） -->
             <div class="task-right">
               <img :src="project.image" alt="Project Image" class="task-image" />
             </div>
           </div>
 
+          <!-- 分割线 -->
           <div class="task-divider"></div>
 
           <!-- 底部头像与等级 -->
           <div class="task-footer">
             <div class="avatar-wrapper">
-              <Avatar
-                :image="project.avatar"
-                shape="circle"
-                style="width: 40px; height: 40px"
-              />
+              <Avatar :image="project.avatar" shape="circle" style="width: 40px; height: 40px" />
               <span class="avatar-name">{{ project.author }}</span>
             </div>
             <span class="task-level">Level {{ project.level }}</span>
@@ -72,13 +75,13 @@
         </div>
       </div>
 
-      <!-- ✅ 分页器容器：相对 .main-body 绝对定位，底部居中 -->
+      <!-- ✅ 分页器容器（固定在右下角） -->
       <div class="fixed-footer-wrapper">
         <Paginator
           :rows="rowsPerPage"
           :totalRecords="filteredProjects.length"
           :first="currentPage * rowsPerPage"
-          @page="(e) => currentPage = e.page"
+          @page="(e) => (currentPage = e.page)"
           style="background-color: white; border-radius: 12px; padding: 4px 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);"
         />
       </div>
@@ -107,112 +110,119 @@
             />
           </div>
 
-          <!-- 中间标题 -->
+          <!-- 中间标题 + 时间 -->
           <div class="dialog-header-center">
             <span class="dialog-title">{{ selectedProject?.title || '' }}</span>
+            <span class="dialog-date-inline">
+              <i class="pi pi-clock"></i>
+              {{ selectedProject?.date }}
+            </span>
           </div>
 
-          <!-- 浮动右上角的等级标签（仅显示，不可交互） -->
+          <!-- 浮动右上角的等级标签（只显示） -->
           <div class="floating-dialog-level">
             Level {{ selectedProject?.level || '' }}
           </div>
         </div>
       </template>
 
-      <!-- 弹窗主体内容区域 -->
+      <!-- 弹窗主体内容 -->
       <div class="dialog-content-wrapper">
-        <!-- 左侧内容区域 -->
+        <!-- 左侧内容区域（75%） -->
         <div class="dialog-left-section">
-          <div class="dialog-date">
-            <i class="pi pi-clock dialog-icon"></i>
-            <span>{{ selectedProject?.date }}</span>
-          </div>
-
+          <!-- ✅ ID（author name）与左边框的对齐：依赖 --rail -->
           <div class="dialog-author">
             <Avatar
               image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
               shape="circle"
               size="large"
               style="width: 40px; height: 40px"
+              aria-label="Author Avatar"
             />
             <span class="author-name">{{ selectedProject?.author }}</span>
           </div>
 
+          <!-- ✅ 描述与左边框的对齐：同样依赖 --rail；不包含头像 -->
           <div class="dialog-description-row">
-            <div class="fake-avatar-space"></div>
             <p class="dialog-description">
               {{ selectedProject?.description || '无任务说明' }}
             </p>
           </div>
 
-          <div class="dialog-images">
-            <div class="image-placeholder"></div>
-            <div class="image-placeholder"></div>
+          <!-- ✅ 图片组与左边框的对齐：同样依赖 --rail -->
+          <div class="dialog-images" role="group" aria-label="Project Images">
+            <div class="image-placeholder" aria-hidden="true"></div>
+            <div class="image-placeholder" aria-hidden="true"></div>
           </div>
         </div>
 
-        <!-- 分隔线 -->
+        <!-- 分隔线（对齐 75%） -->
         <div class="dialog-vertical-divider"></div>
 
-        <!-- 右侧区域（留空占位，后续可扩展） -->
-        <div class="dialog-right-section"></div>
+       <!-- 右侧占位区域（25%） -->
+<div class="dialog-right-section">
+  <!-- 为浮动的 Level 预留等高空间，保证与第一条进度条的距离 = 进度条间距 -->
+  <div class="right-level-spacer" aria-hidden="true">
+    Level {{ selectedProject?.level || '' }}
+  </div>
+
+  <!-- 纵向 3 条进度条：EXP / Coin / Hour（显示具体数值） -->
+  <div class="right-metrics">
+    <div v-for="m in metricsBound" :key="m.key" class="metric-item">
+      <div class="metric-label">{{ m.label }}</div>
+
+      <!-- 进度用百分比驱动，内部插槽显示具体数值 -->
+      <ProgressBar :value="m.pct" class="metric-bar">
+        <span class="metric-text">{{ m.raw }}{{ m.unit }}</span>
+      </ProgressBar>
+    </div>
+  </div>
+</div>
       </div>
 
-      <!-- 接任务按钮（保持在 content 外层，绝对定位，不占高度） -->
+      <!-- 接任务按钮（固定右下角） -->
       <div class="absolute-accept-button">
         <Button label="Accept" class="custom-btn" />
       </div>
     </Dialog>
 
-    <!-- ✅ 筛选弹窗（不包含 assigned，assigned 作为 ongoing 的分支） -->
-<Dialog
-  v-model:visible="showFilterDialog"
-  modal
-  dismissableMask
-  header="Filter Tasks"
-  class="filter-dialog"
-  appendTo="self"
-  :style="{ width: '1100px', height: '700px', position: 'relative' }"
->
-  <!-- ⛔️ 移除原来的 “Task Status” 那一行文本 -->
-
-  <!-- 状态切换：按钮文字离左右边框 10px -->
-  <div class="filter-section">
-    <div class="status-toggle-wrap">
-    <SelectButton
-      v-model="tempTab"
-      :options="['ongoing', 'completed']"
-      class="status-toggle"
-    />
-  </div>
-</div>
-  <!-- 新增：Choose level，多选样式与截图一致 -->
-  <div class="filter-section level-section">
-    <div class="level-label">Choose level</div>
-    <div class="level-row">
-      <div
-        v-for="opt in levelOptions"
-        :key="opt.value"
-        class="level-item"
-      >
-        <!-- PrimeVue Checkbox 多选 -->
-        <Checkbox
-          v-model="tempLevels"
-          :inputId="'lvl-' + opt.value"
-          :value="opt.value"
-        />
-        <label class="level-text" :for="'lvl-' + opt.value">
-          {{ opt.label }}
-        </label>
+    <!-- ✅ 筛选弹窗 -->
+    <Dialog
+      v-model:visible="showFilterDialog"
+      modal
+      dismissableMask
+      header="Filter Tasks"
+      class="filter-dialog"
+      appendTo="self"
+      :style="{ width: '1100px', height: '700px', position: 'relative' }"
+    >
+      <!-- 状态切换（ongoing/completed） -->
+      <div class="filter-section">
+        <div class="status-toggle-wrap">
+          <SelectButton
+            v-model="tempTab"
+            :options="['ongoing', 'completed']"
+            class="status-toggle"
+          />
+        </div>
       </div>
-    </div>
-  </div>
 
-  <!-- 应用按钮（保持你原有绝对定位不变） -->
-  <div class="absolute-apply-button">
-    <Button label="confirm" @click="confirmFilter" class="apply-button" />
-  </div>
-</Dialog>
+      <!-- Level 多选 -->
+      <div class="filter-section level-section">
+        <div class="level-label">Choose level</div>
+        <div class="level-row">
+          <div v-for="opt in levelOptions" :key="opt.value" class="level-item">
+            <Checkbox v-model="tempLevels" :inputId="'lvl-' + opt.value" :value="opt.value" />
+            <label class="level-text" :for="'lvl-' + opt.value">{{ opt.label }}</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- 确认应用 -->
+      <div class="absolute-apply-button">
+        <Button label="confirm" @click="confirmFilter" class="apply-button" />
+      </div>
+    </Dialog>
   </div>
 </template>
 
@@ -222,36 +232,33 @@ meta:
 </route>
 
 <script setup>
-
+/**
+ * 逻辑区块顺序：
+ * 1) imports
+ * 2) 弹窗/筛选的响应式状态
+ * 3) 数据源
+ * 4) 过滤 & 分页（computed）
+ * 5) 方法（open/confirm 等）
+ * 6) 监听（watch）
+ */
 import { ref, computed, watch } from 'vue';
-import { useRouter } from 'vue-router';
 
 import Avatar from 'primevue/avatar';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
 import Checkbox from 'primevue/checkbox';
 import SelectButton from 'primevue/selectbutton';
+import Paginator from 'primevue/paginator';
+import ProgressBar from 'primevue/progressbar';
 
 import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue';
 
-/* -------------------- 路由 -------------------- */
-const router = useRouter();
-const goToProfile = () => router.push('/student/task');
-
-/* -------------------- 任务弹窗 -------------------- */
+/* -------------------- 任务弹窗状态 -------------------- */
 const showDialog = ref(false);
 const selectedProject = ref(null);
 const openProjectDialog = (project) => {
   selectedProject.value = project;
   showDialog.value = true;
-};
-
-/* -------------------- 顶部公告（保持与模板兼容） -------------------- */
-const op = ref(null);
-const unreadCount = ref(2);
-const togglePanel = (event) => {
-  op.value?.toggle(event);
-  unreadCount.value = 0;
 };
 
 /* -------------------- 数据源（演示） -------------------- */
@@ -263,6 +270,8 @@ const allProjects = [
     status: 'ongoing',
     image: 'https://picsum.photos/seed/cat/400/200',
     exp: '300 exp',
+    coin: '60',
+    hour: '2', 
     level: 'E',
     avatar: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
     author: 'Amy Elsner',
@@ -275,6 +284,8 @@ const allProjects = [
     status: 'ongoing',
     image: 'https://picsum.photos/seed/book/400/200',
     exp: '400 exp',
+    coin: '60',
+    hour: '2', 
     level: 'C',
     avatar: 'https://primefaces.org/cdn/primevue/images/avatar/onyamalimba.png',
     author: 'Onya Malimba',
@@ -287,6 +298,8 @@ const allProjects = [
     status: 'completed',
     image: 'https://picsum.photos/seed/school/400/200',
     exp: '250 exp',
+    coin: '60',
+    hour: '2', 
     level: 'D',
     avatar: 'https://primefaces.org/cdn/primevue/images/avatar/ivanmagalhaes.png',
     author: 'Ivan Magalhaes',
@@ -299,6 +312,8 @@ const allProjects = [
     status: 'assigned',
     image: 'https://picsum.photos/seed/poster/400/200',
     exp: '350 exp',
+    coin: '60',
+    hour: '2', 
     level: 'B',
     avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
     author: 'Xu Xuefeng',
@@ -311,6 +326,8 @@ const allProjects = [
     status: 'ongoing',
     image: 'https://picsum.photos/seed/poster/400/200',
     exp: '350 exp',
+    coin: '60',
+    hour: '2', 
     level: 'B',
     avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
     author: 'Xu Xuefeng',
@@ -323,33 +340,33 @@ const allProjects = [
     status: 'ongoing',
     image: 'https://picsum.photos/seed/poster/400/200',
     exp: '350 exp',
+    coin: '60',
+    hour: '2', 
     level: 'B',
     avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
     author: 'Xu Xuefeng',
     description: '设计艺术节宣传海报，预计工作时间3小时，需要2位同学合作完成',
   },
   {
-    // 避免 v-for key 冲突：你的原始数据里 id:5 重复，这里改为 7
     id: 7,
     title: 'Design Posters for Art Festival',
     date: '15 August, 2025',
     status: 'ongoing',
     image: 'https://picsum.photos/seed/poster/400/200',
     exp: '350 exp',
+    coin: '60',
+    hour: '2', 
     level: 'B',
     avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
     author: 'Xu Xuefeng',
     description: '设计艺术节宣传海报，预计工作时间3小时，需要2位同学合作完成',
-  }
+  },
 ];
 
-/* -------------------- 状态切换（ongoing/completed） -------------------- */
-const activeTab = ref('ongoing');      // 实际生效的状态
-const tabOptions = ref(['ongoing', 'completed']); // 备用
-const showFilterDialog = ref(false);   // Filter 弹窗显隐
-const tempTab = ref(activeTab.value);  // 弹窗内的临时状态选择
-
-/* -------------------- Level 多选筛选 -------------------- */
+/* -------------------- 筛选状态（ongoing/completed + level 多选） -------------------- */
+const activeTab = ref('ongoing');          // 生效状态
+const showFilterDialog = ref(false);       // Filter 弹窗显隐
+const tempTab = ref(activeTab.value);      // 弹窗临时状态
 const levelOptions = [
   { label: 'Level F', value: 'F' },
   { label: 'Level E', value: 'E' },
@@ -361,23 +378,20 @@ const levelOptions = [
   { label: 'Level S*', value: 'S*' },
 ];
 const selectedLevels = ref([]); // 生效中的 level 集合
-const tempLevels = ref([]);     // 弹窗内的临时 level 选择
+const tempLevels = ref([]);     // 弹窗内临时 level 集合
 
 /* -------------------- 过滤 + 分页 -------------------- */
-// 先按状态过滤（ongoing 时包含 assigned），再按 level 过滤
+// ongoing 时包含 assigned
 const filteredProjects = computed(() => {
   const statusFiltered = allProjects.filter(
     (p) =>
       p.status === activeTab.value ||
-      (activeTab.value === 'ongoing' && p.status === 'assigned')
+      (activeTab.value === 'ongoing' && p.status === 'assigned'),
   );
-  if (!selectedLevels.value || selectedLevels.value.length === 0) {
-    return statusFiltered;
-  }
+  if (!selectedLevels.value?.length) return statusFiltered;
   return statusFiltered.filter((p) => selectedLevels.value.includes(p.level));
 });
 
-// 分页
 const currentPage = ref(0);
 const rowsPerPage = 4;
 const paginatedProjects = computed(() => {
@@ -385,86 +399,56 @@ const paginatedProjects = computed(() => {
   return filteredProjects.value.slice(start, start + rowsPerPage);
 });
 
+/* -------------------- 方法 -------------------- */
+const applyFilter = () => {
+  activeTab.value = tempTab.value;
+  selectedLevels.value = [...tempLevels.value];
+  showFilterDialog.value = false;
+  currentPage.value = 0; // 重置到第一页
+};
+const confirmFilter = () => applyFilter();
+
+/* -------------------- 监听 -------------------- */
 watch(showFilterDialog, (v) => {
   if (v) {
     tempTab.value = activeTab.value;
     tempLevels.value = [...selectedLevels.value];
   }
 });
-/* -------------------- 应用筛选（弹窗 Apply） -------------------- */
-const applyFilter = () => {
-  activeTab.value = tempTab.value;              // 应用状态
-  selectedLevels.value = [...tempLevels.value]; // 应用 level
-  showFilterDialog.value = false;
-  currentPage.value = 0;                        // 重置到第一页
+
+// 提取数字：'400 exp' -> 400；数字则原样返回
+const toNumber = (v) => {
+  if (typeof v === 'number') return v;
+  if (typeof v === 'string') {
+    const m = v.match(/[\d.]+/);
+    return m ? Number(m[0]) : 0;
+  }
+  return 0;
 };
-const confirmFilter = () => {
-  applyFilter();
-};
+
+// 统一的上限与单位（可按业务调整）
+const METRIC_DEFS = [
+  { key: 'exp',  label: 'EXP',  max: 500, unit: ''  },
+  { key: 'coin', label: 'Coin', max: 100, unit: ''  },
+  { key: 'hour', label: 'Hour', max: 10,  unit: 'h' },
+];
+
+// 计算：为模板提供 { key,label,raw,max,unit,pct }（pct 仅用于进度条宽度）
+const metricsBound = computed(() => {
+  const p = selectedProject.value || {};
+  return METRIC_DEFS.map(def => {
+    const raw = toNumber(p?.[def.key] ?? 0);
+    const pct = def.max > 0 ? Math.max(0, Math.min(100, Math.round((raw / def.max) * 100))) : 0;
+    return { ...def, raw, pct };
+  });
+});
+
 </script>
 
 <style scoped>
-/* 全局布局 */
-.layout-container {
-  display: flex;
-  height: 100vh;
-  background-color: #ffffff;
-  font-family: 'Segoe UI', sans-serif;
-}
-
-.sidebar {
-  width: 300px;
-  background-color: #f3f7fe;
-  color: #333;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 32px 16px;
-  border-right: 1px solid #e3eaf5;
-}
-
-.profile-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 32px;
-}
-
-.user-id {
-  background-color: #e6e6e6;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 14px;
-  color: #333;
-}
-
-.menu-list {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-top: 24px;
-}
-
-.menu-button {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 16px;
-  font-size: 18px;
-  font-weight: 600;
-  border-radius: 14px;
-  background-color: #e3eaf5;
-  color: #1e1e1e;
-}
-
-.menu-button.active {
-  background-color: #2A2C56;
-  color: white;
-}
-
-/* 右侧内容 */
+/* =========================
+   布局与头部
+   ========================= */
 .main-content {
   flex: 1;
   padding: 4px 48px;
@@ -478,8 +462,7 @@ const confirmFilter = () => {
   justify-content: space-between;
   align-items: center;
   border-bottom: 2px solid #d5dbe5;
-  padding-bottom: 4px;
-  padding-top: 4px;
+  padding: 4px 0;
   height: 64px;
 }
 
@@ -501,476 +484,23 @@ const confirmFilter = () => {
   background-color: #e1e8f5;
 }
 
-.header-right {
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-/* 通知 */
-.bell-right-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.notification-wrapper {
-  position: relative;
-  cursor: pointer;
-  padding: 16px;
-}
-
-.notify-bell .p-button-icon {
-  font-size: 48px;
-  color: black;
-}
-
-.notification-badge {
-  position: absolute;
-  top: 2px;
-  right: 0px;
-  background-color: red;
-  color: white;
-  font-size: 12px;
-  font-weight: bold;
-  border-radius: 50%;
-  padding: 2px 6px;
-  min-width: 20px;
-  text-align: center;
-  line-height: 1.3;
-}
-
-.announcement-panel {
-  width: 300px;
-  background-color: #fffefc;
-  padding: 16px;
-  border-radius: 12px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-}
-
-.panel-title {
-  font-weight: bold;
-  margin-bottom: 12px;
-  font-size: 16px;
-}
-
-.announcement-list li {
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px dashed #ddd;
-}
-
-.announcement-date {
-  font-size: 13px;
-  color: #888;
-  margin-bottom: 4px;
-}
-
-.announcement-content {
-  font-size: 14px;
-  color: #333;
-}
 .main-subheader {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin: 4px 0;
-  padding: 0;
   min-height: 40px;
 }
+
 .greeting {
   font-style: italic;
   font-size: 18px;
   color: #333;
 }
 
-.tab-toggle ::v-deep(.p-button) {
-  padding: 6px 16px;
-  font-size: 14px;
-  border-radius: 0;
-}
-.tab-toggle ::v-deep(.p-highlight) {
-  background-color: #304ffe;
-  color: white;
-}
-
-/* 主体卡片区域 */
-
-.main-body {
-  position: relative;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid #e4eaf4;
-}
-.card-background {
-  position: absolute;
-  top: 0; bottom: 0; left: 0; right: 0;
-  background-color: #f3f7fe;
-  border-radius: 12px;
-  z-index: 0;
-}
-.grid-container {
-  position: relative;
-  z-index: 1;
-  display: grid;
- grid-template-columns: repeat(2, 1fr);
-  gap: 40px;
-  padding: 40px;
-}
-.author-name {
-  font-weight: 500;
-  font-size: 20px;
-}
-
-/* task-card 样式用于 projects */
-
-.task-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
-}
-.task-title {
-  font-size: 18px;
-  font-weight: bold;
-  margin: 0 0 4px 0;
-  text-align: left;
-  width: 100%;
-}
-.task-time {
-  color: #888; 
-  font-size: 14px;
-  margin-bottom: 4px;
-  text-align: left; 
-  width: 100%; 
-  display: flex; 
-  align-items: center; 
-  gap: 8px; 
-}
-.task-exp {
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); 
-  font-size: 16px; 
-  font-weight: bold;
-  margin-bottom: 8px;
-  text-align: left;
-  width: 100%;
-   color: #81A0EF !important;               /* exp 填充色 */
-  -webkit-text-stroke: 1px #3A494D;
-}
-.task-teamwork {
-  width: 100%; 
-  border-bottom: 1px solid #ddd; 
-  padding-bottom: 8px; 
-  margin-bottom: 8px; 
-}
-.task-teamwork-image {
-  display: block;  
-  width: calc(100% - 32px); 
-  height: auto;  
-  margin: 0 auto;
-  border-radius: 8px;  
-  object-fit: cover;
-}
-
-.task-level {
-  font-weight: bold;
-  font-size: 22px;
-  text-align: right;
-  color: #C3F9E6 !important;                /* level 填充色 */
-  -webkit-text-stroke: 1px #1BA5BF;
-}
-/* ✅ 横向卡片整体结构 */
-.task-card {
-  display: flex;
-  flex-direction: column;
-  height: auto;
-  padding: 16px;
-  padding-top: 16px;      /* 保持原上边距 */
-  padding-bottom: 8px;
-  background-color: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
-  gap: 12px;
-  overflow: hidden;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.task-main-content {
-  display: flex;
-  flex: 5;
-  flex-direction: row;
-  gap: 16px;
-}
-.task-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex: 1;
-  margin-top: 0px;
-  padding: 0px 0;
-}
-/* 分割线以下区域整体居中对齐 */
-.task-footer {
-  flex: 1;                          /* 占满剩余高度 */
-  display: flex;
-  justify-content: space-between;   /* 左右分布：左边头像/名字，右边等级 */
-  align-items: center;              /* 垂直居中 */
-  margin-top: 0;                    /* 去掉多余间距 */
-  padding: 0px 0;                   /* 左右留点内边距 */
-  box-sizing: border-box;
-}
-.task-divider {
-  width: 100%;
-  height: 1px;
-  background-color: #e1e8f5;
-  margin-top: 0px;
-  margin-bottom: 4px;
-}
-
-.task-left,
-.task-right {
-  width: 50%;
-  height: 100%;
-  box-sizing: border-box;
-}
-.task-left {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  overflow: hidden;
-  overflow-wrap: break-word;
-}
-.task-right {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding-top: 6px; 
-  padding-bottom: 6px;
-}
-.task-image {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-  border-radius: 8px;
-}
-
-#testDiv {
-  width: 100%;
-  word-wrap: break-word;
-  word-break: break-all;
-  overflow: hidden;
-}
-
-.dialog-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-:deep(.p-dialog-title) {
-  font-size: 100px;
-  color: #333;
-  font-weight: bold;
-}
-
-.dialog-level {
-  color: #2F80ED;
-  font-weight: bold;
-}
-.dialog-date {
-  display: flex;
-  align-items: center;
-  color: #666;
-  margin-bottom: 16px;
-}
-.dialog-icon {
-  margin-right: 8px;
-}
-.dialog-author {
-  display: flex;
-  align-items: center;
-  margin-bottom: 16px;
-  gap: 8px;
-}
-.dialog-description {
-  color: #666;
-  font-size: 16px;
-  line-height: 1.5;
-  margin-bottom: 16px;
-}
-/* 图片区域就是你左侧最后一块：不要底部外边距 */
-.dialog-images {
-  display: flex;
-  flex-direction: row;     /* 横向排列 */
-  gap: 16px;               /* 图片之间的水平间距 */
-  margin-top: 12px;        /* 跟上面内容分开一点 */
-  margin-bottom: 0 !important; 
-}
-.image-placeholder {
-  width: 240px;
-  height: 160px;
-  background-color: #e0e0e0;
-  border-radius: 12px;
-  flex-shrink: 0;
-  object-fit: cover;
-}
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-}
-.dialog-custom-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 16px;
-}
-
-.dialog-back-button {
-  font-size: 18px;
-  color: #333;
-}
-
-.dialog-title {
-  font-size: 30px;
-  font-weight: bold;
-  color: #1e1e1e;
-}
-
-:deep(.p-dialog-mask.p-component-overlay) {
-  backdrop-filter: blur(6px); /* 背景模糊 */
-  background-color: rgba(0, 0, 0, 0.2); /* 带轻微暗色 */
-  transition: all 0.3s ease;
-}
-
-/* ✅ 保持分割线上下分别 48px，不受按钮影响 */
-.dialog-vertical-divider {
-  position: absolute;
-  top: 0px;
-  bottom: 0px;
-  left: 75%;
-  width: 1px;
-  background-color: #ccc;
-  border-radius: 1px;
-  z-index: 10;
-}
-
-/* 占满内容区高度，不滚动；去掉底部内边距 */
-/* 2) 与 home 保持一致的内容留白（关键！）*/
-.dialog-content-wrapper {
-  position: relative;               /* 作为分割线的定位上下文 */
-  display: flex;
-  gap: 24px;
-  padding: 4px 24px 24px 24px;      /* ← 与 home 保持一致的 padding */
-  min-height: 0;
-  height: 100%;
-  box-sizing: border-box;
-}
-
-.fixed-accept-button {
-  position: absolute;
-  right: 24px;
-  bottom: 24px;
-}
-:deep(.p-dialog) {
-  height: 100%;
-}
-/* ✅ 任务详情弹窗内容区样式 */
-.project-dialog :deep(.p-dialog-content) {
-  /* PrimeVue 默认 padding 会和 wrapper 叠加，这里清掉 */
-  padding: 0 !important;
-  /* 保证布局灵活 */
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-height: 0;
-  /* 控制高度和滚动 */
-  height: auto !important;
-  overflow: hidden;
-  /* 避免溢出，保证绝对定位可用 */
-  position: relative; /* ⭐ 作为 .absolute-accept-button 的定位父级 */
-  box-sizing: border-box;
-}
-
-/* ⭐ 新增：接任务按钮固定右下 & 不占文档流高度 */
-.absolute-accept-button {
-  position: absolute;
-  right: 24px;
-  bottom: 24px;
-  z-index: 1000;
-}
-
-.floating-dialog-level {
-  position: absolute;
-  top: 28px;
-  right: 130px;
-  color: #2a2c52;
-  font-weight: bold;
-  font-size: 32px;
-  text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-  pointer-events: none;
-}
-.dialog-description-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.fake-avatar-space {
-  width: 48px;   /* 模拟头像宽度 */
-  height: 48px;  /* 可设为 0 也可以跟高度统一 */
-  flex-shrink: 0;
-}
-
-.dialog-description {
-  font-size: 16px;
-  color: #666;
-  line-height: 1.5;
-  margin: 0;
-}
-
-/* 3) 左右比例不变，但确保与分割线的 75% 对齐 */
-.dialog-left-section {
-  flex: 0 0 75%;
-  width: 75%;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  word-wrap: break-word;
-  word-break: break-word;
-}
-.dialog-right-section {
-  flex: 0 0 25%;
-  position: relative;
-  width: 25%;
-  min-height: 0;
-  overflow: hidden;
-}
-.fixed-footer-wrapper {
-  position: absolute;
-  bottom: 16px;          /* 贴近卡片区域底部 */
-  right: 16px;           /* 🔽 改为靠右对齐 */
-  left: auto;            /* ❌ 取消之前的居中 */
-  transform: none;       /* ❌ 去掉居中位移 */
-  display: flex;
-  justify-content: flex-end; /* 内容靠右 */
-  width: auto;           /* 宽度随内容 */
-  pointer-events: auto !important;
-  z-index: 20 !important;
-}
-.footer-text {
-  background-color: #ffffff;
-  padding: 8px 16px;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  color: #333;
-  font-weight: 500;
-}
-
-
+/* =========================
+   筛选按钮
+   ========================= */
 .filter-buttons-wrapper {
   display: inline-flex;
   padding: 2px;
@@ -979,24 +509,8 @@ const confirmFilter = () => {
   background-color: white;
 }
 
-.tab-toggle ::v-deep(.p-button) {
-  padding: 6px 16px;
-  font-size: 14px;
-  border-radius: 0;
-}
-.avatar-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 8px; /* 控制头像与名字之间的间距 */
-}
-
-.avatar-name {
-  font-size: 16px;
-  font-weight: 500;
-  color: #333;
-}
-
-.filter-button.p-button {
+.filter-button.p-button,
+.filter-button {
   font-size: 14px !important;
   font-weight: 500;
   padding: 4px 14px !important;
@@ -1013,46 +527,390 @@ const confirmFilter = () => {
   gap: 8px;
 }
 
-.filter-button {
-  padding: 6px 16px;
-  font-size: 14px;
-  border: 1px solid #c5d4ea;
-  border-radius: 8px;
-  background-color: white;
-  color: #1e1e1e;
-  box-shadow: none;
-}
-
-/* 缩放保持一致 */
 .small-toggle {
   transform: scale(0.9);
   transform-origin: right center;
 }
-.apply-button {
-  background-color: #2A2C52; /* 主色 */
-  color: #ffffff;
-  border: none;
-  padding: 12px 24px;
+
+/* =========================
+   卡片区域
+   ========================= */
+.main-body {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e4eaf4;
+}
+
+.card-background {
+  position: absolute;
+  inset: 0;
+  background-color: #f3f7fe;
+  border-radius: 12px;
+  z-index: 0;
+}
+
+.grid-container {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 40px;
+  padding: 40px;
+}
+
+/* 卡片 */
+.task-card {
+  position: relative;            /* 供水印定位 */
+  display: flex;
+  flex-direction: column;
+  padding: 16px 16px 8px;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+  gap: 12px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.task-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+.task-main-content {
+  display: flex;
+  gap: 16px;
+}
+
+.task-left,
+.task-right {
+  width: 50%;
+  box-sizing: border-box;
+}
+
+.task-left {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  overflow-wrap: break-word;
+}
+
+.task-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0 0 4px 0;
+  text-align: left;
+  width: 100%;
+}
+
+.task-time {
+  color: #888;
+  font-size: 14px;
+  margin-bottom: 4px;
+  text-align: left;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.task-exp {
   font-size: 16px;
-  font-weight: 600;
-  box-shadow: 0 4px 12px rgba(42, 44, 82, 0.2); /* 同色阴影 */
-  transition: background-color 0.3s, transform 0.2s;
+  font-weight: bold;
+  margin-bottom: 8px;
+  text-align: left;
+  width: 100%;
+  color: #81A0EF !important;
+  -webkit-text-stroke: 1px #3A494D;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 }
-.apply-button:hover {
-  background-color: #2A2C52; /* 深一点作为悬停色 */
-  transform: translateY(-1px);
+
+.task-right {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 0;
 }
-.apply-button:active {
-  background-color: #2A2C52 !important;  /* 固定颜色 */
-  color: #ffffff !important;             /* 固定文字颜色 */
-  box-shadow: 0 4px 12px rgba(42, 44, 82, 0.2); /* 保持统一阴影 */
+
+.task-image {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 8px;
 }
-.absolute-apply-button {
+
+.task-divider {
+  width: 100%;
+  height: 1px;
+  background-color: #e1e8f5;
+  margin: 0;
+}
+
+.task-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.avatar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+.task-level {
+  font-weight: bold;
+  font-size: 22px;
+  text-align: right;
+  color: #C3F9E6 !important;
+  -webkit-text-stroke: 1px #1BA5BF;
+}
+
+/* Assigned 卡片配色与水印 */
+.assigned-card {
+  background-color: #D1EDF2 !important;
+}
+.assigned-card .task-divider {
+  background-color: #B8DBEB !important;
+}
+.assigned-card .task-title,
+.assigned-card .task-time {
+  color: #95B0B5 !important;
+}
+.assigned-card .task-exp {
+  color: #BCD8DD !important;
+  -webkit-text-stroke: 1px #A1BEC3;
+  text-shadow: none !important;
+}
+.assigned-card .task-level {
+  -webkit-text-stroke: 1px #A1BEC3;
+  color: #CCE8ED !important;
+}
+.assigned-card .task-right {
+  display: none !important;
+}
+/* 水印 */
+.assigned-card::before {
+  content: "Assigned";
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-20deg);
+  font-size: 48px;
+  font-weight: bold;
+  color: #A0C0C9;
+  opacity: 0.25;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* =========================
+   分页器
+   ========================= */
+.fixed-footer-wrapper {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: auto !important;
+  z-index: 20 !important;
+}
+.fixed-footer-wrapper .p-paginator {
+  pointer-events: auto;
+}
+
+/* =========================
+   Dialog：通用结构与样式
+   ========================= */
+:deep(.p-dialog) {
+  height: 100%;
+}
+.project-dialog :deep(.p-dialog-header) {
+  padding: 0 !important;
+}
+.project-dialog :deep(.p-dialog-content) {
+  padding: 0 !important;            /* 统一由 wrapper 控制 */
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto !important;
+  overflow: hidden;
+  position: relative;               /* 供绝对定位按钮使用 */
+  box-sizing: border-box;
+}
+:deep(.p-dialog-mask.p-component-overlay) {
+  backdrop-filter: blur(6px);
+  background-color: rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+/* Dialog Header */
+.dialog-custom-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: stretch;
+  padding: 0 16px;
+  box-sizing: border-box;
+  gap: 12px;
+}
+.dialog-back-button {
+  font-size: 18px;
+  color: #333;
+}
+.dialog-header-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0;
+}
+.dialog-title {
+  font-size: 30px;
+  font-weight: 800;
+  color: #1e1e1e;
+  margin: 0;
+}
+.dialog-date-inline {
+  font-size: 16px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.floating-dialog-level {
+  position: absolute;
+  top: 28px;
+  right: 130px;
+  color: #2a2c52;
+  font-weight: bold;
+  font-size: 32px;
+  text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* Dialog Content */
+.dialog-content-wrapper {
+  position: relative;               /* 供分隔线定位 */
+  display: flex;
+  gap: 24px;
+  padding: 24px;
+  min-height: 0;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* =========================
+   左侧主列：统一“对齐基线”
+   ========================= */
+.dialog-left-section {
+  flex: 0 0 75%;
+  width: 75%;
+  display: flex;
+  flex-direction: column;
+  --rail: 24px;                     /* ✅ 与左边框的统一对齐距离 */
+  padding-left: var(--rail);        /* ✅ 所有正文内容的左内边距 */
+  position: relative;               /* 供头像绝对定位“悬挂” */
+  overflow: visible;                /* 确保头像不被裁剪 */
+  word-wrap: break-word;
+  word-break: break-word;
+  margin-top: -20px;
+}
+.dialog-right-section {
+  flex: 0 0 25%;
+  width: 25%;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+/* 分隔线（与 75% 对齐） */
+.dialog-vertical-divider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 75%;
+  width: 1px;
+  background-color: #ccc;
+  border-radius: 1px;
+  z-index: 10;
+}
+
+/* =========================
+   左侧内容细节（严格依赖 --rail）
+   ========================= */
+
+/* 1) ID（author name） */
+.dialog-author {
+  position: relative;               /* 让头像以左栏为参照“悬挂”出去 */
+  display: flex;
+  align-items: center;
+  min-height: 40px;                 /* 与头像高度一致，避免覆盖文本 */
+  margin-bottom: 16px;
+}
+/* 头像不计入对齐：向左外悬，不改变文本对齐 */
+.dialog-author :deep(.p-avatar) {
+  position: absolute;
+  left: calc(-40px - 8px);          /* 头像宽度 40 + 与文本间距 8 */
+  top: 0;
+}
+.author-name {
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 40px;                /* 与头像对齐更稳 */
+  margin: 0;                        /* ✅ 靠 --rail 对齐，不额外偏移 */
+}
+
+/* 2) 描述（依赖 --rail，对齐左边框；不包含头像） */
+.dialog-description-row {
+  /* ✅ 不再使用任何左侧额外缩进或占位元素 */
+  margin: 0 0 16px 0;
+  padding: 0;                       /* 继承 .dialog-left-section 的 --rail */
+}
+.dialog-description {
+  color: #666;
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;          /* 长词也能换行 */
+}
+
+/* 3) 图片（依赖 --rail，对齐左边框；不包含头像） */
+.dialog-images {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  margin-top: 12px;
+  /* ✅ 关键：不做任何左偏移，保持与 --rail 对齐 */
+  margin-left: 0;
+  padding-left: 0;
+}
+.image-placeholder {
+  width: 240px;
+  height: 160px;
+  background-color: #e0e0e0;
+  border-radius: 12px;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+/* 接任务按钮（右下） */
+.absolute-accept-button {
   position: absolute;
   right: 24px;
   bottom: 24px;
-  z-index: 999;
+  z-index: 1000;
 }
 .custom-btn {
   background-color: #2a2c55;
@@ -1062,125 +920,58 @@ const confirmFilter = () => {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-
 .custom-btn:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 12px rgba(0, 0, 0, 0.25);
 }
 
-.author-name {
-  font-weight: 500;
-  font-size: 20px;
+/* =========================
+   Filter Dialog
+   ========================= */
+:deep(.filter-dialog) .p-dialog-title {
+  font-size: 30px !important;
+  font-weight: 700;
+  color: #1e1e1e;
+}
+:deep(.filter-dialog) .p-dialog-content {
+  /* 与页面保持紧凑风格：上下左右 10px */
+  padding: 10px !important;
+  box-sizing: border-box;
+  overflow: hidden !important;
+  max-height: none !important;
 }
 
-.assigned-card {
-  background-color: #D1EDF2 !important;
+.filter-section {
+  margin-bottom: 20px !important;
 }
 
-/* 分割线颜色：B8DBEB */
-.assigned-card .task-divider {
-  background-color: #B8DBEB !important;
+.level-section {
+  padding: 0 20px;
 }
-
-/* 标题 & 时间颜色：95B0B5 */
-.assigned-card .task-title {
-  color: #95B0B5 !important;
-}
-.assigned-card .task-time {
-  color: #95B0B5 !important;
-}
-
-/* exp：文字 BCD8DD，描边 A1BEC3 */
-.assigned-card .task-exp {
-  color: #BCD8DD !important;
-  -webkit-text-stroke: 1px #A1BEC3; /* 描边 */
-  text-shadow: none !important;     /* 若原来有阴影，这里关闭它，避免脏感 */
-}
-
-/* Level：底色 CCE8ED，描边 A1BEC3
-   注：这里用背景 + 文字描边，保留你原本字号与布局 */
-.assigned-card .task-level {
-  -webkit-text-stroke: 1px #A1BEC3; /* 描边 */
-  color: #CCE8ED !important;        /* 文字填充色 */
-  font-weight: bold;
-  font-size: 22px;
-  text-align: right;
-}
-
-/* （如果卡片里有 ID 文本）ID 颜色：000000
-   你的 ID 现在在侧边栏 .user-id；卡片里若也有相同类名则会生效；没有就不影响。 */
-.assigned-card .user-id {
-  color: #000000 !important;
-}
-/* ✅ 只对 assigned 状态的卡片加水印 */
-.assigned-card::before {
-  content: "Assigned";              /* 水印文字 */
-  position: absolute;
-  top: 40%;
-  left: 50%;
-  transform: translate(-50%, -50%) rotate(-20deg); /* 左高右低的角度 */
-  font-size: 48px;                   /* 文字大小，可调 */
-  font-weight: bold;
-  color: #A0C0C9;                    /* 文字颜色 */
-  opacity: 0.25;                     /* 透明度，让内容可见 */
-  pointer-events: none;              /* 不影响点击事件 */
-  white-space: nowrap;
-  z-index: 0;                        /* 在内容下面 */
-}
-
-/* 确保 task-card 是相对定位，让 ::before 能按卡片定位 */
-.task-card {
-  position: relative;
-}
-
-.assigned-card .task-right {
-  display: none !important;
-}
-.fixed-footer-wrapper .p-paginator {
-  pointer-events: auto;  /* 让分页器可以正常点击 */
-}
-.fixed-footer-wrapper {
-  pointer-events: auto !important;
-  z-index: 20 !important;         /* 保证在网格之上 */
-}
-
-/* —— 状态切换按钮：左右内边距=10px —— */
-.status-toggle :deep(.p-button) {
-  padding: 6px 10px !important; /* 关键：文字到边框 10px */
-  border-radius: 8px;
-}
-
-/* —— Level 组标题 —— */
 .level-label {
   font-size: 20px;
   font-weight: 600;
   color: #1e1e1e;
-  margin:10px -10px;
+  margin: 10px -10px;
 }
-
-/* —— Level 横排 —— */
 .level-row {
   display: flex;
   gap: 40px;
   flex-wrap: wrap;
   align-items: center;
-  margin: 20px 10px;   /* 上下 20px，左右 10px */
+  margin: 20px 10px;
 }
-
-/* 单个 level 项：复选框 + 文本 */
 .level-item {
   display: inline-flex;
   align-items: center;
   gap: 10px;
 }
-
-/* 复选框样式 */
 .level-item :deep(.p-checkbox-box) {
   width: 22px;
   height: 22px;
   border-radius: 6px;
   border: 2px solid #c8d3e6;
-  transition: all .2s ease;
+  transition: all 0.2s ease;
 }
 .level-item :deep(.p-checkbox-box.p-highlight) {
   background: #3f5aa8;
@@ -1191,74 +982,111 @@ const confirmFilter = () => {
   line-height: 1;
   color: #fff;
 }
-
-/* 文本样式 */
 .level-text {
   font-size: 18px;
   color: #1e1e1e;
 }
 
-/* 2) 区块之间垂直间距 = 20px */
-.filter-section {
-  margin-bottom: 20px !important;        /* 组与组之间的间距 */
-}
-
-/* —— Filter 弹窗：内容区四周 24px 留白 —— */
-:deep(.filter-dialog) .p-dialog-content {
-  padding: 10px !important;
-  box-sizing: border-box;
-  overflow: hidden !important;
-  max-height: none !important;
-}
-
-/* —— 两个筛选区块之间垂直间距 = 20px —— */
-:deep(.filter-dialog) .filter-section {
-  margin-bottom: 20px !important;
-  overflow: visible !important;
-}
-:deep(.filter-dialog) .filter-section:last-of-type {
-  margin-bottom: 0 !important;
-}
-/* 只改 Filter 弹窗标题字号 */
-:deep(.filter-dialog) .p-dialog-title {
-  font-size: 30px !important;
-  font-weight: 700;  /* 粗细可调整 */
-  color: #1e1e1e;    /* 可选：颜色 */
-}
-
-/* —— Level 部分 —— */
-.level-section {
-  padding: 0 20px;
-}
-
-/* —— 状态切换（ongoing/completed）与边框 10px —— */
-.status-toggle {
-  margin: 0 10px;   /* 左右与边框距离 10px */
-  width: calc(100% - 20px); /* 扣掉左右 10px */
-}
-/* 外层容器控制与边框 10px（不会受 scoped 限制） */
+/* 状态切换 SelectButton */
 .status-toggle-wrap {
-  margin: 0px;
+  margin: 0;
 }
-
-/* 让 SelectButton 撑满容器（容器已扣了 10px 外边距） */
+.status-toggle {
+  margin: 0 10px;
+  width: calc(100% - 20px);
+}
 :deep(.filter-dialog) .status-toggle {
-  width: 100% !important;
+  width: 100% !important; /* 撑满容器 */
 }
-
-/* 按钮内文字到按钮边框 10px（你已有，可保留） */
 :deep(.filter-dialog) .p-selectbutton .p-button {
   padding: 0 !important;
   min-width: auto !important;
 }
 :deep(.filter-dialog) .p-selectbutton .p-button .p-button-label {
   display: inline-block;
-  padding: 6px 10px !important;
+  padding: 6px 10px !important; /* 文字到按钮边框 10px */
   line-height: 1.2;
 }
-.tab-toggle :deep(.p-button) {
-  padding: 6px 16px;
-  font-size: 14px;
-  border-radius: 0;
+
+/* 确认按钮固定右下 */
+.absolute-apply-button {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  z-index: 999;
+}
+.apply-button {
+  background-color: #2A2C52;
+  color: #ffffff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(42, 44, 82, 0.2);
+  transition: background-color 0.3s, transform 0.2s;
+}
+.apply-button:hover {
+  background-color: #2A2C52;
+  transform: translateY(-1px);
+}
+.apply-button:active {
+  background-color: #2A2C52 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(42, 44, 82, 0.2);
+}
+/* 右栏：Level 与进度条（NEW） */
+.dialog-right-section {
+  --metric-gap: 16px;        /* 进度条之间 & 与 Level 的距离都用这个值 */
+  padding: 8px 16px;
+}
+.right-level-spacer {
+  font-weight: bold;
+  font-size: 32px;
+  line-height: 1.2;
+  visibility: hidden;        /* 不显示，但占位与浮动 Level 等高空间 */
+}
+.right-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: var(--metric-gap);     /* 三条之间的间距 */
+  margin-top: var(--metric-gap); /* 与 Level 的距离，= gap */
+}
+.metric-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;                   /* 标签与条之间的小间距 */
+}
+.metric-label {
+  font-size: 13px;
+  color: #5a6275;
+  font-weight: 600;
+}
+.metric-bar :deep(.p-progressbar) {
+  height: 14px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #eef2fb;
+}
+.metric-bar :deep(.p-progressbar-value) {
+  /* 保持主题色；需要固定色可解注释： */
+  /* background: #3f5aa8 !important; */
+  border-radius: 999px;
+}
+.metric-bar :deep(.p-progressbar-label) {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e1e1e;
+}
+/* 让插槽里的数字在进度条中居中显示，并设置文字样式 */
+.metric-bar :deep(.p-progressbar .p-progressbar-content) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.metric-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e1e1e;
 }
 </style>
