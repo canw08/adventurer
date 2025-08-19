@@ -3,13 +3,47 @@
     "title": "ƃo˥ ʇsǝnQ",
     "runningQuest": "ʇsǝnQ ƃuᴉuunɹ"
   },
-  "greetings": {
+  "greetings-student": {
+    "night": "¿ɹǝɹnʇuǝʌpɐ 'lᴉo ʇɥƃᴉupᴉɯ ǝɥʇ ƃuᴉuɹnq",
     "morning": "ɹǝɹnʇuǝʌpɐ 'ƃuᴉuɹoɯ pooפ",
     "afternoon": "ɹǝɹnʇuǝʌpɐ 'uoouɹǝʇɟɐ pooפ",
     "evening": "ɹǝɹnʇuǝʌpɐ 'ƃuᴉuǝʌǝ pooפ"
   },
+  "greetings-teacher": {
+    "night": "¿ɹǝɥɔɐǝʇ 'lᴉo ʇɥƃᴉupᴉɯ ǝɥʇ ƃuᴉuɹnq",
+    "morning": "ɹǝɥɔɐǝʇ 'ƃuᴉuɹoɯ pooפ",
+    "afternoon": "ɹǝɥɔɐǝʇ 'uoouɹǝʇɟɐ pooפ",
+    "evening": "ɹǝɥɔɐǝʇ 'ƃuᴉuǝʌǝ pooפ"
+  },
+  "tabs": {
+    "ongoing": "ƃuᴉoƃuO",
+    "completed": "pǝʇǝldɯoƆ"
+  },
   "common": {
     "na": "∀/N",
-    "level": "lǝʌǝ˥"
+    "level": "lǝʌǝ˥",
+    "close": "ǝsolƆ",
+    "decline": "ǝuᴉlɔǝp",
+    "accept": "ʇdǝɔɔ∀"
+  },
+  "notifications": {
+    "systemName": "ɯǝʇsʎs",
+    "type": {
+      "system": "uoᴉʇɐɔᴉɟᴉʇoN ɯǝʇsʎS",
+      "invite": "uoᴉʇɐɔᴉɟᴉʇoN uoᴉʇɐʇᴉʌuI",
+      "unknown": "uoᴉʇɐɔᴉɟᴉʇoN"
+    },
+    "markAll": "pɐǝɹ sɐ ll∀ ʞɹɐW",
+    "showAll": "Show All Notifications",
+    "clickToView": "Click to View Details",
+    "zeroInbox": "Inbox Zero achieved — all is calm."
+  },
+  "sidebar": {
+    "home": "ǝɯoH",
+    "board": "pɹɐoq",
+    "settings": "sƃuᴉʇʇǝS"
+  },
+  "settings": {
+    "title": "sƃuᴉʇʇǝS"
   }
 }
