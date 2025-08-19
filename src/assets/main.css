@@ -27,3 +27,9 @@
   75%  { transform: translateY(-50%) rotate(-6deg); }
   100% { transform: translateY(-50%) rotate(0deg); }
 }
+.pixelated {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  image-rendering: -moz-crisp-edges;
+  -ms-interpolation-mode: nearest-neighbor; /* legacy IE */
+}

@@ -55,7 +55,7 @@
         <div class="stat-carpet">
           <img :src="timeIcon" alt="time" class="stat-icon pixelated stat-icon-time click-wiggle-y50" />
           <img :src="carpetImgB" alt="" class="carpet-img pixelated" />
-          <span class="stat-text">{{ timeText }}</span>
+          <span class="stat-text" style="transform: translateY(-0.5px)">{{ timeText }}</span>
         </div>
       </div>
     </div>
@@ -296,7 +296,7 @@ onMounted(async () => {
 .stat-text {
   position: relative;
   z-index: 1;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   margin-right: 10px;
   text-align: right;   
@@ -373,4 +373,10 @@ onMounted(async () => {
   opacity: 0;
   transform: translate(-50%, -6px);
 }
+
+.stat-icon-time,
+.stat-icon-time + .stat-text {
+  transform: translateY(-17px);
+}
+
 </style>

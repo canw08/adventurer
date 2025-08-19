@@ -163,6 +163,7 @@ import SelectButton from 'primevue/selectbutton';
 import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue'
 import Dialog from 'primevue/dialog';
 import teamwork from '../../assets/team.png'
+import solo from '../../assets/solo.png'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -194,7 +195,7 @@ const allProjects = [
     title: 'Volunteer Feeding Stray Cats',
     date: '5 July, 2025',
     status: 'ongoing',
-    image: teamwork,
+    image: solo,
     exp: '300 exp',
     level: 'E',
     avatar: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
