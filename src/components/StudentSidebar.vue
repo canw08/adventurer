@@ -1,11 +1,36 @@
 <template>
   <div class="sidebar" v-if="userStore.userInfo">
+    <!-- 替换你现有的 .profile-header 里的头像块 -->
     <div class="profile-header">
-      <img
-        :src="`https://api.dicebear.com/9.x/adventurer/svg?seed=${userStore.userInfo.avatar}`"
-        alt="User Avatar"
-        class="avatar-img"
-      />
+      <div
+        class="avatar-progress"
+        :class="{ 'is-active': showExp }"
+        @click="toggleExp"
+        v-ripple
+      >
+        <!-- 进度环（百分比） -->
+        <Knob
+          :modelValue="percent"
+          :size="120"
+          :strokeWidth="8"
+          :readonly="true"
+          valueColor="#4a6cf7"
+          rangeColor="#eee"
+        />
+
+        <!-- 头像 -->
+        <img
+          :src="`https://api.dicebear.com/9.x/adventurer/svg?seed=${userStore.userInfo.avatar}`"
+          alt="User Avatar"
+          class="avatar-img"
+        />
+
+        <!-- 点击后显示：500/1000 这样的经验 -->
+        <transition name="fade-up">
+          <div v-if="showExp" class="exp-badge">{{ expDisplay }}</div>
+        </transition>
+      </div>
+
       <h2 class="user-name">{{ userStore.userInfo.nickname || userStore.userInfo.username }}</h2>
       <p class="user-id">ID {{ userStore.userInfo.identifier }}</p>
     </div>
@@ -69,11 +94,11 @@
 </template>
 
 <script setup>
-import Avatar from 'primevue/avatar';
-import { useRouter, useRoute } from 'vue-router';
-import 'primeicons/primeicons.css';
-import { onMounted,computed } from 'vue';
-import { useUserStore } from '../stores/user';
+import Knob from 'primevue/knob'               // 👈 新增
+import { useRouter, useRoute } from 'vue-router'
+import 'primeicons/primeicons.css'
+import { onMounted, computed, ref } from 'vue' // 👈 加上 ref
+import { useUserStore } from '../stores/user'
 
 const router = useRouter();
 const route = useRoute();
@@ -86,6 +111,10 @@ const timeIcon  = new URL('../assets/icon/time.png', import.meta.url).href;
 const carpetImgB = new URL('../assets/icon/redcarpet.png', import.meta.url).href;
 const carpetImgA = new URL('../assets/icon/bluecarpet.png', import.meta.url).href;
 
+const showExp = ref(false)
+const toggleExp = () => { showExp.value = !showExp.value }
+
+
 const tokenText = computed(() => {
   const v = userStore?.userInfo?.token ?? userStore?.userInfo?.coins ?? 0;
   return `${v} ₷` ;
@@ -94,6 +123,21 @@ const timeText = computed(() => {
   const hours = userStore?.userInfo?.hours ?? userStore?.userInfo?.time ?? 0;
   return `${hours} h`;
 });
+
+const currentExp = computed(() =>
+  Number(userStore?.userInfo?.exp ?? userStore?.userInfo?.token ?? userStore?.userInfo?.coins ?? 500)
+)
+const nextExp = computed(() =>
+  Math.max(1, Number(userStore?.userInfo?.expNext ?? 1000)) // 防止除零
+)
+
+const percent = computed(() => {
+  const cur = Math.min(Math.max(currentExp.value, 0), nextExp.value)
+  return Math.round((cur / nextExp.value) * 100)
+})
+
+const expDisplay = computed(() => `${currentExp.value}/${nextExp.value}`)
+
 
 const goToLog = () => router.push('/student/home');
 const goToBoard = () => router.push('/student/task');
@@ -189,7 +233,7 @@ onMounted(async () => {
   gap: 16px;
   margin-top: 12px;
   padding: 0 8px;
-  margin-left: -2px
+  margin-left: 3px
 }
 
 /* 单个“icon + carpet + 文本” */
@@ -264,4 +308,69 @@ onMounted(async () => {
 
 /* 若有其它像素图也可复用这个类：
 .img-pixel { width: 64px; height: 64px; } 与 .pixelated 组合使用 */
+
+
+/* ========== Avatar 进度/点击态 ========== */
+.avatar-progress {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  cursor: pointer;
+}
+
+/* Knob 占满容器，置于底层 */
+.avatar-progress :deep(.p-knob) {
+  position: absolute;
+  inset: 0;
+}
+
+/* 头像覆盖在圆环中央 */
+.avatar-img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  transition: filter .18s ease, opacity .18s ease;
+}
+
+/* 点击后压暗头像（你可按需调节） */
+.avatar-progress.is-active .avatar-img {
+  filter: brightness(0.5) saturate(0.9);
+}
+
+/* 经验气泡，显示在头像“上方”居中 */
+.exp-badge {
+  position: absolute;
+  left: 50%;
+  bottom: 35%;                 /* 紧贴头像上方 */
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(32, 41, 76, 0.9);
+  border-radius: 999px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  backdrop-filter: blur(4px);
+  pointer-events: none;         /* 避免挡住点击 */
+  white-space: nowrap;
+}
+
+/* 进出场动画（向上浮现） */
+.fade-up-enter-active,
+.fade-up-leave-active {
+  transition: opacity .18s ease, transform .18s ease;
+}
+.fade-up-enter-from,
+.fade-up-leave-to {
+  opacity: 0;
+  transform: translate(-50%, -6px);
+}
+
+
+
 </style>

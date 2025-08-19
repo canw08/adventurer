@@ -31,7 +31,8 @@
   "type": { "system": "System Notification", "invite": "Invitation Notification", "unknown": "Notification" },
   "markAll": "Mark All as Read",
   "showAll": "Show All Notifications",
-  "clickToView": "Click to View Details"
+  "clickToView": "Click to View Details",
+  "zeroInbox" : "Inbox Zero achieved — all is calm."
 }
 
 

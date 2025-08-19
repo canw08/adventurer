@@ -1,4 +1,5 @@
 <template>
+
   <div class="announce-root">
 
     <!-- 铃铛 + 徽章 -->
@@ -25,7 +26,11 @@
         <span v-else>✔</span>
       </button>
 
+
       <ul class="announcement-list">
+        <li v-if="items.length === 0" class="announcement-item empty-item">
+          {{ t('notifications.zeroInbox') }}
+        </li>
         <li
           v-for="a in items"
           :key="a.id"
@@ -61,9 +66,9 @@
       </ul>
 
       <!-- 放在 <ul class="announcement-list">...</ul> 后面 -->
-      <div class="show-all-container">
-        <button class="show-all-btn" @click="showAll" :aria-label="t('notifications.showAll')">
-          <span class="arrow-head" aria-hidden="true"></span>
+      <div class="show-all-container" v-if="!showAllMode">
+        <button class="show-all-btn" @click="showAll">
+          <span class="arrow-head"></span>
         </button>
         <span class="show-all-text">{{ t('notifications.showAll') }}</span>
       </div>
@@ -123,6 +128,9 @@ const op = ref()
 const visible = ref(false)     // 统一控制子弹窗显示/隐藏
 const current = ref(null)      // 当前被点击的公告项（原始对象）
 
+const showAllMode = ref(false)
+
+
 // 根据当前项的 typeKey 选择对应的弹窗组件；默认回退到 system
 const activeDialog = computed(() => {
   if (!current.value) return null
@@ -130,15 +138,29 @@ const activeDialog = computed(() => {
 })
 
 // ===== 视图数据：在不改动 store 的前提下做 i18n/l10n 兜底 =====
-const items = computed(() =>
-  store.ordered.map(a => ({
+const items = computed(() => {
+  let arr = store.ordered.map(a => ({
     ...a,
     displayName: a.name ?? t('notifications.systemName'),
     typeLabel: t(`notifications.type.${a.typeKey || 'unknown'}`),
     dateLabel: a.dateISO || t('common.na'),
     clickHint: t('notifications.clickToView'),
   }))
-)
+
+  // 默认只显示未读
+  if (!showAllMode.value) {
+    arr = arr.filter(a => !a.read)
+  }
+
+  return arr
+})
+
+function showAll() {
+  showAllMode.value = true
+  // 可以考虑 emit 给父级，如果需要跳转页面
+  // emit('showAll')
+  // op.value?.hide()
+}
 
 // 打开/关闭 OverlayPanel
 function toggle(e){
@@ -199,14 +221,15 @@ function handleClearClick() {
 function resetClearButton() {
   expanded.value = false
   done.value = false
+  showAllMode.value = false
 }
 
 // ===== “显示所有通知”事件（抛给父级 / 页面容器） =====
-const emit = defineEmits(['showAll'])
-function showAll() {
-  emit('showAll')
-  op.value?.hide()
-}
+// const emit = defineEmits(['showAll'])
+// function showAll() {
+//   emit('showAll')
+//   op.value?.hide()
+// }
 
 // ===== 对外暴露给模板使用的成员（可选，不暴露也能用） =====
 defineExpose({
@@ -445,6 +468,7 @@ defineExpose({
 /* 展开状态（显示文字） */
 .floating-mark-all.expanded {
   width: auto;
+
   height: 26px;
   padding: 0 10px;
   border-radius: 9999px;
@@ -458,4 +482,21 @@ defineExpose({
   font-size: 14px;
   font-weight: bold;
 }
+
+/* 空状态与普通 item 大小一致 */
+.empty-item {
+  /* 固定高度，与普通 item 区分开 */
+  width: 360px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+}
+
+
 </style>

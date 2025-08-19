@@ -82,6 +82,17 @@ onMounted(() => {
   })
   fireConfetti = reward
 
+  // 初始头像
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+  let result = ""
+  for (let i = 0; i < 50; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  randomStr.value = result
+  console.log(result)
+
+
+
   setTimeout(() => {
     entering.value = false
   }, FADE_MS)
@@ -156,7 +167,13 @@ html, body {
   background-color: #E7F0F9;     /* 不够的区域填充为浅色“白边” */
   z-index: 0;
 }
-
+/* 👇新增：在背景上加一层暗色滤镜 */
+.bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.12); /* 这里调整透明度，0.2~0.4 比较合适 */
+}
 /* ====== 玻璃基类：复用到 input / button / 底盘环 ====== */
 .glass {
   background: rgba(255, 255, 255, 0.14);
