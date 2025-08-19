@@ -9,16 +9,38 @@
     "afternoon": "下午好，冒险者",
     "evening": "晚上好，冒险者"
   },
+  "greetings-teacher": {
+    "night": "在熬夜工作吗，老师？",
+    "morning": "早上好，老师",
+    "afternoon": "下午好，老师\n",
+    "evening": "晚上好，老师"
+  },
+  "tabs": {
+    "ongoing": "进行中",
+    "completed": "已完成"
+  },
   "common": {
     "na": "空",
-    "level": "等级"
+    "level": "等级",
+    "close": "关闭",
+    "decline": "拒绝",
+    "accept": "接受"
   },
   "notifications": {
     "systemName": "系统",
-    "type": { "system": "系统通知", "invite": "邀请通知", "unknown": "通知" },
+    "type": {
+      "system": "系统通知",
+      "invite": "邀请通知",
+      "unknown": "通知"
+    },
     "markAll": "全部标记为已读",
     "showAll": "显示所有通知",
     "clickToView": "点击查看详情",
-    "zeroInbox" : "皇上，今朝无奏章，一切安然。"
+    "zeroInbox": "皇上，今朝无奏章，一切安然。"
+  },
+  "sidebar": {
+    "home": "营地\n",
+    "board": "任务板",
+    "settings": "设置\n"
   }
 }
