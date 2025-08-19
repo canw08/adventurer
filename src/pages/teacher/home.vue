@@ -195,15 +195,22 @@ const bigTitle = ref('')
 
 const router = useRouter()
 
-const activeTab = ref('ongoing')
-const tabOptions = ref(['ongoing', 'completed'])
+import { useI18n } from 'vue-i18n'
 
-const op = ref(null)
-const unreadCount = ref(2)
+const { t } = useI18n()
+const activeTab = ref('ongoing')
+const tabOptions = ref([
+  { label: t('tabs.ongoing'), value: 'ongoing' },
+  { label: t('tabs.completed'), value: 'completed' }
+])
+
+const op = ref(null);
+const unreadCount = ref(2);
 const togglePanel = (event) => {
-  op.value.toggle(event)
-  unreadCount.value = 0
+  op.value.toggle(event);
+  unreadCount.value = 0;
 }
+
 
 const period = computed(() => {
   const h = new Date().getHours()
