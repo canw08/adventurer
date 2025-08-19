@@ -42,6 +42,7 @@
   },
   "settings":
   {
-    "title" : "Settings"
+    "title" : "Settings",
+    "signOut" : "Sign out"
   }
 }
