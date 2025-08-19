@@ -62,7 +62,7 @@ meta:
 <script setup>
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { setLocale } from '../../i18n/index.js'   // 👈 引入你写的 setLocale 方法
+import { setLocale } from '../i18n/index.js'   // 👈 引入你写的 setLocale 方法
 
 const { locale, t } = useI18n()
 
@@ -121,7 +121,7 @@ const onSignOut = () => {
   overflow: auto;
   background-color: #f3f7fe;   /* 浅蓝 */
   border: 1px solid #e4eaf4;
-  margin-top: 50px;
+  margin-top: 30px;
   padding: 24px;
 }
 
@@ -173,7 +173,7 @@ const onSignOut = () => {
   right: 24px;
   bottom: 24px;
   height: 44px;
-  padding: 0 22px;
+  padding: 0 42px;
   border-radius: 12px;
   border: none;
   background: #2a2c55;

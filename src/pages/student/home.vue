@@ -218,7 +218,8 @@ import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue'
 import Dialog from 'primevue/dialog'
 import OverlayPanel from 'primevue/overlaypanel'
 import teamwork from '../../assets/team.png'
-import solo from '../../assets/solo.png'
+import solo1 from '../../assets/solo.png'
+import solo2 from '../../assets/solo2.png'
 import { useI18n } from 'vue-i18n'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
@@ -250,7 +251,7 @@ const allProjects = [
     title: 'Volunteer Feeding Stray Cats',
     date: '5 July, 2025',
     status: 'ongoing',
-    image: solo,
+    image: solo1,
     exp: '300 exp',
     level: 'E',
     avatar: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
@@ -276,7 +277,7 @@ const allProjects = [
     title: 'Schoolyard Cleanup Event',
     date: '20 May, 2025',
     status: 'completed',
-    image: teamwork,
+    image: solo2,
     exp: '250 exp',
     level: 'D',
     avatar: 'https://primefaces.org/cdn/primevue/images/avatar/ivanmagalhaes.png',
@@ -289,7 +290,7 @@ const allProjects = [
     title: 'Design Posters for Art Festival',
     date: '15 August, 2025',
     status: 'ongoing',
-    image: teamwork,
+    image: solo2,
     exp: '350 exp',
     level: 'B',
     avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
