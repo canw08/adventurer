@@ -535,7 +535,7 @@ const submitLeave = () => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  border-radius: 12px;
+  border-radius: 32px;
   overflow: hidden;
   overflow: auto;
   background-color: #f3f7fe;

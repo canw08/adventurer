@@ -12,9 +12,9 @@
         <Knob
           :modelValue="percent"
           :size="120"
-          :strokeWidth="8"
+          :strokeWidth="14"
           :readonly="true"
-          valueColor="#4a6cf7"
+          valueColor="#4eb8d0"
           rangeColor="#eee"
         />
 
@@ -81,7 +81,7 @@
       </div>
       <div
         class="menu-button"
-        :class="{ active: isActive('/student/team') }"
+        :class="{ active: isActive('/student/settings') }"
         @click="goToTeam"
         v-ripple
       >
@@ -144,7 +144,7 @@ const expDisplay = computed(() => `${currentExp.value}/${nextExp.value}`)
 
 const goToLog = () => router.push('/student/home');
 const goToBoard = () => router.push('/student/task');
-const goToTeam = () => router.push('/student/team');
+const goToTeam = () => router.push('/student/settings');
 const isActive = (path) => route.path === path;
 
 onMounted(async () => {

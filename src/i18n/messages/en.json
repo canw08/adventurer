@@ -39,5 +39,9 @@
     "home" : "Home",
     "board" : "Board",
     "settings" : "Settings"
+  },
+  "settings":
+  {
+    "title" : "Settings"
   }
 }

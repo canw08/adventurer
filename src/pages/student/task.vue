@@ -543,7 +543,7 @@ const metricsBound = computed(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  border-radius: 12px;
+  border-radius: 32px;
   overflow: hidden;
   border: 1px solid #e4eaf4;
 }
