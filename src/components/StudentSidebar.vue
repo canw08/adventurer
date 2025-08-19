@@ -1,5 +1,6 @@
 <template>
   <div class="sidebar" v-if="userStore.userInfo">
+    <Toast />
     <!-- 替换你现有的 .profile-header 里的头像块 -->
     <div class="profile-header">
       <div
@@ -33,7 +34,9 @@
 
       <h2 class="user-name">{{ userStore.userInfo.nickname || userStore.userInfo.username }}</h2>
       
-      <p class="user-id">ID {{ userStore.userInfo.identifier }}</p>
+      <p class="user-id" @click="copyId">
+        ID {{ userStore.userInfo.identifier }}
+      </p>
     </div>
 
     <!-- 代币/时间行 -->
@@ -101,7 +104,9 @@ import 'primeicons/primeicons.css'
 import { onMounted, computed, ref } from 'vue'
 import { useUserStore } from '../stores/user'
 import { useI18n } from 'vue-i18n'
+import { useToast } from 'primevue/usetoast'
 
+const toast = useToast()
 const { t } = useI18n()
 const router = useRouter();
 const route = useRoute();
@@ -152,6 +157,25 @@ onMounted(async () => {
     await userStore.fetchUser();
   } catch {}
 });
+
+const copyId = async () => {
+  try {
+    await navigator.clipboard.writeText(userStore.userInfo.identifier)
+    toast.add({
+      severity: 'success',
+      summary: '已复制',
+      detail: 'ID 已复制到剪切板',
+      life: 2000
+    })
+  } catch (err) {
+    toast.add({
+      severity: 'error',
+      summary: '复制失败',
+      detail: '请手动复制 ID',
+      life: 2000
+    })
+  }
+}
 </script>
 
 <style scoped>
@@ -185,6 +209,13 @@ onMounted(async () => {
   margin-top: -20px;
   font-size: 14px;
   color: #a2a0a0;
+  cursor: pointer;         /* 👈 鼠标手势 */
+  user-select: none;       /* 避免选中高亮 */
+  transition: background-color .2s;
+}
+
+.user-id:hover {
+  background-color: #d5d5d5;
 }
 
 .menu-list {
