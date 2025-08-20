@@ -56,13 +56,13 @@
 
 <route lang="yaml">
 meta:
-  layout: "student"
+  layout: "teacher"
 </route>
 
 <script setup>
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { setLocale } from '../i18n/index.js'   // 👈 引入你写的 setLocale 方法
+import { setLocale } from '../../i18n/index.js'   // 👈 引入你写的 setLocale 方法
 
 const { locale, t } = useI18n()
 

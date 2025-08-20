@@ -84,7 +84,7 @@
       </div>
       <div
         class="menu-button"
-        :class="{ active: isActive('/settings') }"
+        :class="{ active: isActive('/student/settings') }"
         @click="goToTeam"
         v-ripple
       >
@@ -149,7 +149,7 @@ const expDisplay = computed(() => `${currentExp.value}/${nextExp.value}`)
 
 const goToLog = () => router.push('/student/home');
 const goToBoard = () => router.push('/student/task');
-const goToTeam = () => router.push('/settings');
+const goToTeam = () => router.push('/student/settings');
 const isActive = (path) => route.path === path;
 
 onMounted(async () => {
