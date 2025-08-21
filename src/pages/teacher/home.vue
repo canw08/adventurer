@@ -999,7 +999,7 @@ onMounted(async () => {
   margin-left: 2%;
 }
 :deep(.p-editor .ql-editor.ql-blank::before) {
-  content: "Enter your assignment description......";
+  content: "Please enter your assignment description including: Purpose, Number of students needed, Assignment details, Required skills, Personal stylish interpretation......";
   color: #999;
   position: absolute;
 }
