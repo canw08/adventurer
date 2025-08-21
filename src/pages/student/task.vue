@@ -130,16 +130,15 @@
       <div class="dialog-content-wrapper">
         <!-- 左侧内容区域（75%） -->
         <div class="dialog-left-section">
-          <div class="dialog-vertical-divider"></div>
           <!-- ✅ ID（author name）与左边框的对齐：依赖 --rail -->
           <div class="dialog-author">
-            <Avatar
-              image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
-              shape="circle"
-              size="large"
-              style="width: 50px; height: 50px"
-              aria-label="Author Avatar"
-            />
+            <!-- 动态：跟随 selectedProject.avatar -->
+<Avatar
+  :image="selectedProject?.avatar || 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png'"
+  shape="circle"
+  size="large"
+  style="width: 50px; height: 50px"
+/>
             <span class="author-name">{{ selectedProject?.author }}</span>
           </div>
 
@@ -156,6 +155,7 @@
             <div class="image-placeholder" aria-hidden="true"></div>
           </div>
         </div>
+         <div class="dialog-grid-divider" aria-hidden="true"></div>
        <!-- 右侧占位区域（25%） -->
         <div class="dialog-right-section">
           <!-- 为浮动的 Level 预留等高空间，保证与第一条进度条的距离 = 进度条间距 -->
@@ -695,8 +695,14 @@ const metricsBound = computed(() => {
   -webkit-text-stroke: 1px #A1BEC3;
   color: #CCE8ED !important;
 }
+/* 保留右侧列和图片的尺寸，但不显示内容 */
 .assigned-card .task-right {
-  display: none !important;
+  display: flex !important;   /* 恢复布局参与 */
+  visibility: hidden;         /* 不显示，但保留空间 */
+}
+
+.assigned-card .task-image {
+  visibility: hidden;         /* 图片同样不显示，但保留尺寸 */
 }
 /* 水印 */
 .assigned-card::before {
@@ -800,53 +806,9 @@ const metricsBound = computed(() => {
   pointer-events: none;
 }
 
-/* Dialog Content */
-.dialog-content-wrapper {
-  position: relative;               /* 供分隔线定位 */
-  display: flex;
-  gap: 24px;
-  padding: 24px;
-  min-height: 0;
-  height: 100%;
-  box-sizing: border-box;
-}
-
 /* =========================
    左侧主列：统一“对齐基线”
    ========================= */
-.dialog-left-section {
-  flex: 0 0 75%;
-  width: 75%;
-  display: flex;
-  flex-direction: column;
-  --rail: 24px;                     /* ✅ 与左边框的统一对齐距离 */
-  padding-left: var(--rail);        /* ✅ 所有正文内容的左内边距 */
-  position: relative;               /* 供头像绝对定位“悬挂” */
-  overflow: visible;                /* 确保头像不被裁剪 */
-  word-wrap: break-word;
-  word-break: break-word;
-  margin-top: -20px;
-}
-.dialog-right-section {
-  flex: 0 0 25%;
-  width: 25%;
-  min-height: 0;
-  overflow: hidden;
-  position: relative;
-}
-
-
-/* 分隔线（与 75% 对齐） */
-.dialog-vertical-divider {
-  position: absolute;
-  top: 100px;
-  bottom: 100px;
-  left: 75%;
-  width: 1px;
-  background-color: #ccc;
-  border-radius: 1px;
-  z-index: 10;
-}
 
 /* =========================
    左侧内容细节（严格依赖 --rail）
@@ -878,7 +840,7 @@ const metricsBound = computed(() => {
 /* 2) 描述（依赖 --rail，对齐左边框；不包含头像） */
 .dialog-description-row {
   /* ✅ 不再使用任何左侧额外缩进或占位元素 */
-  margin: 0 0 16px 0;
+  margin: 0;
   padding: 0;                       /* 继承 .dialog-left-section 的 --rail */
   margin-left: 25px;
 }
@@ -1041,10 +1003,14 @@ const metricsBound = computed(() => {
   color: #ffffff !important;
   box-shadow: 0 4px 12px rgba(42, 44, 82, 0.2);
 }
-/* 右栏：Level 与进度条（NEW） */
 .dialog-right-section {
-  --metric-gap: 16px;        /* 进度条之间 & 与 Level 的距离都用这个值 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;   /* 右栏内部水平居中 */
+  justify-content: flex-start; /* 内容从上往下 */
   padding: 8px 16px;
+  --metric-gap: 16px;
+  z-index: 2;            /* 让它在分割线之上 */
 }
 .right-level-spacer {
   font-weight: bold;
@@ -1052,11 +1018,13 @@ const metricsBound = computed(() => {
   line-height: 1.2;
   visibility: hidden;        /* 不显示，但占位与浮动 Level 等高空间 */
 }
+
 .right-metrics {
   display: flex;
   flex-direction: column;
-  gap: var(--metric-gap);     /* 三条之间的间距 */
-  margin-top: -45px; /* 与 Level 的距离，= gap */
+  gap: var(--metric-gap);
+  width: clamp(220px, 80%, 320px);
+  margin: 0 auto;       /* ⬅ 居中 */
 }
 .metric-text {
   font-size: 12px;
@@ -1079,34 +1047,40 @@ const metricsBound = computed(() => {
 .metric-row {
   display: flex;
   align-items: center;
-  gap: 0px;                 /* icon 和 bar 的距离 */
+  width: 100%;
+  position: relative;
 }
 
 .metric-icon {
-  width: 45px;
-  height: 45px;
-  flex-shrink: 0;           /* 图标固定大小，不会被压缩 */
-  margin-right: -18px;
-  z-index: 2;
+  width: clamp(28px, 4vw, 45px);
+  height: clamp(28px, 4vw, 45px);
+  margin-right: max(-12px, -2vw);   /* 维持你原来的“嵌入进度条”的效果 */
+  flex-shrink: 0;
+  z-index: 3;
+  position: relative;
 }
 
 .metric-bar {
   flex: 1;                  /* 占满剩余空间 */
-  z-index: 1;
+  width: 100%;              /* 确保进度条撑满父容器 */
+  min-width: 120px;         /* 避免太小挤没了 */
 }
 
 .metric-label {
-  text-align: left;       /* label 居中到 icon 下方 */
+  margin-left: 10px;
   font-size: 13px;
   font-weight: 600;
-  margin-left: 10px;
   color: #5a6275;
 }
 .metric-bar :deep(.p-progressbar) {
-  height: 24px;             /* 改这里就能调整高度 */
+  display: block;
+  width: 100%;
+  height: clamp(18px, 2.5vw, 28px);
   border-radius: 999px;
-  overflow: hidden;
   background: #eef2fb;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
 }
 
 .metric-bar :deep(.p-progressbar-value) {
@@ -1121,4 +1095,35 @@ const metricsBound = computed(() => {
   justify-content: center;
 }
 
+.dialog-content-wrapper {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) 1px minmax(0, 1fr);
+  column-gap: 24px;
+  padding: 24px;
+  height: 100%;
+  box-sizing: border-box;
+  position: relative;
+  --divider-inset: 0px;
+}
+
+.dialog-left-section { grid-column: 1; }
+.dialog-right-section { grid-column: 3; }
+.dialog-left-section {
+  grid-column: 1;
+  display: flex;
+  flex-direction: column;
+  padding-left: 24px;      /* 唯一的“左基线” */
+  margin-top: 0;
+  overflow: visible;
+}
+.dialog-grid-divider {
+  grid-column: 2;
+  background-color: #ccc;
+  border-radius: 1px;
+  align-self: stretch;                    /* 拉满网格行高度 */
+  margin-block: var(--divider-inset);     /* ⬅ 上下等距内缩 */
+}
+.dialog-vertical-divider {
+  display: none !important;
+}
 </style>

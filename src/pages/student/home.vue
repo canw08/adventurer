@@ -120,7 +120,6 @@
   <!-- ① 内容包裹层：先开 -->
   <div class="dialog-content-wrapper">
     <div class="dialog-left-section">
-      <div class="dialog-vertical-divider"></div>
       <div class="dialog-author">
         <Avatar
           :image="selectedProject?.avatar || 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png'"
@@ -142,23 +141,10 @@
             <div class="image-placeholder" aria-hidden="true"></div>
           </div>
         </div>
-
-    <!-- ✅ 只保留这一组按钮（使用 OverlayPanel） -->
-    <div class="dialog-left-buttons">
-      <Button
-        label="Ask for leave"
-        class="custom-btn"
-        @click="toggleLeavePanel($event)"
-      />
-      <Button
-        label="Prompt"
-        class="custom-btn"
-        @click="onButton2Click"
-      />
-    </div>
-
+    <div class="dialog-grid-divider" aria-hidden="true"></div>
     <div class="dialog-right-section">
      <div class="right-level-spacer" aria-hidden="true">
+       Level {{ selectedProject?.level || '' }}
           </div>
     <!-- 纵向 3 条进度条：EXP / Coin / Hour（显示具体数值） -->
           <div class="right-metrics">
@@ -176,7 +162,12 @@
           </div>
         </div>  
       </div>   
+      <div class="dialog-footer-left">
+      <Button label="Ask for leave" class="p-button-secondary" />
+      <Button label="Confirm" class="p-button-primary" />
+    </div>
     <!-- 右下角 Mandator -->
+     
     <div class="assigned-box">
       <div class="right-level-spacer" aria-hidden="true">
           </div>
@@ -263,6 +254,7 @@ import { useI18n } from 'vue-i18n'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import { useRouter } from 'vue-router'
+import ProgressBar from 'primevue/progressbar'
 
 const router = useRouter()
 
@@ -288,58 +280,66 @@ const period = computed(() => {
 const greetingKey = computed(() => `greetings-student.${period.value}`)
 
 const allProjects = [
-  // {
-  //   id: 1,
-  //   title: 'Volunteer Feeding Stray Cats',
-  //   date: '5 July, 2025',
-  //   status: 'ongoing',
-  //   image: solo1,
-  //   exp: '300 exp',
-  //   level: 'E',
-  //   avatar: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
-  //   author: 'Amy Elsner',
-  //   description: '中午十二点，在三棵树集合喂猫，时长为1小时，需要5–6人',
-  //   mandator: 'John Doe',
-  // },
-  // {
-  //   id: 2,
-  //   title: 'Organize Community Event',
-  //   date: '12 June, 2025',
-  //   status: 'ongoing',
-  //   image: teamwork,
-  //   exp: '400 exp',
-  //   level: 'C',
-  //   avatar: 'https://primefaces.org/cdn/primevue/images/avatar/onyamalimba.png',
-  //   author: 'Onya Malimba',
-  //   description: '下午两点，在活动中心组织志愿者会议，需要3人负责接待',
-  //   mandator: 'John Doe',
-  // },
-  // {
-  //   id: 3,
-  //   title: 'Schoolyard Cleanup Event',
-  //   date: '20 May, 2025',
-  //   status: 'completed',
-  //   image: solo2,
-  //   exp: '250 exp',
-  //   level: 'D',
-  //   avatar: 'https://primefaces.org/cdn/primevue/images/avatar/ivanmagalhaes.png',
-  //   author: 'Ivan Magalhaes',
-  //   description: '早上九点集合，清理学校操场，需要10人，时长2小时',
-  //   mandator: 'John Doe',
-  // },
-  // {
-  //   id: 4,
-  //   title: 'Design Posters for Art Festival',
-  //   date: '15 August, 2025',
-  //   status: 'ongoing',
-  //   image: solo2,
-  //   exp: '350 exp',
-  //   level: 'B',
-  //   avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
-  //   author: 'Xu Xuefeng',
-  //   description: '设计艺术节宣传海报，预计工作时间3小时，需要2位同学合作完成',
-  //   mandator: 'John Doe',
-  // }
+  {
+    id: 1,
+    title: 'Volunteer Feeding Stray Cats',
+    date: '5 July, 2025',
+    status: 'ongoing',
+    image: solo1,
+    exp: '300 exp',
+    coin: '60',
+    hour: '2', 
+    level: 'E',
+    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
+    author: 'Amy Elsner',
+    description: '中午十二点，在三棵树集合喂猫，时长为1小时，需要5–6人',
+    mandator: 'John Doe',
+  },
+  {
+    id: 2,
+    title: 'Organize Community Event',
+    date: '12 June, 2025',
+    status: 'ongoing',
+    image: teamwork,
+    exp: '400 exp',
+    coin: '60',
+    hour: '2', 
+    level: 'C',
+    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/onyamalimba.png',
+    author: 'Onya Malimba',
+    description: '下午两点，在活动中心组织志愿者会议，需要3人负责接待',
+    mandator: 'John Doe',
+  },
+  {
+    id: 3,
+    title: 'Schoolyard Cleanup Event',
+    date: '20 May, 2025',
+    status: 'completed',
+    image: solo2,
+    exp: '250 exp',
+    coin: '60',
+    hour: '2', 
+    level: 'D',
+    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/ivanmagalhaes.png',
+    author: 'Ivan Magalhaes',
+    description: '早上九点集合，清理学校操场，需要10人，时长2小时',
+    mandator: 'John Doe',
+  },
+  {
+    id: 4,
+    title: 'Design Posters for Art Festival',
+    date: '15 August, 2025',
+    status: 'ongoing',
+    image: solo2,
+    exp: '350 exp',
+    coin: '60',
+    hour: '2', 
+    level: 'B',
+    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
+    author: 'Xu Xuefeng',
+    description: '设计艺术节宣传海报，预计工作时间3小时，需要2位同学合作完成',
+    mandator: 'John Doe',
+  }
 ]
 
 const filteredProjects = computed(() =>
@@ -720,11 +720,21 @@ const goToQuestStore = () => {
 }
 
 .dialog-custom-header {
-  display: flex;
-  align-items: center;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: stretch;
+  padding: 0 16px;
+  box-sizing: border-box;
   gap: 12px;
-  padding: 8px 16px;
 }
+
+.dialog-header-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0;
+}
+
 .dialog-back-button {
   font-size: 18px;
   color: #333;
@@ -750,32 +760,12 @@ const goToQuestStore = () => {
   font-weight: bold;
   font-size: 32px;
   text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
-}
-.dialog-content-wrapper {
-  position: relative;               /* 供分隔线定位 */
-  display: flex;
-  gap: 24px;
-  padding: 24px;
-  min-height: 0;
-  height: 100%;
-  box-sizing: border-box;
-}
-.dialog-left-section {
-  flex: 0 0 75%;
-  width: 75%;
-  display: flex;
-  flex-direction: column;
-  --rail: 24px;                     /* ✅ 与左边框的统一对齐距离 */
-  padding-left: var(--rail);        /* ✅ 所有正文内容的左内边距 */
-  position: relative;               /* 供头像绝对定位“悬挂” */
-  overflow: visible;                /* 确保头像不被裁剪 */
-  word-wrap: break-word;
-  word-break: break-word;
-  margin-top: -20px;
+  z-index: 1000;             /* 额外层级 */
+  pointer-events: none;       /* 不遮挡点击 */
 }
 .dialog-description-row {
   /* ✅ 不再使用任何左侧额外缩进或占位元素 */
-  margin: 0 0 16px 0;
+  margin: 0;
   padding: 0;                       /* 继承 .dialog-left-section 的 --rail */
   margin-left: 25px;
 }
@@ -805,13 +795,6 @@ const goToQuestStore = () => {
   flex-shrink: 0;
   object-fit: cover;
 }
-.dialog-left-buttons {
-  position: absolute;
-  left: 30px;
-  bottom: 30px;
-  display: flex;
-  gap: 18px; /* 按钮之间的间距 */
-}
 
 .custom-btn {
   background-color: #2A2C55 !important; /* 按钮背景色 */
@@ -833,16 +816,6 @@ const goToQuestStore = () => {
 .custom-btn:focus {
   outline: none !important; /* 去掉默认 outline */
   box-shadow: 0 4px 12px rgba(42, 44, 85, 0.3) !important; /* 聚焦时保留普通阴影 */
-}
-.dialog-vertical-divider {
-  position: absolute;
-  top: 100px;
-  bottom: 100px;
-  left: 75%;
-  width: 1px;
-  background-color: #ccc;
-  border-radius: 1px;
-  z-index: 10;
 }
 
 .dialog-date {
@@ -974,29 +947,19 @@ const goToQuestStore = () => {
   border-radius: 999px !important;  /* 超大圆角就会成椭圆气泡了 */
   overflow: hidden;                 /* 防止内部方角内容溢出 */
 }
-/* 右栏：Level 与进度条（NEW） */
-.dialog-right-section {
-  --metric-gap: 16px;        /* 进度条之间 & 与 Level 的距离都用这个值 */
-  padding: 8px 16px;
-}
-.dialog-right-section {
-  flex: 0 0 25%;
-  width: 25%;
-  min-height: 0;
-  overflow: hidden;
-  position: relative;
-}
 .right-level-spacer {
   font-weight: bold;
   font-size: 32px;
   line-height: 1.2;
   visibility: hidden;        /* 不显示，但占位与浮动 Level 等高空间 */
 }
+
 .right-metrics {
   display: flex;
   flex-direction: column;
-  gap: var(--metric-gap);     /* 三条之间的间距 */
-  margin-top: -45px; /* 与 Level 的距离，= gap */
+  gap: var(--metric-gap);
+  width: clamp(220px, 80%, 320px);
+  margin: 0 auto;       /* ⬅ 居中 */
 }
 .metric-text {
   font-size: 12px;
@@ -1019,34 +982,40 @@ const goToQuestStore = () => {
 .metric-row {
   display: flex;
   align-items: center;
-  gap: 0px;                 /* icon 和 bar 的距离 */
+  width: 100%;
+  position: relative;
 }
 
 .metric-icon {
-  width: 45px;
-  height: 45px;
-  flex-shrink: 0;           /* 图标固定大小，不会被压缩 */
-  margin-right: -18px;
-  z-index: 2;
+  width: clamp(28px, 4vw, 45px);
+  height: clamp(28px, 4vw, 45px);
+  margin-right: max(-12px, -2vw);   /* 维持你原来的“嵌入进度条”的效果 */
+  flex-shrink: 0;
+  z-index: 3;
+  position: relative;
 }
 
 .metric-bar {
   flex: 1;                  /* 占满剩余空间 */
-  z-index: 1;
+  width: 100%;              /* 确保进度条撑满父容器 */
+  min-width: 120px;         /* 避免太小挤没了 */
 }
 
 .metric-label {
-  text-align: left;       /* label 居中到 icon 下方 */
+  margin-left: 10px;
   font-size: 13px;
   font-weight: 600;
-  margin-left: 10px;
   color: #5a6275;
 }
 .metric-bar :deep(.p-progressbar) {
-  height: 24px;             /* 改这里就能调整高度 */
+  display: block;
+  width: 100%;
+  height: clamp(18px, 2.5vw, 28px);
   border-radius: 999px;
-  overflow: hidden;
   background: #eef2fb;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
 }
 
 .metric-bar :deep(.p-progressbar-value) {
@@ -1100,4 +1069,79 @@ const goToQuestStore = () => {
   color: #2A2C55;
 }
 
+:deep(.p-dialog) {
+  height: 100%;
+}
+.project-dialog :deep(.p-dialog-header) {
+  padding: 0 !important;
+}
+.project-dialog :deep(.p-dialog-content) {
+  padding: 0 !important;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto !important;
+  overflow: hidden;
+  position: relative;
+  box-sizing: border-box;
+}
+:deep(.p-dialog-mask.p-component-overlay) {
+  backdrop-filter: blur(6px);
+  background-color: rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.dialog-content-wrapper {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) 1px minmax(0, 1fr);
+  column-gap: 24px;
+  padding: 24px;
+  height: 100%;
+  box-sizing: border-box;
+  position: relative;
+  --divider-inset: 0px;
+}
+
+.dialog-left-section { grid-column: 1; }
+.dialog-right-section { grid-column: 3; }
+/* 左右列不再写固定百分比宽度，由 Grid 控制 */
+
+.dialog-left-section {
+  grid-column: 1;
+  display: flex;
+  flex-direction: column;
+  padding-left: 24px;
+  margin-top: 0;
+  overflow: visible;
+}
+
+.dialog-right-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;   /* 右栏内部水平居中 */
+  justify-content: flex-start; /* 内容从上往下 */
+  padding: 8px 16px;
+  --metric-gap: 16px;
+  z-index: 2;            /* 让它在分割线之上 */
+}
+
+.dialog-grid-divider {
+  grid-column: 2;
+  background-color: #ccc;
+  border-radius: 1px;
+  align-self: stretch;                    /* 拉满网格行高度 */
+  margin-block: var(--divider-inset);     /* ⬅ 上下等距内缩 */
+}
+.dialog-vertical-divider {
+  display: none !important;
+}
+.dialog-footer-left {
+  position: absolute;
+  bottom: 24px;   /* 距离底部 24px，可以自己调 */
+  left: 24px;     /* 距离左侧 24px */
+  display: flex;
+  gap: 12px;      /* 按钮之间的间隔 */
+  z-index: 5;     /* 确保不被内容遮挡 */
+}
 </style>
