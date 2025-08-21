@@ -29,32 +29,49 @@
     <!-- 主体卡片区域 -->
     <div class="main-body">
       <div class="grid-container">
-        <!-- Projects 使用 task-card 样式 -->
-        <div
-          v-for="project in filteredProjects"
-          :key="project.id"
-          class="task-card"
-          @click="openProjectDialog(project)"
-        >
-          <h3 class="task-title">{{ project.title }}</h3>
-          <div class="task-time">
-            <i class="pi pi-clock"></i>
-            <span>{{ project.date }}</span>
-          </div>
-          <div class="task-exp">{{ project.exp || $t('common.na') }}</div>
-          <div class="task-teamwork">
-            <img :src="project.image" alt="Project Image" class="task-teamwork-image" />
-          </div>
-          <div class="task-footer">
-            <div class="avatar-wrapper">
-              <Avatar
-                :image="project.avatar"
-                shape="circle"
-                style="width: 40px; height: 40px"
-              />
-              <span class="avatar-name">{{ project.author }}</span>
+        <!-- 有任务：照常渲染 -->
+        <template v-if="filteredProjects.length">
+          <div
+            v-for="project in filteredProjects"
+            :key="project.id"
+            class="task-card"
+            @click="openProjectDialog(project)"
+          >
+            <h3 class="task-title">{{ project.title }}</h3>
+            <div class="task-time">
+              <i class="pi pi-clock"></i>
+              <span>{{ project.date }}</span>
             </div>
-            <span class="task-level">{{ $t('common.level') }} {{ project.level }}</span>
+            <div class="task-exp">{{ project.exp || $t('common.na') }}</div>
+            <div class="task-teamwork">
+              <img :src="project.image" alt="Project Image" class="task-teamwork-image" />
+            </div>
+            <div class="task-footer">
+              <div class="avatar-wrapper">
+                <Avatar
+                  :image="project.avatar"
+                  shape="circle"
+                  style="width: 40px; height: 40px"
+                />
+                <span class="avatar-name">{{ project.author }}</span>
+              </div>
+              <span class="task-level">{{ $t('common.level') }} {{ project.level }}</span>
+            </div>
+          </div>
+        </template>
+
+        <!-- 无任务：显示可点击的“新增/获取任务”卡片 -->
+        <div
+          v-else
+          class="task-card add-card"
+          role="button"
+          tabindex="0"
+          @click="goToQuestStore"
+          @keypress.enter="goToQuestStore"
+        >
+          <div class="add-card-content">
+            <i class="pi pi-plus large-plus" aria-hidden="true"></i>
+            <div class="add-text">{{ $t('questLog.getQuest') || '获取任务' }}</div>
           </div>
         </div>
       </div>
@@ -223,6 +240,9 @@ import solo2 from '../../assets/solo2.png'
 import { useI18n } from 'vue-i18n'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const { t } = useI18n()
 
@@ -246,58 +266,58 @@ const period = computed(() => {
 const greetingKey = computed(() => `greetings-student.${period.value}`)
 
 const allProjects = [
-  {
-    id: 1,
-    title: 'Volunteer Feeding Stray Cats',
-    date: '5 July, 2025',
-    status: 'ongoing',
-    image: solo1,
-    exp: '300 exp',
-    level: 'E',
-    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
-    author: 'Amy Elsner',
-    description: '中午十二点，在三棵树集合喂猫，时长为1小时，需要5–6人',
-    mandator: 'John Doe',
-  },
-  {
-    id: 2,
-    title: 'Organize Community Event',
-    date: '12 June, 2025',
-    status: 'ongoing',
-    image: teamwork,
-    exp: '400 exp',
-    level: 'C',
-    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/onyamalimba.png',
-    author: 'Onya Malimba',
-    description: '下午两点，在活动中心组织志愿者会议，需要3人负责接待',
-    mandator: 'John Doe',
-  },
-  {
-    id: 3,
-    title: 'Schoolyard Cleanup Event',
-    date: '20 May, 2025',
-    status: 'completed',
-    image: solo2,
-    exp: '250 exp',
-    level: 'D',
-    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/ivanmagalhaes.png',
-    author: 'Ivan Magalhaes',
-    description: '早上九点集合，清理学校操场，需要10人，时长2小时',
-    mandator: 'John Doe',
-  },
-  {
-    id: 4,
-    title: 'Design Posters for Art Festival',
-    date: '15 August, 2025',
-    status: 'ongoing',
-    image: solo2,
-    exp: '350 exp',
-    level: 'B',
-    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
-    author: 'Xu Xuefeng',
-    description: '设计艺术节宣传海报，预计工作时间3小时，需要2位同学合作完成',
-    mandator: 'John Doe',
-  }
+  // {
+  //   id: 1,
+  //   title: 'Volunteer Feeding Stray Cats',
+  //   date: '5 July, 2025',
+  //   status: 'ongoing',
+  //   image: solo1,
+  //   exp: '300 exp',
+  //   level: 'E',
+  //   avatar: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
+  //   author: 'Amy Elsner',
+  //   description: '中午十二点，在三棵树集合喂猫，时长为1小时，需要5–6人',
+  //   mandator: 'John Doe',
+  // },
+  // {
+  //   id: 2,
+  //   title: 'Organize Community Event',
+  //   date: '12 June, 2025',
+  //   status: 'ongoing',
+  //   image: teamwork,
+  //   exp: '400 exp',
+  //   level: 'C',
+  //   avatar: 'https://primefaces.org/cdn/primevue/images/avatar/onyamalimba.png',
+  //   author: 'Onya Malimba',
+  //   description: '下午两点，在活动中心组织志愿者会议，需要3人负责接待',
+  //   mandator: 'John Doe',
+  // },
+  // {
+  //   id: 3,
+  //   title: 'Schoolyard Cleanup Event',
+  //   date: '20 May, 2025',
+  //   status: 'completed',
+  //   image: solo2,
+  //   exp: '250 exp',
+  //   level: 'D',
+  //   avatar: 'https://primefaces.org/cdn/primevue/images/avatar/ivanmagalhaes.png',
+  //   author: 'Ivan Magalhaes',
+  //   description: '早上九点集合，清理学校操场，需要10人，时长2小时',
+  //   mandator: 'John Doe',
+  // },
+  // {
+  //   id: 4,
+  //   title: 'Design Posters for Art Festival',
+  //   date: '15 August, 2025',
+  //   status: 'ongoing',
+  //   image: solo2,
+  //   exp: '350 exp',
+  //   level: 'B',
+  //   avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
+  //   author: 'Xu Xuefeng',
+  //   description: '设计艺术节宣传海报，预计工作时间3小时，需要2位同学合作完成',
+  //   mandator: 'John Doe',
+  // }
 ]
 
 const filteredProjects = computed(() =>
@@ -353,6 +373,11 @@ const submitLeave = () => {
   leaveTitle.value = ''
   leaveDetail.value = ''
   leavePanel.value?.hide()
+}
+
+/** 跳转到任务获取页（请按你的路由实际修改） */
+const goToQuestStore = () => {
+  router.push('/student/task')
 }
 </script>
 
@@ -557,7 +582,12 @@ const submitLeave = () => {
   gap: 40px;
   padding: 40px;
 }
-
+.grid-container:has(.add-card) {
+  display: flex;              /* 改成 flex 布局 */
+  justify-content: center;    /* 水平居中 */
+  align-items: center;        /* 垂直居中（可选） */
+  min-height: 100%;           /* 保证占满容器高度 */
+}
 /* task-card 样式用于 projects */
 .task-card {
   background-color: white;
@@ -856,4 +886,44 @@ const submitLeave = () => {
   border-radius: 999px !important;  /* 超大圆角就会成椭圆气泡了 */
   overflow: hidden;                 /* 防止内部方角内容溢出 */
 }
+
+
+/* 空态：与 task-card 一致的卡片，内容居中 */
+.add-card {
+  cursor: pointer;
+  display: flex;
+  align-items: center;     /* 垂直居中 */
+  justify-content: center; /* 水平居中 */
+  min-height: 200px;            /* 保持和普通卡片差不多的高度 */
+  min-width: 350px;   
+  border: 2px dashed rgba(0, 123, 255, 0.25);
+}
+
+
+.add-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+.add-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* 关键：纵向也居中 */
+  gap: 12px;
+  text-align: center;      /* 文本水平居中 */
+  user-select: none;
+}
+
+
+.large-plus {
+  font-size: 42px;
+}
+
+.add-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2A2C55;
+}
+
 </style>
