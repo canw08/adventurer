@@ -35,35 +35,20 @@
         <img src="/public/login.jpg" alt="login" class="media-img" />
       </section>
 
-
       <!-- 奖励条 -->
-      <section class="rewards">
-        <!-- EXP -->
-        <div class="reward">
-          <div class="icon-wrap">
-            <img class="r-icon" :src="expIcon" alt="EXP"/>
-          </div>
-          <div class="bar-bg">
-            <div class="bar-fill bar-orange" :style="{ width: expPercent + '%' }">
-              <span class="amount">500</span>
+        <div class="right-metrics">
+            <div v-for="m in metricsBound" :key="m.key" class="metric-item">
+              <!-- 上行：icon + 进度条 -->
+              <div class="metric-row">
+                <img :src="m.icon" alt="" class="metric-icon pixelated click-wiggle" />
+                <ProgressBar :value="m.pct" class="metric-bar" :style="{ height: '28px','--bar-color': m.color }">
+                  <span class="metric-text">{{ m.raw }}{{ m.unit }}</span>
+                </ProgressBar>
+              </div>
+              <!-- 下行：label -->
+              <div class="metric-label">{{ m.label }}</div>
             </div>
           </div>
-          <div class="under-label">EXP</div>
-        </div>
-
-        <!-- Coin -->
-        <div class="reward">
-          <div class="icon-wrap">
-            <img class="r-icon" :src="coinIcon" alt="Coin"/>
-          </div>
-          <div class="bar-bg">
-            <div class="bar-fill bar-yellow" :style="{ width: coinPercent + '%' }">
-              <span class="amount">340</span>
-            </div>
-          </div>
-          <div class="under-label">Coin</div>
-        </div>
-      </section>
 
       <!-- 底部：左按钮 + 右指派 -->
       <footer class="bottom">
@@ -80,25 +65,56 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-// 引入本地图标
-import expIcon from '../assets/icon/exp.png'
-import coinIcon from '../assets/icon/token.png'
+import { computed, ref, defineComponent, h } from 'vue'
 
 const hostAvatar = 'https://api.dicebear.com/9.x/adventurer/svg?seed=bridgette'
 const assigneeAvatar = 'https://api.dicebear.com/9.x/adventurer/svg?seed=haoyang'
-
-
-const exp = 500, expMax = 1000
-const coin = 340, coinMax = 500
-const expPercent  = computed(() => Math.min(100, Math.round((exp  / expMax ) * 100)))
-const coinPercent = computed(() => Math.min(100, Math.round((coin / coinMax) * 100)))
-
 // <script setup>
 const pics = [
   'public/image/login.jpg',
 ]
+const metricsBound = computed(() => {
+  const p = selectedProject.value || {};
+  return METRIC_DEFS.map(def => {
+    const raw = toNumber(p?.[def.key] ?? 0);
+    const pct = def.max > 0 ? Math.max(0, Math.min(100, Math.round((raw / def.max) * 100))) : 0;
+    return { ...def, raw, pct };
+  });
+});
+// 统一的上限与单位（可按业务调整）
+const METRIC_DEFS = [
+  { key: 'exp',  label: 'EXP',  max: 500, unit: '', icon: new URL('../assets/icon/exp.png',   import.meta.url).href, color: '#F58B40' },
+  { key: 'coin', label: 'Coin', max: 100, unit: '', icon: new URL('../assets/icon/token.png', import.meta.url).href, color: '#FBE838' },
+  { key: 'hour', label: 'Hour', max: 10,  unit: 'h', icon: new URL('../assets/icon/time.png',  import.meta.url).href, color: '#65D6ef'  },
+]
 
+/* ✅ 补齐：selectedProject（如果你之后从接口赋值，可以把这里的初始值替换掉） */
+type Project = { exp?: number; coin?: number; hour?: number }
+const selectedProject = ref<Project>({
+  exp: 500,
+  coin: 85,
+  hour: 1,
+})
+
+/* ✅ 补齐：toNumber 工具 */
+const toNumber = (v: unknown) => {
+  const n = Number(v)
+  return Number.isFinite(n) ? n : 0
+}
+
+const ProgressBar = defineComponent({
+  name: 'ProgressBar',
+  props: { value: { type: Number, required: true } },
+  setup(props, { slots }) {
+    return () =>
+      h('div', { class: 'pbar-bg' }, [
+        h('div', {
+          class: 'pbar-fill',
+          style: { width: `${Math.max(0, Math.min(100, props.value))}%` }
+        }, slots.default?.())
+      ])
+  }
+})
 </script>
 
 <style scoped>
@@ -182,6 +198,7 @@ const pics = [
   grid-template-columns: repeat(2, 300px);
   gap: 28px;
   margin: 24px 0 16px;
+  margin-left: 5%;
 }
 
 .media-img {
@@ -241,11 +258,12 @@ const pics = [
   background:var(--btn);
   color:#fff;
   border:none;
-  padding:12px 28px;
+  padding:12px 58px;
   font-weight:900;
-  border-radius:999px;
+  border-radius:500px;
   font-size:18px;
   cursor:pointer;
+  background-color: #2A2C55;
 }
 .accept:active{ transform: translateY(1px); }
 
@@ -261,5 +279,54 @@ const pics = [
 @media (max-width: 720px){
   .container{ padding:24px 18px; }
   .media{ grid-template-columns: 1fr; }
+}
+
+.right-metrics {
+  display: flex;
+  position: absolute;
+  flex-direction: column;
+  gap: var(--metric-gap);     /* 三条之间的间距 */
+  margin-top: -45px; /* 与 Level 的距离，= gap */
+  top: 65%;
+  margin-left: 5%;
+}
+.metric-item {
+  display: flex;
+  flex-direction: column;   /* 上下布局：第一行 icon+bar，第二行 label */
+  gap: 4px;
+}
+.metric-row {
+  display: flex;
+  align-items: center;
+  gap: 0px;                 /* icon 和 bar 的距离 */
+}
+.metric-icon {
+  width: 45px;
+  height: 45px;
+  flex-shrink: 0;           /* 图标固定大小，不会被压缩 */
+  margin-right: -18px;
+  z-index: 2;
+}
+.metric-bar {
+  flex: 1;                  /* 占满剩余空间 */
+  z-index: 1;
+}
+.metric-label {
+  text-align: left;       /* label 居中到 icon 下方 */
+  font-size: 13px;
+  font-weight: 600;
+  margin-left: 10px;
+  color: #5a6275;
+}
+.pixelated {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  image-rendering: -moz-crisp-edges;
+  -ms-interpolation-mode: nearest-neighbor; /* legacy IE */
+}
+.metric-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #FFf;
 }
 </style>
