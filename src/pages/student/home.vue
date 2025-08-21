@@ -65,62 +65,66 @@
 <Dialog
   v-model:visible="showDialog"
   modal
+  blockScroll
   dismissableMask
   :closable="false"
   :style="{ width: '1100px', height: '700px', position: 'relative' }"
   class="project-dialog"
 >
   <template #header>
-    <div class="dialog-custom-header">
-      <div class="dialog-header-left">
-        <Button
-          icon="pi pi-arrow-left"
-          text
-          class="dialog-back-button"
-          @click="showDialog = false"
-        />
-      </div>
-      <div class="dialog-header-center">
-        <span class="dialog-title">{{ selectedProject?.title || '' }}</span>
-      </div>
-      <div class="floating-dialog-level">
-        Level {{ selectedProject?.level || '' }}
-      </div>
-    </div>
-  </template>
+        <div class="dialog-custom-header">
+          <!-- 左侧返回按钮 -->
+          <div class="dialog-header-left">
+            <Button
+              icon="pi pi-arrow-left"
+              text
+              class="dialog-back-button"
+              @click="showDialog = false"
+            />
+          </div>
+
+          <!-- 中间标题 + 时间 -->
+          <div class="dialog-header-center">
+            <span class="dialog-title">{{ selectedProject?.title || '' }}</span>
+            <span class="dialog-date-inline">
+              <i class="pi pi-clock"></i>
+              {{ selectedProject?.date }}
+            </span>
+          </div>
+
+          <!-- 浮动右上角的等级标签（只显示） -->
+          <div class="floating-dialog-level">
+            Level {{ selectedProject?.level || '' }}
+          </div>
+        </div>
+      </template>
+
 
   <!-- ① 内容包裹层：先开 -->
   <div class="dialog-content-wrapper">
     <div class="dialog-left-section">
       <div class="dialog-vertical-divider"></div>
-
-      <div class="dialog-date">
-        <i class="pi pi-clock dialog-icon"></i>
-        <span>{{ selectedProject?.date || '' }}</span>
-      </div>
-
       <div class="dialog-author">
         <Avatar
           :image="selectedProject?.avatar || 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png'"
           shape="circle"
           size="large"
-          style="width: 40px; height: 40px"
+          style="width: 50px; height: 50px"
         />
-        <span class="author-name">{{ selectedProject?.author || '' }}</span>
+        <span class="author-name">{{ selectedProject?.author}}</span>
       </div>
 
       <div class="dialog-description-row">
-        <div class="fake-avatar-space"></div>
         <p class="dialog-description">
           {{ selectedProject?.description || '无任务说明' }}
         </p>
       </div>
 
-      <div class="dialog-images">
-        <div class="image-placeholder"></div>
-        <div class="image-placeholder"></div>
-      </div>
-    </div>
+      <div class="dialog-images" role="group" aria-label="Project Images">
+            <div class="image-placeholder" aria-hidden="true"></div>
+            <div class="image-placeholder" aria-hidden="true"></div>
+          </div>
+        </div>
 
     <!-- ✅ 只保留这一组按钮（使用 OverlayPanel） -->
     <div class="dialog-left-buttons">
@@ -136,10 +140,29 @@
       />
     </div>
 
-    <div class="dialog-right-section"></div>
-
+    <div class="dialog-right-section">
+     <div class="right-level-spacer" aria-hidden="true">
+          </div>
+    <!-- 纵向 3 条进度条：EXP / Coin / Hour（显示具体数值） -->
+          <div class="right-metrics">
+            <div v-for="m in metricsBound" :key="m.key" class="metric-item">
+              <!-- 上行：icon + 进度条 -->
+              <div class="metric-row">
+                <img :src="m.icon" alt="" class="metric-icon pixelated click-wiggle" />
+                <ProgressBar :value="m.pct" class="metric-bar" :style="{ height: '28px','--bar-color': m.color }">
+                  <span class="metric-text">{{ m.raw }}{{ m.unit }}</span>
+                </ProgressBar>
+              </div>
+              <!-- 下行：label -->
+              <div class="metric-label">{{ m.label }}</div>
+            </div>
+          </div>
+        </div>  
+      </div>   
     <!-- 右下角 Mandator -->
     <div class="assigned-box">
+      <div class="right-level-spacer" aria-hidden="true">
+          </div>
       <span class="assigned-label">Mandator</span>
       <span class="assigned-name">{{ selectedProject?.mandator || '' }}</span>
       <Avatar
@@ -148,7 +171,6 @@
         style="width: 48px; height: 48px"
       />
     </div>
-  </div>
   <!-- ② 内容包裹层：先关 ↑ 这一行必须在 OverlayPanel 之前 -->
 
   <!-- ③ OverlayPanel 放在 Dialog 内、content-wrapper 外 -->
@@ -223,6 +245,8 @@ import solo2 from '../../assets/solo2.png'
 import { useI18n } from 'vue-i18n'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
+import Button from 'primevue/button'
+import ProgressBar from 'primevue/progressbar'
 
 const { t } = useI18n()
 
@@ -253,24 +277,26 @@ const allProjects = [
     status: 'ongoing',
     image: solo1,
     exp: '300 exp',
+    coin: '60',
+    hour: '2', 
     level: 'E',
     avatar: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
     author: 'Amy Elsner',
     description: '中午十二点，在三棵树集合喂猫，时长为1小时，需要5–6人',
-    mandator: 'John Doe',
   },
   {
     id: 2,
     title: 'Organize Community Event',
     date: '12 June, 2025',
     status: 'ongoing',
-    image: teamwork,
+    image: 'https://picsum.photos/seed/book/400/200',
     exp: '400 exp',
+    coin: '60',
+    hour: '2', 
     level: 'C',
     avatar: 'https://primefaces.org/cdn/primevue/images/avatar/onyamalimba.png',
     author: 'Onya Malimba',
     description: '下午两点，在活动中心组织志愿者会议，需要3人负责接待',
-    mandator: 'John Doe',
   },
   {
     id: 3,
@@ -279,11 +305,12 @@ const allProjects = [
     status: 'completed',
     image: solo2,
     exp: '250 exp',
+    coin: '60',
+    hour: '2', 
     level: 'D',
     avatar: 'https://primefaces.org/cdn/primevue/images/avatar/ivanmagalhaes.png',
     author: 'Ivan Magalhaes',
     description: '早上九点集合，清理学校操场，需要10人，时长2小时',
-    mandator: 'John Doe',
   },
   {
     id: 4,
@@ -292,13 +319,56 @@ const allProjects = [
     status: 'ongoing',
     image: solo2,
     exp: '350 exp',
+    coin: '60',
+    hour: '2', 
     level: 'B',
     avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
     author: 'Xu Xuefeng',
     description: '设计艺术节宣传海报，预计工作时间3小时，需要2位同学合作完成',
-    mandator: 'John Doe',
-  }
-]
+  },
+  {
+    id: 5,
+    title: 'Design Posters for Art Festival',
+    date: '15 August, 2025',
+    status: 'ongoing',
+    image: 'https://picsum.photos/seed/poster/400/200',
+    exp: '350 exp',
+    coin: '60',
+    hour: '2', 
+    level: 'B',
+    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
+    author: 'Xu Xuefeng',
+    description: '设计艺术节宣传海报，预计工作时间3小时，需要2位同学合作完成',
+  },
+  {
+    id: 6,
+    title: 'Design Posters for Art Festival',
+    date: '15 August, 2025',
+    status: 'ongoing',
+    image: 'https://picsum.photos/seed/poster/400/200',
+    exp: '350 exp',
+    coin: '60',
+    hour: '2', 
+    level: 'B',
+    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
+    author: 'Xu Xuefeng',
+    description: '设计艺术节宣传海报，预计工作时间3小时，需要2位同学合作完成',
+  },
+  {
+    id: 7,
+    title: 'Design Posters for Art Festival',
+    date: '15 August, 2025',
+    status: 'ongoing',
+    image: 'https://picsum.photos/seed/poster/400/200',
+    exp: '350 exp',
+    coin: '60',
+    hour: '2', 
+    level: 'B',
+    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
+    author: 'Xu Xuefeng',
+    description: '设计艺术节宣传海报，预计工作时间3小时，需要2位同学合作完成',
+  },
+];
 
 const filteredProjects = computed(() =>
   allProjects.filter((p) => p.status === activeTab.value)
@@ -354,6 +424,32 @@ const submitLeave = () => {
   leaveDetail.value = ''
   leavePanel.value?.hide()
 }
+// 提取数字：'400 exp' -> 400；数字则原样返回
+const toNumber = (v) => {
+  if (typeof v === 'number') return v;
+  if (typeof v === 'string') {
+    const m = v.match(/[\d.]+/);
+    return m ? Number(m[0]) : 0;
+  }
+  return 0;
+};
+
+// 统一的上限与单位（可按业务调整）
+const METRIC_DEFS = [
+  { key: 'exp',  label: 'EXP',  max: 500, unit: '', icon: new URL('../../assets/icon/exp.png', import.meta.url).href, color: '#F58B40'},
+  { key: 'coin', label: 'Coin', max: 100, unit: '', icon: new URL('../../assets/icon/token.png', import.meta.url).href , color: '#FBE838'},
+  { key: 'hour', label: 'Hour', max: 10,  unit: 'h', icon: new URL('../../assets/icon/time.png', import.meta.url).href , color: '#65D6ef'},
+];
+
+// 计算：为模板提供 { key,label,raw,max,unit,pct }（pct 仅用于进度条宽度）
+const metricsBound = computed(() => {
+  const p = selectedProject.value || {};
+  return METRIC_DEFS.map(def => {
+    const raw = toNumber(p?.[def.key] ?? 0);
+    const pct = def.max > 0 ? Math.max(0, Math.min(100, Math.round((raw / def.max) * 100))) : 0;
+    return { ...def, raw, pct };
+  });
+});
 </script>
 
 <style scoped>
@@ -656,6 +752,14 @@ const submitLeave = () => {
   font-weight: bold;
   color: #1e1e1e;
 }
+.dialog-date-inline {
+  font-size: 16px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top:5px;
+}
 .floating-dialog-level {
   position: absolute;
   top: 28px;
@@ -666,37 +770,58 @@ const submitLeave = () => {
   text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
 }
 .dialog-content-wrapper {
+  position: relative;               /* 供分隔线定位 */
   display: flex;
-  flex-direction: row;
   gap: 24px;
-  padding: 4px 24px 24px 24px;
+  padding: 24px;
+  min-height: 0;
   height: 100%;
+  box-sizing: border-box;
 }
 .dialog-left-section {
-  flex: 1;
-  max-width: 75%;
+  flex: 0 0 75%;
+  width: 75%;
+  display: flex;
+  flex-direction: column;
+  --rail: 24px;                     /* ✅ 与左边框的统一对齐距离 */
+  padding-left: var(--rail);        /* ✅ 所有正文内容的左内边距 */
+  position: relative;               /* 供头像绝对定位“悬挂” */
+  overflow: visible;                /* 确保头像不被裁剪 */
+  word-wrap: break-word;
+  word-break: break-word;
+  margin-top: -20px;
 }
 .dialog-description-row {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
+  /* ✅ 不再使用任何左侧额外缩进或占位元素 */
+  margin: 0 0 16px 0;
+  padding: 0;                       /* 继承 .dialog-left-section 的 --rail */
+  margin-left: 25px;
 }
-.fake-avatar-space {
-  width: 48px;
-  height: 48px;
+.dialog-description {
+  color: #666;
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;          /* 长词也能换行 */
+  margin-left: 30px;
+}
+.dialog-images {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  margin-top: 12px;
+  /* ✅ 关键：不做任何左偏移，保持与 --rail 对齐 */
+  padding-left: 0;
+  margin-left: 60px;
 }
 .image-placeholder {
   width: 240px;
   height: 160px;
   background-color: #e0e0e0;
   border-radius: 12px;
-}
-.dialog-images {
-  display: flex;
-  flex-direction: row;  /* 明确设置横向排列 */
-  gap: 12px;
-  margin-bottom: 20px;
-  margin-left: calc(48px + 12px);
+  flex-shrink: 0;
+  object-fit: cover;
 }
 .dialog-left-buttons {
   position: absolute;
@@ -749,14 +874,25 @@ const submitLeave = () => {
 }
 
 .dialog-author {
+  position: relative;               /* 让头像以左栏为参照“悬挂”出去 */
   display: flex;
   align-items: center;
-  margin-bottom: 12px;
-  gap: 8px;
+  min-height: 40px;                 /* 与头像高度一致，避免覆盖文本 */
+  margin-bottom: 16px;
+  margin-left: -14px;
+  gap: 20px;
+}
+/* 头像不计入对齐：向左外悬，不改变文本对齐 */
+.dialog-author :deep(.p-avatar) {
+  position: static;
+  left: calc(-50px - 8px);          /* 头像宽度 40 + 与文本间距 8 */
+  top: 0;
 }
 .author-name {
   font-weight: 500;
   font-size: 20px;
+  line-height: 1.2;                /* 与头像对齐更稳 */
+  margin: 0;                        /* ✅ 靠 --rail 对齐，不额外偏移 */
 }
 
 /* ★ 新增：右下角 Assigned 模块 */
@@ -855,5 +991,91 @@ const submitLeave = () => {
 :deep(.p-overlaypanel) {
   border-radius: 999px !important;  /* 超大圆角就会成椭圆气泡了 */
   overflow: hidden;                 /* 防止内部方角内容溢出 */
+}
+/* 右栏：Level 与进度条（NEW） */
+.dialog-right-section {
+  --metric-gap: 16px;        /* 进度条之间 & 与 Level 的距离都用这个值 */
+  padding: 8px 16px;
+}
+.dialog-right-section {
+  flex: 0 0 25%;
+  width: 25%;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+.right-level-spacer {
+  font-weight: bold;
+  font-size: 32px;
+  line-height: 1.2;
+  visibility: hidden;        /* 不显示，但占位与浮动 Level 等高空间 */
+}
+.right-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: var(--metric-gap);     /* 三条之间的间距 */
+  margin-top: -45px; /* 与 Level 的距离，= gap */
+}
+.metric-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #FFf;
+}
+.pixelated {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  image-rendering: -moz-crisp-edges;
+  -ms-interpolation-mode: nearest-neighbor; /* legacy IE */
+}
+
+.metric-item {
+  display: flex;
+  flex-direction: column;   /* 上下布局：第一行 icon+bar，第二行 label */
+  gap: 4px;
+}
+
+.metric-row {
+  display: flex;
+  align-items: center;
+  gap: 0px;                 /* icon 和 bar 的距离 */
+}
+
+.metric-icon {
+  width: 45px;
+  height: 45px;
+  flex-shrink: 0;           /* 图标固定大小，不会被压缩 */
+  margin-right: -18px;
+  z-index: 2;
+}
+
+.metric-bar {
+  flex: 1;                  /* 占满剩余空间 */
+  z-index: 1;
+}
+
+.metric-label {
+  text-align: left;       /* label 居中到 icon 下方 */
+  font-size: 13px;
+  font-weight: 600;
+  margin-left: 10px;
+  color: #5a6275;
+}
+.metric-bar :deep(.p-progressbar) {
+  height: 24px;             /* 改这里就能调整高度 */
+  border-radius: 999px;
+  overflow: hidden;
+  background: #eef2fb;
+}
+
+.metric-bar :deep(.p-progressbar-value) {
+  border-radius: 999px;
+  background-color: var(--bar-color, #3b82f6); /* 默认蓝色 */
+}
+
+/* 内容居中即可，不要再设高度覆盖 */
+.metric-bar :deep(.p-progressbar .p-progressbar-content) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

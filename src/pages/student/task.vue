@@ -130,13 +130,14 @@
       <div class="dialog-content-wrapper">
         <!-- 左侧内容区域（75%） -->
         <div class="dialog-left-section">
+          <div class="dialog-vertical-divider"></div>
           <!-- ✅ ID（author name）与左边框的对齐：依赖 --rail -->
           <div class="dialog-author">
             <Avatar
               image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png"
               shape="circle"
               size="large"
-              style="width: 40px; height: 40px"
+              style="width: 50px; height: 50px"
               aria-label="Author Avatar"
             />
             <span class="author-name">{{ selectedProject?.author }}</span>
@@ -155,10 +156,6 @@
             <div class="image-placeholder" aria-hidden="true"></div>
           </div>
         </div>
-
-        <!-- 分隔线（对齐 75%） -->
-        <div class="dialog-vertical-divider"></div>
-
        <!-- 右侧占位区域（25%） -->
         <div class="dialog-right-section">
           <!-- 为浮动的 Level 预留等高空间，保证与第一条进度条的距离 = 进度条间距 -->
@@ -789,6 +786,7 @@ const metricsBound = computed(() => {
   display: flex;
   align-items: center;
   gap: 6px;
+  margin-top:5px;
 }
 .floating-dialog-level {
   position: absolute;
@@ -841,14 +839,13 @@ const metricsBound = computed(() => {
 /* 分隔线（与 75% 对齐） */
 .dialog-vertical-divider {
   position: absolute;
-  top: 0px;
-  bottom: 0px;
+  top: 100px;
+  bottom: 100px;
   left: 75%;
   width: 1px;
   background-color: #ccc;
   border-radius: 1px;
   z-index: 10;
-  height: 100%; 
 }
 
 /* =========================
@@ -862,17 +859,19 @@ const metricsBound = computed(() => {
   align-items: center;
   min-height: 40px;                 /* 与头像高度一致，避免覆盖文本 */
   margin-bottom: 16px;
+  margin-left: -14px;
+  gap: 20px;
 }
 /* 头像不计入对齐：向左外悬，不改变文本对齐 */
 .dialog-author :deep(.p-avatar) {
-  position: absolute;
-  left: calc(-40px - 8px);          /* 头像宽度 40 + 与文本间距 8 */
+  position: static;
+  left: calc(-50px - 8px);          /* 头像宽度 40 + 与文本间距 8 */
   top: 0;
 }
 .author-name {
   font-weight: 500;
   font-size: 20px;
-  line-height: 40px;                /* 与头像对齐更稳 */
+  line-height: 1.2;                /* 与头像对齐更稳 */
   margin: 0;                        /* ✅ 靠 --rail 对齐，不额外偏移 */
 }
 
@@ -881,6 +880,7 @@ const metricsBound = computed(() => {
   /* ✅ 不再使用任何左侧额外缩进或占位元素 */
   margin: 0 0 16px 0;
   padding: 0;                       /* 继承 .dialog-left-section 的 --rail */
+  margin-left: 25px;
 }
 .dialog-description {
   color: #666;
@@ -889,6 +889,7 @@ const metricsBound = computed(() => {
   margin: 0;
   white-space: normal;
   overflow-wrap: anywhere;          /* 长词也能换行 */
+  margin-left: 30px;
 }
 
 /* 3) 图片（依赖 --rail，对齐左边框；不包含头像） */
@@ -898,8 +899,8 @@ const metricsBound = computed(() => {
   gap: 16px;
   margin-top: 12px;
   /* ✅ 关键：不做任何左偏移，保持与 --rail 对齐 */
-  margin-left: 0;
   padding-left: 0;
+  margin-left: 60px;
 }
 .image-placeholder {
   width: 240px;
@@ -1119,6 +1120,5 @@ const metricsBound = computed(() => {
   align-items: center;
   justify-content: center;
 }
-
 
 </style>
