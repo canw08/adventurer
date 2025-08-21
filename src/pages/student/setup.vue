@@ -25,7 +25,7 @@
     <input
       v-model="nickname"
       type="text"
-      placeholder="输入你的昵称"
+      :placeholder="$t('login.username')"
       class="input glass"
       inputmode="text"
       autocomplete="nickname"
@@ -51,13 +51,15 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useReward } from 'vue-rewards'
-
+import { useTipBuddy } from '../../composables/useTipBuddy'
+const { show } = useTipBuddy()
 const router = useRouter()
 const nickname = ref('')
 const fading = ref(false)
 
 const FADE_MS = 800
 const randomStr = ref('')
+const tipShown = ref(false)  // 变量：是否已经显示过
 
 const entering = ref(true)   // 👈 新增：入场黑屏状态
 
@@ -110,6 +112,10 @@ function rollDice() {
 
   // 触发整屏 confetti
   fireConfetti && fireConfetti()
+  if (!tipShown.value) {
+    show('Tips:头像一定要认真挑选噢~ 还没有渠道更换头像呢')
+    tipShown.value = true
+  }
 }
 
 function proceed() {

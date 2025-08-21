@@ -105,6 +105,7 @@ import { onMounted, computed, ref } from 'vue'
 import { useUserStore } from '../stores/user'
 import { useI18n } from 'vue-i18n'
 import { useToast } from 'primevue/usetoast'
+import { showOnce } from '../composables/tip-once.js'
 
 const toast = useToast()
 const { t } = useI18n()
@@ -120,7 +121,11 @@ const carpetImgB = new URL('../assets/icon/redcarpet.png', import.meta.url).href
 const carpetImgA = new URL('../assets/icon/bluecarpet.png', import.meta.url).href;
 
 const showExp = ref(false)
-const toggleExp = () => { showExp.value = !showExp.value }
+const toggleExp = () => 
+{
+  showOnce('avator-showexp-tip', '这里显示的是你经验的具体数值(❁´◡`❁)')
+  showExp.value = !showExp.value 
+}
 
 
 const tokenText = computed(() => {

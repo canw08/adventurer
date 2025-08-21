@@ -58,6 +58,7 @@
                 :value="level"
                 name="quest-level"
                 class="gapBetweenElements"
+                @change="onLevelChange"
               />
               <label :for="level">{{ level }}</label>
             </div>
@@ -189,6 +190,7 @@ import { useRouter } from 'vue-router'
 import teamwork from '../../assets/team.png'
 import { useI18n } from 'vue-i18n'
 import { onMounted } from 'vue';
+import { showOnce } from '../../composables/tip-once.js'
 
 const userStore = useUserStore();
 const selectedLevel = ref('')   // 或 'Level F'
@@ -326,6 +328,9 @@ const levels = computed(() => {
   return baseLevels
 })
 
+const onLevelChange = (value) => {
+  showOnce('select-level-tip', '等级越高的任务奖励越丰厚，但等级越高对冒险者的限制会越多噢~ 【点击右上角小问号可查看示例】 ')
+}
 
 const taskDate = ref(null)
 
@@ -342,23 +347,70 @@ const resolver = (values) => {
   return { values, errors }
 }
 
-const onFormSubmit = () => {
-  const plainText = editorContent.value.replace(/<[^>]*>/g, '').trim()
-  if (!plainText) {
-    contentError.value = '任务内容不能为空'
-    return
+const onFormSubmit = async (e) => {
+  e?.preventDefault?.();   // 防止页面刷新
+  try {
+    let html = editorContent.value
+
+    // 匹配所有 base64 图片
+    const imgRegex = /<img[^>]+src="data:image\/[^"]+"[^>]*>/g
+    const matches = html.match(imgRegex) || []
+
+    for (const tag of matches) {
+      const base64 = tag.match(/src="([^"]+)"/)?.[1]
+      if (base64?.startsWith('data:image')) {
+        // 转成 Blob
+        const res = await fetch(base64)
+        const blob = await res.blob()
+
+        // 构造 FormData
+        const fd = new FormData()
+        fd.append('file', blob, `image-${Date.now()}.png`)
+
+        // 调用上传接口
+        const uploadResp = await fetch('/api/upload', {
+          method: 'POST',
+          body: fd,
+        })
+        const uploadData = await uploadResp.json()
+
+        // 用返回的 URL 替换原来的 base64
+        if (uploadData?.url) {
+          html = html.replace(base64, uploadData.url)
+        }
+      }
+    }
+
+    // 构造最终任务数据
+    const payload = {
+      taskTitle: bigTitle.value,
+      taskDetails: html,
+      selectedLevel: selectedLevel.value,
+      exp: exp.value,
+      coin: coin.value,
+      hours: hours.value,
+      taskDate: taskDate.value ? taskDate.value.toISOString() : null,
+    }
+    console.log(payload);
+
+    // 调用任务创建接口
+    const resp = await fetch('/api/tasks/create/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    })
+    const data = await resp.json()
+
+    console.log('任务创建成功:', data)
+
+    showDialog.value = false
+  } catch (err) {
+    console.error('提交任务失败:', err)
   }
-  contentError.value = ''
-  console.log({
-    selectedLevel: selectedLevel.value,
-    exp: exp.value,
-    coin: coin.value,
-    hours: hours.value,
-    taskDate: taskDate.value,
-    taskDetails: editorContent.value
-  })
-  showDialog.value = false
 }
+
 const editorContent = ref('')
 const contentError = ref('')
 

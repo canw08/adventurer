@@ -18,7 +18,9 @@
 
 <script setup>
 import { useReward } from 'vue-rewards'
-
+import { useTipBuddy } from '../composables/useTipBuddy.js'
+const { show } = useTipBuddy()
+let count = 0;
 // 绑定到按钮 id
 const { reward } = useReward('fire-btn', 'emoji', {
   elementCount: 50,
@@ -30,6 +32,10 @@ const { reward } = useReward('fire-btn', 'emoji', {
 
 function boom() {
   reward()
+  count += 1
+  if(count == 10)
+    show('你已经点了10次了!!! 我要走了!!! 请使用电脑或平板访问本网站￣へ￣')
+
 }
 </script>
 

@@ -100,6 +100,7 @@ import { useI18n } from 'vue-i18n'
 import Button from 'primevue/button'
 import OverlayPanel from 'primevue/overlaypanel'
 import { useAnnouncementStore } from '../../stores/announcement' // 按你的项目路径
+import { showOnce } from '../../composables/tip-once.js'
 
 // === 异步加载各类弹窗（每种 typeKey 一个组件） ===
 const DialogSystem = defineAsyncComponent(() => import('./dialogs/AnnouncementDialogSystem.vue'))
@@ -164,6 +165,7 @@ function showAll() {
 
 // 打开/关闭 OverlayPanel
 function toggle(e){
+  showOnce('avator-annouuncement-tip', '没错! 这里会显示你收到的所有通知( ‵▽′)ψ')
   op.value?.toggle(e)
 }
 

@@ -45,5 +45,14 @@
   {
     "title" : "Settings",
     "signOut" : "Sign out"
+  },
+  "login": 
+  {
+    "username" : "Enter your User ID",
+    "password" : "Enter your password"
+  },
+  "setup": 
+  {
+    "nickname" : "Enter your nickname (think carefully!)"
   }
 }

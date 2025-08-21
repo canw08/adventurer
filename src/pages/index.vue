@@ -1,48 +1,191 @@
 <template>
   <div class="page">
-    <!-- 背景：图片完整显示（contain），多余区域用浅色当“白边” -->
+    <!-- 背景 -->
     <div class="bg"></div>
 
-    <!-- 直接摆放表单元素（无外层容器、无标题） -->
+    <!-- 输入：ID -->
     <input
-      v-model="id"
+      v-model.trim="id"
       type="text"
-      placeholder="输入你的ID"
+      :placeholder="$t('login.username')"
       class="input glass"
+      :class="{ invalid: touched.id && errors.id }"
+      @blur="touch('id')"
+      @keydown.enter="login"
+      aria-label="User ID"
+      autocomplete="username"
     />
+    <p v-if="touched.id && errors.id" class="err">{{ errors.id }}</p>
+
+    <!-- Input: Password -->
     <input
       v-model="password"
-      type="password"
-      placeholder="输入你的密码"
+      :type="showPwd ? 'text' : 'password'"
+      :placeholder="$t('login.password')"
       class="input glass"
+      :class="{ invalid: touched.password && errors.password }"
+      @blur="touch('password')"
+      @keydown.enter="login"
+      aria-label="Password"
+      autocomplete="current-password"
     />
+    <p v-if="touched.password && errors.password" class="err">{{ errors.password }}</p>
 
-    <button class="btn glass" @click="login">
-      <span class="arrow">➜</span>
+    <!-- 行为按钮 -->
+    <button
+      class="btn glass"
+      @click="login"
+      :disabled="submitting || !canSubmit"
+      :aria-busy="submitting ? 'true' : 'false'"
+      :title="btnTitle"
+    >
+      <span v-if="!submitting" class="arrow">➜</span>
+      <span v-else class="loading">Loading…</span>
     </button>
+
+    <!-- 统一错误提示（接口错误等） -->
+    <p v-if="serverError" class="err global">{{ serverError }}</p>
+
+    <!-- 黑场过渡层 -->
     <div class="blackout" :class="{ show: fading }"></div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
+
+// 表单状态
 const id = ref("");
 const password = ref("");
+const showPwd = ref(false);
+
+// 交互/视觉状态
 const fading = ref(false);
+const submitting = ref(false);
+const serverError = ref("");
 
-const FADE_MS = 800; // 和 CSS 里 transition 时间保持一致
+// 触碰态：只在用户“碰过”后才显示错误，避免一上来就红
+const touched = reactive({ id: false, password: false });
 
+// 校验错误
+const errors = reactive<{ id: string | null; password: string | null }>({
+  id: null,
+  password: null,
+});
 
-function login() {
-  if (fading.value) return;       // 防抖：避免重复点击
-  // TODO: 这里可先做校验/登录请求，成功后再触发黑场
-  fading.value = true;            // 黑幕淡入
-  setTimeout(() => {
-    router.push("/animations/login");         // TODO: 改成你的目标路由
-  }, FADE_MS);
+const FADE_MS = 800; // 与 CSS 中 transition 保持一致
+
+// ======= 校验逻辑 =======
+const idPattern = /^[A-Za-z0-9_]{3,32}$/;
+
+function validateId(): string | null {
+  return null;
+}
+
+function validatePassword(): string | null {
+  return null;
+}
+
+function validateAll() {
+  errors.id = validateId();
+  errors.password = validatePassword();
+  return !errors.id && !errors.password;
+}
+
+function touch(field: "id" | "password") {
+  touched[field] = true;
+  // 即时校验该字段
+  if (field === "id") errors.id = validateId();
+  if (field === "password") errors.password = validatePassword();
+}
+
+// 是否可提交
+const canSubmit = computed(() => {
+  // 未触碰也允许点击，由 login 内部二次校验兜底
+  return !submitting.value && id.value.length > 0 && password.value.length > 0;
+});
+
+const btnTitle = computed(() =>
+  submitting.value ? "正在提交…" : canSubmit.value ? "登录" : "请先填写表单"
+);
+
+// ======= 登录提交 =======
+async function login() {
+  if (fading.value || submitting.value) return; // 防抖
+  // 首次点击时，标记为 touched 以显示错误
+  touch("id");
+  touch("password");
+
+  serverError.value = "";
+
+  // 强制全表单校验
+  if (!validateAll()) {
+    return;
+  }
+
+  submitting.value = true;
+  try {
+    // 说明：
+    // 后端可能期望 username/password 或 id/password，这里两个字段都带上，便于兼容。
+    const payload = {
+      id: id.value,
+      username: id.value,
+      password: password.value,
+    };
+
+    const resp = await fetch("/api/users/login/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      // 如果你做了跨域，需要服务端允许，或在本地同源下使用 Mock.js
+      body: JSON.stringify(payload),
+    });
+
+    if (!resp.ok) {
+      // 尝试解析后端返回的错误信息
+      let msg = `登录失败（${resp.status}）`;
+      try {
+        const data = await resp.json();
+        if (data?.detail) msg = String(data.detail);
+        if (data?.message) msg = String(data.message);
+        if (Array.isArray(data?.non_field_errors) && data.non_field_errors[0]) {
+          msg = String(data.non_field_errors[0]);
+        }
+      } catch {
+        // ignore JSON parse error
+      }
+      throw new Error(msg);
+    }
+
+    const data = (await resp.json()) as {
+      access_token: string;
+      refresh_token: string;
+      username: string;
+    };
+
+    if (!data?.access_token || !data?.refresh_token) {
+      throw new Error("登录返回数据不完整，缺少令牌");
+    }
+
+    // 持久化（按需调整为 cookie / pinia / vuex）
+    localStorage.setItem("access_token", data.access_token);
+    localStorage.setItem("refresh_token", data.refresh_token);
+    localStorage.setItem("username", data.username ?? id.value);
+
+    // 成功：黑幕淡入 -> 路由跳转
+    fading.value = true;
+    window.setTimeout(() => {
+      router.push("/animations/login"); // TODO: 改成你的目标路由
+    }, FADE_MS);
+  } catch (err: any) {
+    serverError.value = err?.message || "登录失败，请稍后重试";
+  } finally {
+    submitting.value = false;
+  }
 }
 </script>
 
@@ -63,20 +206,18 @@ html, body {
   position: relative;
   width: 100vw;
 
-  /* 使用多种视口单位，兼容移动端地址栏变化 */
   height: 100vh;
   height: 100svh;
   height: 100dvh;
 
-  /* 直接用 page 做垂直居中，无需任何外层容器 */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;                 /* 元素之间的间距 */
-  overflow: clip;            /* 彻底避免溢出触发滚动 */
-  padding: 0 20px;           /* 仅左右留一点内边距，避免贴边 */
-    padding-top: 100px;
+  gap: 8px;
+  overflow: clip;
+  padding: 0 20px;
+  padding-top: 100px;
 }
 @supports not (overflow: clip) {
   .page { overflow: hidden; }
@@ -89,12 +230,12 @@ html, body {
   background-image: url("/image/login-real.jpg");
   background-repeat: no-repeat;
   background-position: center;
-  background-size: contain;      /* 保持比例完整显示 */
-  background-color: #E7F0F9;     /* 不够的区域填充为浅色“白边” */
+  background-size: contain;
+  background-color: #E7F0F9;
   z-index: 0;
 }
 
-/* ====== 玻璃基类：可复用到 input / button ====== */
+/* ====== 玻璃基类 ====== */
 .glass {
   background: rgba(255, 255, 255, 0.14);
   -webkit-backdrop-filter: blur(14px) saturate(140%);
@@ -107,16 +248,7 @@ html, body {
   transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
 }
 
-/* ====== label / input ====== */
-.label {
-  align-self: stretch;               /* label 与输入框齐宽 */
-  max-width: 520px;
-  margin: 0px 2px 6px;
-  font-size: 13px;
-  color: #f7f7f7cc;
-  z-index: 1;                        /* 盖在背景上 */
-}
-
+/* ====== 输入/错误 ====== */
 .input {
   width: 100%;
   max-width: 320px;
@@ -129,18 +261,12 @@ html, body {
   appearance: none;
   font-size: 16px;
   letter-spacing: 0.2px;
-  z-index: 1;                        /* 盖在背景上 */
+  z-index: 1;
 }
-
 .input + .input {
-  margin-top: 15px; /* 你想多一点/少一点就改这个值 */
+  margin-top: 10px;
 }
-
-
-.input::placeholder {
-  color: #ffffffaa;
-}
-
+.input::placeholder { color: #ffffffaa; }
 .input:focus {
   background: rgba(255, 255, 255, 0.18);
   box-shadow:
@@ -148,12 +274,20 @@ html, body {
     inset 0 1px 0 rgba(255, 255, 255, 0.55),
     0 0 0 2px rgba(180, 220, 255, 0.45);
 }
+.input.invalid { border-color: #ff9aa2; }
 
-.input:-webkit-autofill,
-.input:-webkit-autofill:hover,
-.input:-webkit-autofill:focus {
-  -webkit-text-fill-color: #fff;
-  transition: background-color 5000s ease-in-out 0s;
+.err {
+  margin: 4px 2px 2px;
+  padding: 0 4px;
+  max-width: 320px;
+  font-size: 12px;
+  color: #ffe6e9;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.25);
+  z-index: 1;
+}
+.err.global {
+  text-align: center;
+  margin-top: 8px;
 }
 
 /* ====== 按钮 ====== */
@@ -178,11 +312,15 @@ html, body {
   gap: 8px;
   cursor: pointer;
   user-select: none;
-  z-index: 1;                         /* 盖在背景上 */
+  z-index: 1;
   margin-left: 260px;
 }
-
-.btn:hover {
+.btn[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+.btn:hover:not([disabled]) {
   transform: translateY(-1px);
   background: linear-gradient(
       to bottom,
@@ -194,32 +332,29 @@ html, body {
     0 14px 30px rgba(0, 0, 0, 0.32),
     inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
-
-.btn:active {
+.btn:active:not([disabled]) {
   transform: translateY(0);
   box-shadow:
     0 8px 22px rgba(0, 0, 0, 0.26),
     inset 0 1px 0 rgba(255, 255, 255, 0.55);
 }
 
-.arrow {
-  font-size: 16px;
-  line-height: 1;
-}
+.arrow { font-size: 16px; line-height: 1; }
+.loading { font-size: 12px; letter-spacing: .5px; }
 
 /* ====== 黑场过渡层 ====== */
 .blackout {
-  position: fixed;   /* 覆盖整个视口，确保在一切之上 */
+  position: fixed;
   inset: 0;
   background: #000;
   opacity: 0;
-  transition: opacity 800ms ease;  /* 和 FADE_MS 对齐 */
-  pointer-events: none;            /* 未显示时不拦截点击 */
+  transition: opacity 800ms ease;
+  pointer-events: none;
   z-index: 9999;
 }
 .blackout.show {
   opacity: 1;
-  pointer-events: auto;            /* 显示时拦截交互，避免多次点击 */
+  pointer-events: auto;
 }
 
 /* ====== 降级方案 ====== */
