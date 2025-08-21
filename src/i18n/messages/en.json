@@ -1,7 +1,8 @@
 {
   "questLog": {
     "title": "Quest Log",
-    "runningQuest": "Running Quest"
+    "runningQuest": "Running Quest",
+    "getQuest" : "Get a quest"
   },
   "greetings-student": {
     "night": "Burning the midnight oil, adventurer?",
