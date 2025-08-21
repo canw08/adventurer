@@ -91,6 +91,8 @@
               placeholder="MM/DD/YYYY"
               showIcon
               class="task-date-input"
+              :minDate="todayStart"
+              :manualInput="false"  
             ></Calendar>
           </span>
           </div>
@@ -114,7 +116,7 @@
           class="flex flex-col gap-4"
         >
           <div class="flex flex-col gap-1 pos">
-            <Editor name="content" editorStyle="height: 320px" />
+            <Editor name="content" v-model="editorContent" editorStyle="height: 320px"/>
             <Message
               v-if="$form?.content?.invalid"
               severity="error"
@@ -124,7 +126,13 @@
               {{ $form?.content?.error?.message }}
             </Message>
           </div>
-          <Button class="submitPosition" type="submit" severity="secondary" label="Submit" />
+          <Button
+            class="submitPosition"
+            type="submit"
+            severity="secondary"
+            label="Submit"
+            :disabled="!isFormValid"
+          />
         </Form>
       </div>
     </Dialog>
@@ -174,35 +182,58 @@ meta:
 // src/mock/index.js
 import { useUserStore } from '../../stores/user';
 import '../../styles/overrides.css'
-
 import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue'
 import AwardSliders from '../../components/AwardSliders.vue' // 确认相对路径
-
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import teamwork from '../../assets/team.png'
-
-
+import { useI18n } from 'vue-i18n'
 import { onMounted } from 'vue';
-const userStore = useUserStore();
 
+const userStore = useUserStore();
 const selectedLevel = ref('')   // 或 'Level F'
 const exp   = ref(0)
 const coin  = ref(0)
 const hours = ref(0)
-
 const bigTitle = ref('')
-
 const router = useRouter()
-
-import { useI18n } from 'vue-i18n'
-
 const { t } = useI18n()
 const activeTab = ref('ongoing')
 const tabOptions = ref([
   { label: t('tabs.ongoing'), value: 'ongoing' },
   { label: t('tabs.completed'), value: 'completed' }
 ])
+
+const isFormValid = computed(() => {
+  const hasAwards = exp.value > 0 || coin.value > 0 || hours.value > 0
+  const hasTitle  = bigTitle.value.trim() !== ''
+  const plainText = editorContent.value.replace(/<[^>]*>/g, '').trim()
+  const hasContent = plainText !== ''
+
+  const validDate =
+  taskDate.value instanceof Date &&
+  !isNaN(taskDate.value.getTime()) &&
+  taskDate.value.setHours(0,0,0,0) >= todayStart.value.getTime()
+  return hasAwards && hasTitle && hasContent && validDate
+})
+
+function isValidDateValue(val) {
+  // PrimeVue Calendar 可能返回 Date、string、或 range 数组
+  if (!val) return false
+  // range: [start, end]
+  if (Array.isArray(val)) {
+    if (val.length === 0) return false
+    const first = val[0]
+    return first instanceof Date ? !isNaN(first.getTime()) : String(first).trim() !== ''
+  }
+  if (val instanceof Date) return !isNaN(val.getTime())
+  return String(val).trim() !== ''
+}
+const todayStart = computed(() => {
+  const d = new Date()
+  d.setHours(0, 0, 0, 0)
+  return d
+})
 
 const op = ref(null);
 const unreadCount = ref(2);
@@ -284,7 +315,6 @@ const runningProjects = computed(() =>
 const goToProfile = () => {
   router.push('/teacher/home')
 }
-
 /* 弹窗相关 */
 const showDialog = ref(false)
 const levels = computed(() => {
