@@ -1,7 +1,12 @@
 {
   "questLog": {
     "title": "营地",
-    "runningQuest": "进行中的任务\n"
+    "runningQuest": "进行中的任务\n",
+    "getQuest": "获取任务"
+  },
+  "questBoard": {
+    "title": "委托墙\n",
+    "filter": "筛选"
   },
   "greetings-student": {
     "night": "你不要命了，冒险者？",
@@ -40,7 +45,18 @@
   },
   "sidebar": {
     "home": "营地\n",
-    "board": "任务板",
+    "board": "委托墙\n",
     "settings": "设置\n"
+  },
+  "settings": {
+    "title": "设置",
+    "signOut": "退出登录"
+  },
+  "login": {
+    "username": "输入您的用户ID",
+    "password": "输入您的密码"
+  },
+  "setup": {
+    "nickname": "输入您的昵称（认真点!）"
   }
 }
