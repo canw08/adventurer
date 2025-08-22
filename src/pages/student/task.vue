@@ -4,7 +4,7 @@
     <!-- 顶部栏 -->
     <div class="main-header">
       <div class="header-left-group">
-        <span class="header-left">Quest Board</span>
+        <span class="header-left">{{ $t('questBoard.title') }}</span>
         <div class="vertical-divider"></div>
       </div>
       <!-- 公告组件（保持原有交互与样式） -->
@@ -13,12 +13,12 @@
 
     <!-- 次级标题与筛选按钮 -->
     <div class="main-subheader">
-      <span class="greeting">Good morning, adventurer</span>
+      <span class="greeting">{{ $t(greetingKey) }}</span>
 
       <div class="filter-buttons-wrapper small-toggle">
         <div class="fake-select-wrapper">
           <Button
-            label="Filter"
+            :label="$t('questBoard.filter')"
             icon="pi pi-filter"
             @click="showFilterDialog = true"
             class="filter-button"
@@ -252,6 +252,13 @@ import Paginator from 'primevue/paginator';
 import ProgressBar from 'primevue/progressbar';
 
 import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue';
+
+const period = computed(() => {
+  const h = new Date().getHours()
+  return h < 4 ? 'night' : h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening'
+})
+const greetingKey = computed(() => `greetings-student.${period.value}`)
+
 
 /* -------------------- 任务弹窗状态 -------------------- */
 const showDialog = ref(false);

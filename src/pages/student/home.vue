@@ -235,120 +235,74 @@ meta:
 </route>
 
 <script setup>
-/**
- * 说明：
- * - 已移除 showLeaveDialog / 二级 Dialog；
- * - 只保留 OverlayPanel，并通过 toggle(event) 定位到按钮；
- * - 合并 confirmLeave，避免重复定义。
- */
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import axios from 'axios'
+
 import Avatar from 'primevue/avatar'
 import SelectButton from 'primevue/selectbutton'
 import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue'
 import Dialog from 'primevue/dialog'
 import OverlayPanel from 'primevue/overlaypanel'
+import InputText from 'primevue/inputtext'
+import Textarea from 'primevue/textarea'
+import ProgressBar from 'primevue/progressbar'
+import { useI18n } from 'vue-i18n'
+
 import teamwork from '../../assets/team.png'
 import solo1 from '../../assets/solo.png'
 import solo2 from '../../assets/solo2.png'
-import { useI18n } from 'vue-i18n'
-import InputText from 'primevue/inputtext'
-import Textarea from 'primevue/textarea'
-import { useRouter } from 'vue-router'
-import ProgressBar from 'primevue/progressbar'
 
 const router = useRouter()
-
 const { t } = useI18n()
 
+// ====== Tabs ======
 const activeTab = ref('ongoing')
 const tabOptions = ref([
   { label: t('tabs.ongoing'), value: 'ongoing' },
   { label: t('tabs.completed'), value: 'completed' }
 ])
 
-const op = ref(null)
-const unreadCount = ref(2)
-const togglePanel = (event) => {
-  op.value.toggle(event)
-  unreadCount.value = 0
+// ====== 项目数据（从mock获取） ======
+const allProjects = ref([])
+
+function mapTaskToProject(task) {
+  return {
+    id: task.id,
+    title: task.title,
+    date: task.deadline,   
+    status: task.is_accepted ? 'ongoing' : 'completed', 
+    // 根据任务类型选择图片
+    image: task.task_type === 'team' ? teamwork : (Math.random() > 0.5 ? solo1 : solo2),
+    exp: task.experience_reward + ' EXP', // 加 EXP 后缀
+    coin: task.token_reward,
+    hour: task.volunteerTime_reward,
+    level: task.required_level,
+    avatar: task.publisher_avatar || 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
+    author: task.publisher_nickname,
+    description: task.description,
+    mandator: task.publisher_nickname,
+  }
 }
 
-const period = computed(() => {
-  const h = new Date().getHours()
-  return h < 4 ? 'night' : h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening'
-})
-const greetingKey = computed(() => `greetings-student.${period.value}`)
-
-const allProjects = [
-  {
-    id: 1,
-    title: 'Volunteer Feeding Stray Cats',
-    date: '5 July, 2025',
-    status: 'ongoing',
-    image: solo1,
-    exp: '300 exp',
-    coin: '60',
-    hour: '2', 
-    level: 'E',
-    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
-    author: 'Amy Elsner',
-    description: '中午十二点，在三棵树集合喂猫，时长为1小时，需要5–6人',
-    mandator: 'John Doe',
-  },
-  {
-    id: 2,
-    title: 'Organize Community Event',
-    date: '12 June, 2025',
-    status: 'ongoing',
-    image: teamwork,
-    exp: '400 exp',
-    coin: '60',
-    hour: '2', 
-    level: 'C',
-    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/onyamalimba.png',
-    author: 'Onya Malimba',
-    description: '下午两点，在活动中心组织志愿者会议，需要3人负责接待',
-    mandator: 'John Doe',
-  },
-  {
-    id: 3,
-    title: 'Schoolyard Cleanup Event',
-    date: '20 May, 2025',
-    status: 'completed',
-    image: solo2,
-    exp: '250 exp',
-    coin: '60',
-    hour: '2', 
-    level: 'D',
-    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/ivanmagalhaes.png',
-    author: 'Ivan Magalhaes',
-    description: '早上九点集合，清理学校操场，需要10人，时长2小时',
-    mandator: 'John Doe',
-  },
-  {
-    id: 4,
-    title: 'Design Posters for Art Festival',
-    date: '15 August, 2025',
-    status: 'ongoing',
-    image: solo2,
-    exp: '350 exp',
-    coin: '60',
-    hour: '2', 
-    level: 'B',
-    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
-    author: 'Xu Xuefeng',
-    description: '设计艺术节宣传海报，预计工作时间3小时，需要2位同学合作完成',
-    mandator: 'John Doe',
+onMounted(async () => {
+  try {
+    const res = await axios.get('/api/tasks/my-tasks/')
+    allProjects.value = res.data.map(mapTaskToProject)
+  } catch (err) {
+    console.error('加载任务失败:', err)
   }
-]
+})
 
+// ====== 过滤 ======
 const filteredProjects = computed(() =>
-  allProjects.filter((p) => p.status === activeTab.value)
+  allProjects.value.filter((p) => p.status === activeTab.value)
 )
 const runningProjects = computed(() =>
-  allProjects.filter((p) => p.status === 'ongoing')
+  allProjects.value.filter((p) => p.status === 'ongoing')
 )
 
+// ====== Dialog逻辑 ======
 const showDialog = ref(false)
 const selectedProject = ref(null)
 const openProjectDialog = (project) => {
@@ -356,30 +310,19 @@ const openProjectDialog = (project) => {
   showDialog.value = true
 }
 
-const onButton2Click = () => {
-  console.log('Prompt clicked')
-}
-
-/* ===== Ask for leave（OverlayPanel 实现） ===== */
+// ====== 请假 OverlayPanel ======
 const leavePanel = ref(null)
+const leaveTitle = ref('')
+const leaveDetail = ref('')
 
-/** 切换弹层显示（基于点击事件做锚点） */
 const toggleLeavePanel = (event) => {
   leavePanel.value?.toggle(event)
 }
-
-/** 确认请假：接入业务逻辑后关闭弹层 */
 const confirmLeave = () => {
   console.log('Leave confirmed for project:', selectedProject.value?.title)
   leavePanel.value?.hide()
 }
-// 表单数据（请假标题 & 详情）
-const leaveTitle = ref('') 
-const leaveDetail = ref('')
-
-/** 提交请假 */
 const submitLeave = () => {
-  // 简单校验，你可按需替换为真实校验/请求
   if (!leaveTitle.value.trim()) {
     console.warn('申请理由不能为空')
     return
@@ -389,45 +332,48 @@ const submitLeave = () => {
     title: leaveTitle.value,
     detail: leaveDetail.value
   })
-  // TODO: 调用 API / 写入状态 …
-
-  // 重置并关闭
   leaveTitle.value = ''
   leaveDetail.value = ''
   leavePanel.value?.hide()
 }
-// 提取数字：'400 exp' -> 400；数字则原样返回
-const toNumber = (v) => {
-  if (typeof v === 'number') return v;
-  if (typeof v === 'string') {
-    const m = v.match(/[\d.]+/);
-    return m ? Number(m[0]) : 0;
-  }
-  return 0;
-};
 
-// 统一的上限与单位（可按业务调整）
+// ====== Metrics绑定 ======
+const toNumber = (v) => {
+  if (typeof v === 'number') return v
+  if (typeof v === 'string') {
+    const m = v.match(/[\d.]+/)
+    return m ? Number(m[0]) : 0
+  }
+  return 0
+}
+
 const METRIC_DEFS = [
   { key: 'exp',  label: 'EXP',  max: 500, unit: '', icon: new URL('../../assets/icon/exp.png', import.meta.url).href, color: '#F58B40'},
-  { key: 'coin', label: 'Coin', max: 100, unit: '', icon: new URL('../../assets/icon/token.png', import.meta.url).href , color: '#FBE838'},
-  { key: 'hour', label: 'Hour', max: 10,  unit: 'h', icon: new URL('../../assets/icon/time.png', import.meta.url).href , color: '#65D6ef'},
-];
+  { key: 'coin', label: 'Coin', max: 100, unit: '', icon: new URL('../../assets/icon/token.png', import.meta.url).href, color: '#FBE838'},
+  { key: 'hour', label: 'Hour', max: 10,  unit: 'h', icon: new URL('../../assets/icon/time.png', import.meta.url).href, color: '#65D6ef'},
+]
 
-// 计算：为模板提供 { key,label,raw,max,unit,pct }（pct 仅用于进度条宽度）
 const metricsBound = computed(() => {
-  const p = selectedProject.value || {};
+  const p = selectedProject.value || {}
   return METRIC_DEFS.map(def => {
-    const raw = toNumber(p?.[def.key] ?? 0);
-    const pct = def.max > 0 ? Math.max(0, Math.min(100, Math.round((raw / def.max) * 100))) : 0;
-    return { ...def, raw, pct };
-  });
-});
+    const raw = toNumber(p?.[def.key] ?? 0)
+    const pct = def.max > 0 ? Math.max(0, Math.min(100, Math.round((raw / def.max) * 100))) : 0
+    return { ...def, raw, pct }
+  })
+})
 
-/** 跳转到任务获取页（请按你的路由实际修改） */
+// ====== 其他 ======
+const period = computed(() => {
+  const h = new Date().getHours()
+  return h < 4 ? 'night' : h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening'
+})
+const greetingKey = computed(() => `greetings-student.${period.value}`)
+
 const goToQuestStore = () => {
   router.push('/student/task')
 }
 </script>
+
 
 <style scoped>
 /* 全局布局 */

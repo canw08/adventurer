@@ -1,8 +1,13 @@
 {
   "questLog": {
-    "title": "Quest Log",
+    "title": "Home",
     "runningQuest": "Running Quest",
     "getQuest" : "Get a quest"
+  },
+  "questBoard": 
+  {
+    "title" : "Board",
+    "filter" : "Filter"
   },
   "greetings-student": {
     "night": "Burning the midnight oil, adventurer?",
