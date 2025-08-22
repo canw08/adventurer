@@ -23,29 +23,49 @@ async function loadMessages(locale) {
     console.error(`[i18n] No language file found for: ${locale}`)
     return {}
   }
-  const module = await messageFiles[path]() // 执行函数 → 动态加载
-  return module.default
+  const mod = await messageFiles[path]() // 动态加载
+  return mod.default
 }
 
-// 4. 初始化 i18n（先加载默认语言）
-const defaultMessages = await loadMessages(defaultLocale)
-const enMessages = await loadMessages('en')
-export const i18n = createI18n({
-  legacy: false, // 使用 Composition API 风格
-  locale: defaultLocale,
-  fallbackLocale: 'en',
-  messages: {
-    [defaultLocale]: defaultMessages,
-    en: enMessages
-  }
-})
+// 持有 i18n 引用，供 setLocale 使用
+let i18nInstance = null
+
+// 4. 初始化 i18n（在应用启动时调用）
+export async function initI18n() {
+  const [defaultMessages, enMessages] = await Promise.all([
+    loadMessages(defaultLocale),
+    loadMessages('en'),
+  ])
+
+  i18nInstance = createI18n({
+    legacy: false,
+    locale: defaultLocale,
+    fallbackLocale: 'en',
+    messages: {
+      [defaultLocale]: defaultMessages,
+      en: enMessages,
+    },
+  })
+
+  // 可选：同步 html lang
+  document.documentElement.setAttribute('lang', defaultLocale)
+
+  return i18nInstance
+}
 
 // 5. 切换语言方法
 export async function setLocale(locale) {
-  if (i18n.global.locale.value === locale) return
+  if (!i18nInstance) throw new Error('[i18n] call initI18n() first')
+  if (i18nInstance.global.locale.value === locale) return
+
   const msgs = await loadMessages(locale)
-  i18n.global.setLocaleMessage(locale, msgs)
-  i18n.global.locale.value = locale
+  i18nInstance.global.setLocaleMessage(locale, msgs)
+  i18nInstance.global.locale.value = locale
   localStorage.setItem(STORAGE_KEY, locale)
   document.documentElement.setAttribute('lang', locale)
+}
+
+// （可选）需要时导出当前实例
+export function getI18n() {
+  return i18nInstance
 }
