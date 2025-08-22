@@ -35,5 +35,16 @@ export default defineConfig(({ command, mode }) => {
         `,
       }),
     ],
+
+    // 🔥 本地开发代理：/api 转发到 Django
+    server: {
+      proxy: {
+        '/api': {
+          target: 'http://127.0.0.1:8000', // Django 本地运行端口
+          changeOrigin: true,
+          secure: false,
+        },
+      },
+    },
   };
 });
