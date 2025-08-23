@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
-import axios from 'axios';
+import api from '../api.js';
+
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -13,7 +14,7 @@ export const useUserStore = defineStore('user', {
       this.loading = true;
       this.error = null;
       try {
-        const res = await axios.get('/api/users/');
+        const res = await api.get('/api/users/?me=true');
         this.userInfo = res.data;
         return this.userInfo;
       } catch (e) {

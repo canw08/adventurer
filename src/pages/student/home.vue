@@ -237,7 +237,7 @@ meta:
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import api from '../../api.js';
 
 import Avatar from 'primevue/avatar'
 import SelectButton from 'primevue/selectbutton'
@@ -287,7 +287,7 @@ function mapTaskToProject(task) {
 
 onMounted(async () => {
   try {
-    const res = await axios.get('/api/tasks/my-tasks/')
+    const res = await api.get('/api/tasks/my-tasks/')
     allProjects.value = res.data.map(mapTaskToProject)
   } catch (err) {
     console.error('加载任务失败:', err)

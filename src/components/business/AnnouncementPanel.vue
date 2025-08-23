@@ -94,8 +94,8 @@
  * - 按 typeKey 动态选择不同的弹窗子组件
  * - 仍保留你现有的公告列表、标记已读、Show All 等逻辑
  */
-
-import { ref, computed, onMounted, defineAsyncComponent } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
+import { ref, computed, defineAsyncComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Button from 'primevue/button'
 import OverlayPanel from 'primevue/overlaypanel'
@@ -118,6 +118,15 @@ const dialogRegistry = {
 
 const store = useAnnouncementStore()
 const { t } = useI18n()
+
+onMounted(() => {
+  store.startAutoRefresh(60000) // 每分钟自动刷新
+})
+
+onUnmounted(() => {
+  store.stopAutoRefresh()
+})
+
 
 // 首次挂载拉取数据
 onMounted(() => {

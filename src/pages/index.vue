@@ -131,7 +131,6 @@ async function login() {
     // 说明：
     // 后端可能期望 username/password 或 id/password，这里两个字段都带上，便于兼容。
     const payload = {
-      id: id.value,
       username: id.value,
       password: password.value,
     };
@@ -150,11 +149,11 @@ async function login() {
       let msg = `登录失败（${resp.status}）`;
       try {
         const data = await resp.json();
-        if (data?.detail) msg = String(data.detail);
-        if (data?.message) msg = String(data.message);
+        if (data?.error) msg = String(data.error);
         if (Array.isArray(data?.non_field_errors) && data.non_field_errors[0]) {
           msg = String(data.non_field_errors[0]);
         }
+
       } catch {
         // ignore JSON parse error
       }

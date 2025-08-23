@@ -1,41 +1,73 @@
 // stores/announcement.js
 import { defineStore } from 'pinia'
-import axios from 'axios'
+import api from '../api.js';
 
-// 可选：后端扩展新类型时的兜底
 const KNOWN_TYPES = new Set(['system', 'invite'])
 const normalizeTypeKey = (k) => (KNOWN_TYPES.has(k) ? k : 'unknown')
 
 export const useAnnouncementStore = defineStore('announcements', {
   state: () => ({
-    items: [], // [{ id, avatarSeed, name|null, typeKey, content, dateISO, read }]
+    items: [],
+    _timer: null, // 内部用的定时器引用
   }),
   getters: {
     unreadCount: (s) => s.items.filter(a => !a.read).length,
     ordered: (s) => [...s.items].sort((a, b) => (b.dateISO || '').localeCompare(a.dateISO || '')),
   },
   actions: {
-    markRead(id) {
-      this.items = this.items.map(a => a.id === id ? { ...a, read: true } : a)
+    // 标记单条已读
+    async markRead(id) {
+      try {
+        await api.post(`/api/notifications/${id}/mark-read/`)
+        await this.fetchAll()
+      } catch (err) {
+        console.error('标记通知已读失败', err)
+      }
     },
-    markAllRead() {
-      this.items = this.items.map(a => ({ ...a, read: true }))
+
+    // 标记全部已读
+    async markAllRead() {
+      try {
+        await api.post(`/api/notifications/mark-all-read/`)
+        await this.fetchAll()
+      } catch (err) {
+        console.error('标记全部通知已读失败', err)
+      }
     },
+
+    // 拉取所有通知
     async fetchAll() {
       try {
-        const res = await axios.get('/api/notifications/latest/')
+        const res = await api.get('/api/notifications/latest/')
         this.items = (res.data || []).map((n) => ({
           id: n.id,
           avatarSeed: n.related_user_nickname || 'none',
-          name: n.related_user_nickname ?? null,      // 为空时，组件用 t('notifications.systemName') 兜底
-          typeKey: normalizeTypeKey(n.type),          // 'system' | 'invite' | 'unknown'
+          name: n.related_user_nickname ?? null,
+          typeKey: normalizeTypeKey(n.type),
           content: n.message,
-          dateISO: n.created_at,                      // 组件可直接展示或再格式化
+          dateISO: n.created_at,
           read: !!n.is_read,
         }))
       } catch (err) {
         console.error('获取通知失败', err)
       }
-    }
+    },
+
+    // 开始定时刷新（默认 2 分钟一次）
+    startAutoRefresh(intervalMs = 120000) {
+      if (this._timer) return // 已经在跑了就不要重复开
+      this.fetchAll() // 先拉一次
+      this._timer = setInterval(() => {
+        this.fetchAll()
+      }, intervalMs)
+    },
+
+    // 停止定时刷新
+    stopAutoRefresh() {
+      if (this._timer) {
+        clearInterval(this._timer)
+        this._timer = null
+      }
+    },
   }
 })
