@@ -21,7 +21,7 @@
 
         <!-- 头像 -->
         <img
-          :src="`https://api.dicebear.com/9.x/adventurer/svg?seed=${userStore.userInfo.avatar}`"
+          :src="`https://api.dicebear.com/9.x/adventurer/svg?seed=${userStore.userInfo.avatar}&skinColor=ecad80,f2d3b1`"
           alt="User Avatar"
           class="avatar-img"
         />

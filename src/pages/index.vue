@@ -54,7 +54,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
-
+import { useUserStore } from '../stores/user'
 const router = useRouter();
 
 // 表单状态
@@ -175,11 +175,22 @@ async function login() {
     localStorage.setItem("refresh_token", data.refresh_token);
     localStorage.setItem("username", data.username ?? id.value);
 
-    // 成功：黑幕淡入 -> 路由跳转
-    fading.value = true;
-    window.setTimeout(() => {
-      router.push("/animations/login"); // TODO: 改成你的目标路由
-    }, FADE_MS);
+    const userStore = useUserStore();
+
+    userStore.fetchUser();
+
+    if(userStore.userInfo.avatar === ""){
+            // 成功：黑幕淡入 -> 路由跳转
+      fading.value = true;
+      window.setTimeout(() => {
+        router.push("/animations/login"); // TODO: 改成你的目标路由
+      }, FADE_MS);
+    }
+    else
+    {
+      router.push("/student/home")
+    }
+
   } catch (err: any) {
     serverError.value = err?.message || "登录失败，请稍后重试";
   } finally {

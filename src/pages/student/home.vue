@@ -171,7 +171,7 @@
     <div class="assigned-box">
       <div class="right-level-spacer" aria-hidden="true">
           </div>
-      <span class="assigned-label">Mandator</span>
+      <span class="assigned-label">Assigned</span>
       <span class="assigned-name">{{ selectedProject?.mandator || '' }}</span>
       <Avatar
         :image="selectedProject?.avatar || 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png'"
@@ -248,6 +248,8 @@ import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import ProgressBar from 'primevue/progressbar'
 import { useI18n } from 'vue-i18n'
+
+import { levelRanges } from '../../components/levelRange.js'
 
 import teamwork from '../../assets/team.png'
 import solo1 from '../../assets/solo.png'
@@ -347,20 +349,50 @@ const toNumber = (v) => {
   return 0
 }
 
+// ② 工具：根据 level 拿到该等级的各项上下限
+const getBoundsByLevel = (level) => {
+  // 允许传中文 'A级' 或英文 'Level A'，我们字典里都放了
+  return levelRanges?.[level] || null
+}
+
+// ③ 计算选中任务对应的上下限（exp/coin/hours）
+const selectedBounds = computed(() => {
+  const lvl = selectedProject.value?.level
+  const bounds = getBoundsByLevel(lvl)
+  // 兜底：如果没匹配到等级，给个通用范围（你也可以自定义）
+  return bounds || { exp:[0,100], coin:[0,100], hours:[0,24] }
+})
+
+// 原先有 max 的地方删掉它；保留 unit/icon/color
 const METRIC_DEFS = [
-  { key: 'exp',  label: 'EXP',  max: 500, unit: '', icon: new URL('../../assets/icon/exp.png', import.meta.url).href, color: '#F58B40'},
-  { key: 'coin', label: 'Coin', max: 100, unit: '', icon: new URL('../../assets/icon/token.png', import.meta.url).href, color: '#FBE838'},
-  { key: 'hour', label: 'Hour', max: 10,  unit: 'h', icon: new URL('../../assets/icon/time.png', import.meta.url).href, color: '#65D6ef'},
+  { key: 'exp',  label: 'EXP',  unit: '',  icon: new URL('../../assets/icon/exp.png', import.meta.url).href,  color: '#F58B40' },
+  { key: 'coin', label: 'Coin', unit: '',  icon: new URL('../../assets/icon/token.png', import.meta.url).href, color: '#FBE838' },
+  { key: 'hour', label: 'Hour', unit: 'h', icon: new URL('../../assets/icon/time.png', import.meta.url).href,  color: '#65D6ef' },
 ]
 
+// 百分比 = (raw - min) / (max - min)
+// 同时把 raw clamp 到 [min, max]，避免条溢出或负数
 const metricsBound = computed(() => {
   const p = selectedProject.value || {}
+  const b = selectedBounds.value   // { exp:[min,max], coin:[min,max], hours:[min,max] }
+
   return METRIC_DEFS.map(def => {
     const raw = toNumber(p?.[def.key] ?? 0)
-    const pct = def.max > 0 ? Math.max(0, Math.min(100, Math.round((raw / def.max) * 100))) : 0
-    return { ...def, raw, pct }
+    const [min, max] = b?.[def.key] ?? [0, 0]
+    let clamped = raw
+    if (max > min) {
+      if (clamped < min) clamped = min
+      if (clamped > max) clamped = max
+    }
+    const pct = (max > min) ? Math.round(((clamped - min) / (max - min)) * 100) : 0
+
+    // 你在 ProgressBar 里显示的文本，保留原样（也可以改为 `${raw}${def.unit} / ${max}${def.unit}`）
+    const text = `${raw}${def.unit}`
+
+    return { ...def, raw, pct, text, min, max }
   })
 })
+
 
 // ====== 其他 ======
 const period = computed(() => {

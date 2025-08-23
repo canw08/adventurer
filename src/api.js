@@ -31,18 +31,20 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const { config, response } = error;
-    console.log(response.status);
-    
+
     if (response && response.status === 401 && !config._retry) {
       config._retry = true;
+
       if (!isRefreshing) {
         isRefreshing = true;
         const refreshToken = localStorage.getItem('refresh_token');
 
         try {
-          const res = await axios.post('/api/token/refresh/', {
+          // 🔑 用 api 而不是 axios，保证走同一个 baseURL
+          const res = await api.post('/api/token/refresh/', {
             refresh: refreshToken,
           });
+
           const newToken = res.data.access;
           localStorage.setItem('access_token', newToken);
 
@@ -58,6 +60,7 @@ api.interceptors.response.use(
         }
       }
 
+      // 🔑 return 出去，确保原始请求被重试
       return new Promise((resolve) => {
         addSubscriber((newToken) => {
           config.headers.Authorization = `Bearer ${newToken}`;
@@ -65,8 +68,10 @@ api.interceptors.response.use(
         });
       });
     }
+
     return Promise.reject(error);
   }
 );
+
 
 export default api;

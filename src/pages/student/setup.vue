@@ -31,7 +31,11 @@
       autocomplete="nickname"
     />
 
-    <button class="btn glass" @click="proceed">
+    <button
+      class="btn glass"
+      @click="proceed"
+      :disabled="!nickname"
+    >
       <span class="arrow">➜</span>
     </button>
 
@@ -52,13 +56,15 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useReward } from 'vue-rewards'
 import { useTipBuddy } from '../../composables/useTipBuddy'
+import api from '../../api'
 const { show } = useTipBuddy()
 const router = useRouter()
 const nickname = ref('')
+const randomStr = ref('')
 const fading = ref(false)
 
 const FADE_MS = 800
-const randomStr = ref('')
+
 const tipShown = ref(false)  // 变量：是否已经显示过
 
 const entering = ref(true)   // 👈 新增：入场黑屏状态
@@ -118,15 +124,26 @@ function rollDice() {
   }
 }
 
-function proceed() {
+async function proceed() {
   if (fading.value) return
-  // TODO: 这里可以做昵称校验或提交
-  fading.value = true
-  setTimeout(() => {
-    router.push('/animations/setup') // TODO: 改成你的目标路由
-  }, FADE_MS)
-}
 
+  try {
+    // 调用后端接口
+    await api.post('/api/users/update-profile/', {
+      nickname: nickname.value,
+      avatar: randomStr.value,
+    })
+
+    // 成功后再跳转
+    fading.value = true
+    setTimeout(() => {
+      router.push('/animations/setup')
+    }, FADE_MS)
+  } catch (err) {
+    console.error('更新用户资料失败', err)
+    alert('更新资料失败，请重试') // 你也可以换成 Toast 等提示
+  }
+}
 function onAvatarError(e) {
   // 如果没有默认头像，则退化为纯色占位
   const target = e.target
@@ -401,4 +418,12 @@ html, body {
   pointer-events: none;
   z-index: 0;          /* 粒子的 zIndex 在 JS 配置里控制 */
 }
+
+.btn:disabled {
+  opacity: 0.5;               /* 灰掉 */
+  cursor: not-allowed;        /* 鼠标变禁止 */
+  transform: none !important; /* 去掉 hover/active 效果 */
+  box-shadow: none;
+}
+
 </style>
