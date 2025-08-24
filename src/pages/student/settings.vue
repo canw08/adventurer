@@ -57,8 +57,9 @@
 <route lang="yaml">
 meta:
   layout: "student"
+  requiresAuth: true
+  roles: ['student']
 </route>
-
 <script setup>
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'

@@ -176,11 +176,13 @@ async function login() {
     localStorage.setItem("username", data.username ?? id.value);
 
     const userStore = useUserStore();
+    const user = await userStore.fetchUser();
 
-    userStore.fetchUser();
+    // 更稳的判空：空串 / null / undefined / 只包含空白 都当作“没头像”
+    const noAvatar = !user?.avatar || String(user.avatar).trim() === "";
 
-    if(userStore.userInfo.avatar === ""){
-            // 成功：黑幕淡入 -> 路由跳转
+    if (noAvatar) {
+      // 成功：黑幕淡入 -> 路由跳转
       fading.value = true;
       window.setTimeout(() => {
         router.push("/animations/login"); // TODO: 改成你的目标路由

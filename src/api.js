@@ -41,10 +41,10 @@ api.interceptors.response.use(
 
         try {
           // 🔑 用 api 而不是 axios，保证走同一个 baseURL
-          const res = await api.post('/api/token/refresh/', {
+          const res = await axios.post('/api/token/refresh/', {
             refresh: refreshToken,
           });
-
+          
           const newToken = res.data.access;
           localStorage.setItem('access_token', newToken);
 

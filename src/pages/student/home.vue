@@ -130,17 +130,8 @@
         <span class="author-name">{{ selectedProject?.author}}</span>
       </div>
 
-      <div class="dialog-description-row">
-        <p class="dialog-description">
-          {{ selectedProject?.description || '无任务说明' }}
-        </p>
+      <div class="dialog-description" v-html="safeDescription"></div>
       </div>
-
-      <div class="dialog-images" role="group" aria-label="Project Images">
-            <div class="image-placeholder" aria-hidden="true"></div>
-            <div class="image-placeholder" aria-hidden="true"></div>
-          </div>
-        </div>
     <div class="dialog-grid-divider" aria-hidden="true"></div>
     <div class="dialog-right-section">
      <div class="right-level-spacer" aria-hidden="true">
@@ -241,13 +232,15 @@
 <route lang="yaml">
 meta:
   layout: "student"
+  requiresAuth: true
+  roles: ['student']
 </route>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '../../api.js';
-
+import DOMPurify from 'dompurify'
 import Avatar from 'primevue/avatar'
 import SelectButton from 'primevue/selectbutton'
 import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue'
@@ -284,18 +277,37 @@ function mapTaskToProject(task) {
     date: task.deadline,   
     status: task.is_accepted ? 'ongoing' : 'completed', 
     // 根据任务类型选择图片
-    image: task.task_type === 'team' ? teamwork : (Math.random() > 0.5 ? solo1 : solo2),
+    image: pickTaskImage(task),
     exp: task.experience_reward + ' EXP', // 加 EXP 后缀
     coin: task.token_reward,
     hour: task.volunteerTime_reward,
     level: task.required_level,
-    avatar: task.publisher_avatar || 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
+    avatar: `https://api.dicebear.com/9.x/adventurer/svg?skinColor=ecad80,f2d3b1&seed=${task.publisher_avatar}` || `https://api.dicebear.com/9.x/adventurer/svg?seed=none`,
     author: task.publisher_nickname,
     description: task.description,
     mandator: task.publisher_nickname,
   }
 }
 
+function pickTaskImage(task) {
+  // 团队任务固定用 teamwork
+  if (task.task_type === 'team') return teamwork;
+
+  // 用发布时间（deadline）作为种子
+  const seedStr = task.deadline || String(task.id) || '';
+  let hash = 0;
+  for (let i = 0; i < seedStr.length; i++) {
+    hash = (hash << 5) - hash + seedStr.charCodeAt(i);
+    hash |= 0; // 转成 32 位整数
+  }
+
+  // 根据 hash 奇偶数来决定用哪张
+  return Math.abs(hash) % 2 === 0 ? solo1 : solo2;
+}
+const safeDescription = computed(() => {
+  const html = selectedProject.value?.description || '无任务说明'
+  return DOMPurify.sanitize(html)
+})
 onMounted(async () => {
   try {
     const res = await api.get('/api/tasks/my-tasks/')
@@ -764,7 +776,8 @@ const goToQuestStore = () => {
   margin: 0;
   white-space: normal;
   overflow-wrap: anywhere;          /* 长词也能换行 */
-  margin-left: 30px;
+  margin-left: 60px;
+  margin-top: -10px
 }
 .dialog-images {
   display: flex;

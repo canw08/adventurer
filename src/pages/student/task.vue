@@ -148,18 +148,7 @@
             <span class="author-name">{{ selectedProject?.author }}</span>
           </div>
 
-          <!-- ✅ 描述与左边框的对齐：同样依赖 --rail；不包含头像 -->
-          <div class="dialog-description-row">
-            <p class="dialog-description">
-              {{ selectedProject?.description || '无任务说明' }}
-            </p>
-          </div>
-
-          <!-- ✅ 图片组与左边框的对齐：同样依赖 --rail -->
-          <div class="dialog-images" role="group" aria-label="Project Images">
-            <div class="image-placeholder" aria-hidden="true"></div>
-            <div class="image-placeholder" aria-hidden="true"></div>
-          </div>
+          <div class="dialog-description rich-text" v-html="safeDescription"></div>
         </div>
          <div class="dialog-grid-divider" aria-hidden="true"></div>
        <!-- 右侧占位区域（25%） -->
@@ -207,7 +196,7 @@
         <div class="status-toggle-wrap">
           <SelectButton
             v-model="tempTab"
-            :options="['ongoing', 'completed']"
+            :options="['assigned', 'available']"
             class="status-toggle"
           />
         </div>
@@ -235,6 +224,8 @@
 <route lang="yaml">
 meta:
   layout: "student"
+  requiresAuth: true
+  roles: ['student']
 </route>
 
 <script setup>
@@ -242,7 +233,7 @@ meta:
  * 逻辑区块顺序：
  * 1) imports
  * 2) 弹窗/筛选的响应式状态
- * 3) 数据源
+ * 3) 数据源（mock 接口）
  * 4) 过滤 & 分页（computed）
  * 5) 方法（open/confirm 等）
  * 6) 监听（watch）
@@ -257,13 +248,23 @@ import ProgressBar from 'primevue/progressbar';
 import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 
 import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue';
+import api from '../../api.js';
 
+// === 进度条上下限表 ===
+import { levelRanges } from '../../components/levelRange.js';
+
+// === 图片：按任务类型选择 ===
+import teamwork from '../../assets/team.png'
+import solo1 from '../../assets/solo.png'
+import solo2 from '../../assets/solo2.png'
+
+import DOMPurify from 'dompurify'
+/* -------------------- 问候语 -------------------- */
 const period = computed(() => {
   const h = new Date().getHours()
   return h < 4 ? 'night' : h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening'
 })
 const greetingKey = computed(() => `greetings-student.${period.value}`)
-
 
 /* -------------------- 任务弹窗状态 -------------------- */
 const showDialog = ref(false);
@@ -273,110 +274,76 @@ const openProjectDialog = (project) => {
   showDialog.value = true;
 };
 
-/* -------------------- 数据源（演示） -------------------- */
-const allProjects = [
-  {
-    id: 1,
-    title: 'Volunteer Feeding Stray Cats',
-    date: '5 July, 2025',
-    status: 'ongoing',
-    image: 'https://picsum.photos/seed/cat/400/200',
-    exp: '300 exp',
-    coin: '60',
-    hour: '2', 
-    level: 'E',
-    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
-    author: 'Amy Elsner',
-    description: '中午十二点，在三棵树集合喂猫，时长为1小时，需要5–6人',
-  },
-  {
-    id: 2,
-    title: 'Organize Community Event',
-    date: '12 June, 2025',
-    status: 'ongoing',
-    image: 'https://picsum.photos/seed/book/400/200',
-    exp: '400 exp',
-    coin: '60',
-    hour: '2', 
-    level: 'C',
-    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/onyamalimba.png',
-    author: 'Onya Malimba',
-    description: '下午两点，在活动中心组织志愿者会议，需要3人负责接待',
-  },
-  {
-    id: 3,
-    title: 'Schoolyard Cleanup Event',
-    date: '20 May, 2025',
-    status: 'completed',
-    image: 'https://picsum.photos/seed/school/400/200',
-    exp: '250 exp',
-    coin: '60',
-    hour: '2', 
-    level: 'D',
-    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/ivanmagalhaes.png',
-    author: 'Ivan Magalhaes',
-    description: '早上九点集合，清理学校操场，需要10人，时长2小时',
-  },
-  {
-    id: 4,
-    title: 'Design Posters for Art Festival',
-    date: '15 August, 2025',
-    status: 'assigned',
-    image: 'https://picsum.photos/seed/poster/400/200',
-    exp: '350 exp',
-    coin: '60',
-    hour: '2', 
-    level: 'B',
-    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
-    author: 'Xu Xuefeng',
-    description: '设计艺术节宣传海报，预计工作时间3小时，需要2位同学合作完成',
-  },
-  {
-    id: 5,
-    title: 'Design Posters for Art Festival',
-    date: '15 August, 2025',
-    status: 'ongoing',
-    image: 'https://picsum.photos/seed/poster/400/200',
-    exp: '350 exp',
-    coin: '60',
-    hour: '2', 
-    level: 'B',
-    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
-    author: 'Xu Xuefeng',
-    description: '设计艺术节宣传海报，预计工作时间3小时，需要2位同学合作完成',
-  },
-  {
-    id: 6,
-    title: 'Design Posters for Art Festival',
-    date: '15 August, 2025',
-    status: 'ongoing',
-    image: 'https://picsum.photos/seed/poster/400/200',
-    exp: '350 exp',
-    coin: '60',
-    hour: '2', 
-    level: 'B',
-    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
-    author: 'Xu Xuefeng',
-    description: '设计艺术节宣传海报，预计工作时间3小时，需要2位同学合作完成',
-  },
-  {
-    id: 7,
-    title: 'Design Posters for Art Festival',
-    date: '15 August, 2025',
-    status: 'ongoing',
-    image: 'https://picsum.photos/seed/poster/400/200',
-    exp: '350 exp',
-    coin: '60',
-    hour: '2', 
-    level: 'B',
-    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
-    author: 'Xu Xuefeng',
-    description: '设计艺术节宣传海报，预计工作时间3小时，需要2位同学合作完成',
-  },
-];
+/* -------------------- 数据源（从 mock API 分页获取） -------------------- */
+const allProjects = ref([]);
+const loading = ref(false);
+const loadError = ref('');
+
+// 简单日期展示：直接透传
+const formatDate = (s) => s || '';
+
+// 模拟你示例中的图片逻辑 + badge 字段
+function pickTaskImage(task) {
+  // 团队任务固定用 teamwork
+  if (task.task_type === 'team') return teamwork;
+
+  // 用发布时间（deadline）作为种子
+  const seedStr = task.deadline || String(task.id) || '';
+  let hash = 0;
+  for (let i = 0; i < seedStr.length; i++) {
+    hash = (hash << 5) - hash + seedStr.charCodeAt(i);
+    hash |= 0; // 转成 32 位整数
+  }
+
+  // 根据 hash 奇偶数来决定用哪张
+  return Math.abs(hash) % 2 === 0 ? solo1 : solo2;
+}
+
+function mapTaskToProject(task) {
+  return {
+    id: task.id,
+    title: task.title,
+    date: formatDate(task.deadline),
+    // 参照你给的代码：is_accepted → ongoing；否则 completed
+    status: task.is_accepted ? 'accepted' : 'available',
+    image: pickTaskImage(task),
+    exp: `${task.experience_reward} EXP`,      // 加 EXP 后缀
+    coin: task.token_reward,
+    hour: task.volunteerTime_reward,
+    level: task.required_level || 'F',
+    avatar: `https://api.dicebear.com/9.x/adventurer/svg?skinColor=ecad80,f2d3b1&seed=${task.publisher_avatar}` || `https://api.dicebear.com/9.x/adventurer/svg?seed=none`,
+    author: task.publisher_nickname || 'Anonymous',
+    description: task.description || '',
+    mandator: task.publisher_nickname || 'Anonymous',
+  }
+}
+
+const fetchAllProjects = async () => {
+  loading.value = true;
+  loadError.value = '';
+  try {
+    const acc = [];
+    let page = 1;
+    // 拉取分页直到 next 为空（使用你之前的 /api/tasks/ mock 接口）
+    while (true) {
+      const { data } = await api.get('/api/tasks/', { params: { page } });
+      const results = Array.isArray(data?.results) ? data.results : [];
+      acc.push(...results.map(mapTaskToProject));
+      if (!data?.next) break;
+      page += 1;
+    }
+    allProjects.value = acc;
+  } catch (err) {
+    console.error(err);
+    loadError.value = '加载任务失败';
+    allProjects.value = [];
+  } finally {
+    loading.value = false;
+  }
+};
 
 /* -------------------- 筛选状态（ongoing/completed + level 多选） -------------------- */
-const activeTab = ref('ongoing');          // 生效状态
+const activeTab = ref('available');          // 生效状态
 const showFilterDialog = ref(false);       // Filter 弹窗显隐
 const tempTab = ref(activeTab.value);      // 弹窗临时状态
 const levelOptions = [
@@ -393,16 +360,29 @@ const selectedLevels = ref([]); // 生效中的 level 集合
 const tempLevels = ref([]);     // 弹窗内临时 level 集合
 
 /* -------------------- 过滤 + 分页 -------------------- */
-// ongoing 时包含 assigned
+// ongoing 时包含 assigned（保持老逻辑兼容）
+// === 过滤逻辑 ===
 const filteredProjects = computed(() => {
-  const statusFiltered = allProjects.filter(
-    (p) =>
-      p.status === activeTab.value ||
-      (activeTab.value === 'ongoing' && p.status === 'assigned'),
-  );
+  const statusFiltered = allProjects.value.filter(
+    (p) => p.status === activeTab.value
+  )
   if (!selectedLevels.value?.length) return statusFiltered;
   return statusFiltered.filter((p) => selectedLevels.value.includes(p.level));
-});
+})
+
+const safeDescription = computed(() => {
+  const html = selectedProject.value?.description || '无任务说明'
+  const clean = DOMPurify.sanitize(html)
+  const div = document.createElement('div')
+  div.innerHTML = clean
+  div.querySelectorAll('img').forEach(img => {
+    img.style.maxWidth = '100%'
+    img.style.height = 'auto'
+    img.style.display = 'block'
+  })
+  return div.innerHTML
+})
+
 
 const currentPage = ref(0);
 const rowsPerPage = 4;
@@ -438,20 +418,51 @@ const toNumber = (v) => {
   return 0;
 };
 
-// 统一的上限与单位（可按业务调整）
+/* -------------------- 进度条：按等级动态上下限 -------------------- */
+// 允许 'A' / 'Level A' / 'A级' 等多种键，levelRanges 内需自行准备这些映射
+const getBoundsByLevel = (level) => levelRanges?.[level] || null;
+
+// 当前选中任务的上下限：{ exp:[min,max], coin:[min,max], hours:[min,max] }
+const selectedBounds = computed(() => {
+  const lvl = selectedProject.value?.level;
+  const bounds = getBoundsByLevel(lvl);
+  return bounds || { exp:[0,100], coin:[0,100], hours:[0,24] }; // 兜底
+});
+
+// 注意：我们项目字段是 'hour'，而范围表是 'hours'，这里做一次键位适配
+const pickBounds = (b, key) => {
+  if (!b) return [0, 0];
+  if (key === 'hour') return b.hours ?? [0, 0];
+  return b[key] ?? [0, 0];
+};
+
+// 用于 UI 的度量元数据（去掉固定 max，只保留单位/图标/颜色）
 const METRIC_DEFS = [
-  { key: 'exp',  label: 'EXP',  max: 500, unit: '', icon: new URL('../../assets/icon/exp.png', import.meta.url).href, color: '#F58B40'},
-  { key: 'coin', label: 'Coin', max: 100, unit: '', icon: new URL('../../assets/icon/token.png', import.meta.url).href , color: '#FBE838'},
-  { key: 'hour', label: 'Hour', max: 10,  unit: 'h', icon: new URL('../../assets/icon/time.png', import.meta.url).href , color: '#65D6ef'},
+  { key: 'exp',  label: 'EXP',  unit: '',  icon: new URL('../../assets/icon/exp.png', import.meta.url).href,  color: '#F58B40' },
+  { key: 'coin', label: 'Coin', unit: '',  icon: new URL('../../assets/icon/token.png', import.meta.url).href, color: '#FBE838' },
+  { key: 'hour', label: 'Hour', unit: 'h', icon: new URL('../../assets/icon/time.png', import.meta.url).href,  color: '#65D6ef' },
 ];
 
-// 计算：为模板提供 { key,label,raw,max,unit,pct }（pct 仅用于进度条宽度）
+// 百分比 = (raw - min) / (max - min)，并对 raw 做 clamp，避免溢出或负值
 const metricsBound = computed(() => {
   const p = selectedProject.value || {};
+  const b = selectedBounds.value;
+
   return METRIC_DEFS.map(def => {
     const raw = toNumber(p?.[def.key] ?? 0);
-    const pct = def.max > 0 ? Math.max(0, Math.min(100, Math.round((raw / def.max) * 100))) : 0;
-    return { ...def, raw, pct };
+    const [min, max] = pickBounds(b, def.key);
+    let clamped = raw;
+
+    if (max > min) {
+      if (clamped < min) clamped = min;
+      if (clamped > max) clamped = max;
+    }
+
+    const pct = (max > min) ? Math.round(((clamped - min) / (max - min)) * 100) : 0;
+    // 进度条文本：原值（可改为 `${raw}/${max}${def.unit}`）
+    const text = `${raw}${def.unit}`;
+
+    return { ...def, raw, pct, text, min, max };
   });
 });
 
@@ -476,6 +487,7 @@ const onResize = () => {
 }
 
 onMounted(async () => {
+  await fetchAllProjects();   // 从 mock 接口加载数据（分页）
   await nextTick()
   updateOverflow()
   window.addEventListener('resize', onResize)
@@ -496,6 +508,8 @@ const onCardImageLoad = () => {
   updateOverflow()
 }
 </script>
+
+
 
 <style scoped>
 /* =========================
@@ -906,7 +920,8 @@ const onCardImageLoad = () => {
   margin: 0;
   white-space: normal;
   overflow-wrap: anywhere;          /* 长词也能换行 */
-  margin-left: 30px;
+  margin-left: 60px;
+  margin-top: -10px
 }
 
 /* 3) 图片（依赖 --rail，对齐左边框；不包含头像） */
@@ -1221,4 +1236,14 @@ const onCardImageLoad = () => {
 .cards-scroll.no-scroll {
   overflow: hidden;
 }
+
+/* 限制图片最大宽度，高度自适应 */
+.rich-text img {
+  max-width: 100%;
+  height: auto;
+  display: block;     /* 避免行内空隙 */
+  margin: 8px 0;      /* 给点间距 */
+  border-radius: 6px; /* 看起来更美观，可选 */
+}
+
 </style>

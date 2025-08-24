@@ -57,6 +57,8 @@
 <route lang="yaml">
 meta:
   layout: "teacher"
+  requiresAuth: true
+  roles: ['teacher']
 </route>
 
 <script setup>

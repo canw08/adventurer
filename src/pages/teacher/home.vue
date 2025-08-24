@@ -137,11 +137,11 @@
         </Form>
       </div>
     </Dialog>
-
     <!-- 主体卡片区域 -->
     <div class="main-body">
-        <div class="grid-container">
-          <!-- Projects 使用 task-card 样式 -->
+      <div class="grid-container">
+        <!-- 有任务：照常渲染 -->
+        <template v-if="filteredProjects.length">
           <div
             v-for="project in filteredProjects"
             :key="project.id"
@@ -169,14 +169,33 @@
               <span class="task-level">{{ $t('common.level') }} {{ project.level }}</span>
             </div>
           </div>
+        </template>
+
+        <!-- 无任务：显示可点击的“新增/获取任务”卡片 -->
+        <div
+          v-else
+          class="task-card add-card"
+          role="button"
+          tabindex="0"
+          @click="showDialog = true"
+          @keypress.enter="showDialog = true"
+        >
+          <div class="add-card-content">
+            <i class="pi pi-plus large-plus" aria-hidden="true"></i>
+            <div class="add-text">{{ $t('questLog.getQuest') || '发布任务' }}</div>
+          </div>
         </div>
       </div>
+    </div>
+
     </div>
 </template>
 
 <route lang="yaml">
 meta:
   layout: "teacher"
+  requiresAuth: true
+  roles: ['teacher']
 </route>
 
 <script setup>
@@ -191,6 +210,7 @@ import teamwork from '../../assets/team.png'
 import { useI18n } from 'vue-i18n'
 import { onMounted } from 'vue';
 import { showOnce } from '../../composables/tip-once.js'
+import api from '../../api.js'   // ✅ 引入你配置好的 axios 实例
 
 const userStore = useUserStore();
 const selectedLevel = ref('')   // 或 'Level F'
@@ -360,19 +380,18 @@ const onFormSubmit = async (e) => {
       const base64 = tag.match(/src="([^"]+)"/)?.[1]
       if (base64?.startsWith('data:image')) {
         // 转成 Blob
-        const res = await fetch(base64)
+        const res = await fetch(base64)   // base64 转 Blob，这里还只能用 fetch
         const blob = await res.blob()
 
         // 构造 FormData
         const fd = new FormData()
         fd.append('file', blob, `image-${Date.now()}.png`)
 
-        // 调用上传接口
-        const uploadResp = await fetch('/api/upload', {
-          method: 'POST',
-          body: fd,
+        // ✅ 改成用 api 上传
+        const uploadResp = await api.post('/api/upload', fd, {
+          headers: { 'Content-Type': 'multipart/form-data' }
         })
-        const uploadData = await uploadResp.json()
+        const uploadData = uploadResp.data
 
         // 用返回的 URL 替换原来的 base64
         if (uploadData?.url) {
@@ -380,28 +399,26 @@ const onFormSubmit = async (e) => {
         }
       }
     }
+    
+    const levelLetter = selectedLevel.value?.split(' ').pop() || ''
+
 
     // 构造最终任务数据
     const payload = {
-      taskTitle: bigTitle.value,
-      taskDetails: html,
-      selectedLevel: selectedLevel.value,
-      exp: exp.value,
-      coin: coin.value,
-      hours: hours.value,
-      taskDate: taskDate.value ? taskDate.value.toISOString() : null,
+      title: bigTitle.value,
+      description: html,
+      required_level: levelLetter,
+      experience_reward : exp.value,
+      token_reward: coin.value,
+      volunteerTime_reward: hours.value,
+      deadline: taskDate.value ? taskDate.value.toISOString() : null,
+      task_type: "solo"
     }
     console.log(payload);
 
-    // 调用任务创建接口
-    const resp = await fetch('/api/tasks/create/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    })
-    const data = await resp.json()
+    // ✅ 改成用 api 调任务创建接口
+    const resp = await api.post('/api/tasks/create/', payload)
+    const data = resp.data
 
     console.log('任务创建成功:', data)
 

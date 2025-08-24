@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import routes from '~pages'
 import { setupLayouts } from 'virtual:generated-layouts'
+import { useUserStore } from '../src/stores/user.js'
 
 const routesWithLayouts = setupLayouts(routes)
 
@@ -9,33 +10,61 @@ const router = createRouter({
   routes: routesWithLayouts,
 })
 
-// —— 移动端检测函数 ——
-// 兼容性：先用 UA，兜底再用视口宽度（可按需调整阈值）
+// —— 移动端检测（JS） ——
 function isMobileDevice() {
   const ua = navigator.userAgent
   const byUA = /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua)
-  const byViewport = window.matchMedia?.('(max-width: 820px)').matches || window.innerWidth <= 820
+  const byViewport = (window.matchMedia && window.matchMedia('(max-width: 820px)').matches) || window.innerWidth <= 820
   return byUA || byViewport
 }
-
-// 如果只想在“第一次进入站点时”拦截一次，可用 sessionStorage
 const SEEN_FLAG = 'mobile_notice_seen'
 
-router.beforeEach((to, from, next) => {
+// —— 角色检查（JS） ——
+function hasRoleAccess(to, role) {
+  const needAuth = to.meta && to.meta.requiresAuth === true
+  const allowRoles = to.meta && to.meta.roles
+
+  if (!needAuth) return true
+  if (!role) return false
+  if (!Array.isArray(allowRoles) || allowRoles.length === 0) return true
+  return allowRoles.includes(role)
+}
+
+// —— 路由前置守卫（返回式写法） ——
+router.beforeEach(async (to) => {
+  // 1) 移动端拦截
   const isMobile = isMobileDevice()
-
-  // 允许进入的情况：
-  // 1) 已经在提示页（避免循环）
-  // 2) 路由显式允许手机访问：meta.allowMobile === true
-  // 3)（可选）本会话已看过提示页
-  const allowMobile = to.meta?.allowMobile === true
+  const allowMobile = to.meta && to.meta.allowMobile === true
   const seen = sessionStorage.getItem(SEEN_FLAG) === '1'
-
-  if (isMobile && to.path !== '/mobile-notice' && !allowMobile) {
-    next('/mobile-notice')
-  } else {
-    next()
+  if (isMobile && to.path !== '/mobile-notice' && !allowMobile && !seen) {
+    return { path: '/mobile-notice', query: { redirect: to.fullPath } }
   }
+
+  // 2) 需要鉴权才拉用户
+  const needAuth = to.meta && to.meta.requiresAuth === true
+  const userStore = useUserStore()
+
+  if (needAuth && !userStore.userInfo) {
+    try {
+      await userStore.fetchUser()
+    } catch (e) {
+      return { path: '/login', query: { redirect: to.fullPath } }
+    }
+  }
+
+  const role = userStore.userInfo && userStore.userInfo.role
+
+  if (!hasRoleAccess(to, role)) {
+    if (!role) {
+      return { path: '/login', query: { redirect: to.fullPath } }
+    }
+    // 已登录但没权限：按角色分流或 403
+    if (role === 'teacher') return { path: '/teacher' }
+    if (role === 'student') return { path: '/student/home' }
+    return { path: '/403' }
+  }
+
+  return true
 })
 
 export default router

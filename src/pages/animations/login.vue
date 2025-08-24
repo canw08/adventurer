@@ -12,27 +12,69 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'   // ① 引入 router
+import { useUserStore } from '../../stores/user'   // ⬅️ 从 Pinia 取用户角色
 
 const router = useRouter()              // ② 实例化 router
 
-const sentences = [
-  '/你醒了……',
-  '/这里的阳光有点刺的你睁不开眼……',
-  '/恍惚间片片叶子被风缓缓卷起……仿佛在诉说这片大地过往的种种……',
-  '/一双细腻白皙的手轻扫过饱经风霜的石垣……',
-  '/一位……美少女？',
-  '/她和这里亘古不变的种种一样。',
-  '/过去在……未来也会在……',
-  '/现在……',
-  '哈喽..喂..莫西莫西... O.o?',
-  '哦哦你在啊，哈哈不好意思。',
-  '已经等你123456789天了（还真有人会来的啊）',
-  'Ciallo～(∠・▽< )⌒☆',
-  '嗯……是这样的，我喜欢你。',
-  '跟我结婚吧！（还不赶紧答应本天才美少女(▼ヘ▼#)）',
-  '嘻嘻，既然同意了那就赶紧在契约上写你名字吧……不许反悔的！',
-];
+/** —— 各角色的脚本（可按需增减角色或替换文案） —— */
+const scriptsByRole = {
+  teacher: [
+    '/漫步在片片石阶上,眼前的茫茫让你思绪万千',
+    '/耳边是熟悉的吹打声…风沙慢慢蚀去你的步痕',
+    '/貌似只有朵朵暖云在路上陪伴',
+    '/前面是一座…小酒馆?',
+    '/房顶上缭绕的烟雾让你认出了这就是那些家伙说的地方',
+    '/饱经风霜的墙壁勾起你脑中在这片大地经历的种种',
+    '/不过…你坚信…这扇门的背后会是新的篇章',
+    '/缓缓推开…眼前的是…',
+    '您好您好 终于等到您了…看起来您比他们口中说的更年轻俊俏呢',
+    '/这个自来熟的少女很自然地带你进了一个房间缓缓坐下',
+    '/不经意间,你察觉到少女的脸上褪去了那一丝俏皮',
+    '您知道…我们处在个堕落的时代',
+    '我们相信唯有精诚合作才能带来希望',
+    '因此,请您不要吝啬手中的力量',
+    '年轻的冒险者们已经准备好被您征召',
+    '现在让我为您拍张美照到系统吧',
+  ],
+  student: [
+    '/你醒了……',
+    '/这里的阳光有点刺的你睁不开眼……',
+    '/恍惚间片片叶子被风缓缓卷起……仿佛在诉说这片大地过往的种种……',
+    '/一双细腻白皙的手轻扫过饱经风霜的石垣……',
+    '/一位……美少女？',
+    '/她和这里亘古不变的种种一样。',
+    '/过去在……未来也会在……',
+    '/现在……',
+    '哈喽..喂..莫西莫西... O.o?',
+    '哦哦你在啊，哈哈不好意思。',
+    '已经等你123456789天了（还真有人会来的啊）',
+    'Ciallo～(∠・▽< )⌒☆',
+    '嗯……是这样的，我喜欢你。',
+    '跟我结婚吧！（还不赶紧答应本天才美少女(▼ヘ▼#)）',
+    '嘻嘻，既然同意了那就赶紧在契约上写你名字吧……不许反悔的！',
+    
+  ],
+  admin: [
+    '/周遭的喧嚣戛然而止，数据流如瀑布般在您眼前静谧流淌',
+    '/一道冰冷的蓝光扫过，验证着您的最高权限',
+    '身份确认。管理员，欢迎归来。',
+    '/无数待处理的请求如繁星般在虚空中闪烁，等待您的裁决',
+    '系统日志显示三处异常波动，已标记。需要您亲自审阅。',
+    '秩序，是这片世界得以运行的唯一基石。',
+    '/您的指尖划过光屏，违规的条目在无声中化为齑粉',
+    '新的规则已注入底层协议。',
+    '防火墙强度提升至“冥河”级别。一切如您所愿。',
+    '维护完成。系统，稳定运行中。'
+  ],
+}
 
+const redirectByRole = {
+  teacher: '/teacher',
+  student: '/student/setup',
+  admin: '/admin/dashboard',
+  // 未识别角色或未登录的兜底
+  default: '/login',
+}
 
 const displayedText = ref('')
 const currentSentenceIndex = ref(0)
@@ -45,18 +87,6 @@ const sentencePause = 1500    // 每句话打完后停顿
 const deleteSpeed = 30       // 删除速度
 
 const fakeTerminalCommands = [
-  '>>> INIT_PROTOCOL handshake_bot_01',
-  '>>> Loading assistant personality module...',
-  '>>> Bot personality: Academic · Cheerful · Helpful',
-  '>>> Establishing speech synthesis...',
-  '>>> Synthesizer online.',
-  '>>> Connecting to volunteer network nodes...',
-  '>>> Network connection stable.',
-  '>>> Fetching latest task database...',
-  '>>> Task database synchronized.',
-  '>>> Running system diagnostics...',
-  '>>> Diagnostics complete. All systems functional.',
-  '>>> Ready to assist adventurer.'
 ]
 
 const typeSentence = async (sentence) => {
@@ -76,34 +106,34 @@ const deleteSentence = async () => {
   }
 }
 
-const runTerminalLog = async () => {
-  showTerminalLog.value = true
-  terminalLogs.value = []
-  let speed = 200
-  for (const cmd of fakeTerminalCommands) {
-    terminalLogs.value.push(cmd)
-    await new Promise(resolve => setTimeout(resolve, speed))
-    speed = Math.max(100, speed - 3) // 每条命令间隔逐渐缩短
-  }
-  await new Promise(resolve => setTimeout(resolve, 800))
-  showTerminalLog.value = false
-}
-
-const runTypewriter = async () => {
+const runTypewriter = async (role) => {
   await new Promise(resolve => setTimeout(resolve, 2500))
-
+  const sentences = scriptsByRole[role] || scriptsByRole.student
   for (let i = 0; i < sentences.length; i++) {
     await typeSentence(sentences[i])
     await deleteSentence()   // ✅ 每一句都删掉，包括最后一句
   }
 
-  // ✨ 删除完最后一句后跳转
-  router.push('/student/setup')   // 修改成你要去的页面
+  const target = redirectByRole[role] || redirectByRole.default
+  router.push(target)
 }
 
 
-onMounted(() => {
-  runTypewriter()
+onMounted(async () => {
+    const userStore = useUserStore()
+  let role = null
+
+  // 建议：如果这个页面属于“需要登录才能看”，这里要 try/catch 到登录
+  try {
+    if (!userStore.userInfo) {
+      await userStore.fetchUser()
+    }
+    role = userStore.userInfo && userStore.userInfo.role
+  } catch (e) {
+    // 拉取失败，当成未登录
+    role = null
+  }
+  runTypewriter(role)
 })
 </script>
 
