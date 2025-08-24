@@ -33,6 +33,11 @@
       <div class="card-background"></div>
 
       <!-- 卡片网格 -->
+       <div
+  class="cards-scroll"
+  :class="hasOverflow ? 'with-scroll' : 'no-scroll'"
+  ref="cardsScrollRef"
+>
       <div class="grid-container">
         <div
           v-for="project in paginatedProjects"
@@ -57,7 +62,7 @@
 
             <!-- 右侧图片（assigned 状态通过 CSS 隐藏） -->
             <div class="task-right">
-              <img :src="project.image" alt="Project Image" class="task-image" />
+              <img :src="project.image" alt="Project Image" class="task-image" @load="onCardImageLoad"/>
             </div>
           </div>
 
@@ -74,6 +79,7 @@
           </div>
         </div>
       </div>
+    </div>
 
       <!-- ✅ 分页器容器（固定在右下角） -->
       <div class="fixed-footer-wrapper">
@@ -220,7 +226,7 @@
 
       <!-- 确认应用 -->
       <div class="absolute-apply-button">
-        <Button label="confirm" @click="confirmFilter" class="apply-button" />
+        <Button label="confirm" @click="confirmFilter" class="apply-button custom-btn" />
       </div>
     </Dialog>
   </div>
@@ -241,8 +247,6 @@ meta:
  * 5) 方法（open/confirm 等）
  * 6) 监听（watch）
  */
-import { ref, computed, watch } from 'vue';
-
 import Avatar from 'primevue/avatar';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
@@ -250,6 +254,7 @@ import Checkbox from 'primevue/checkbox';
 import SelectButton from 'primevue/selectbutton';
 import Paginator from 'primevue/paginator';
 import ProgressBar from 'primevue/progressbar';
+import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 
 import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue';
 
@@ -450,6 +455,46 @@ const metricsBound = computed(() => {
   });
 });
 
+/* -------------------- 卡片区域溢出控制 -------------------- */
+const cardsScrollRef = ref(null)     // 绑定 DOM
+const hasOverflow = ref(false)       // 是否需要滚动
+
+// 检查是否溢出
+const updateOverflow = () => {
+  const el = cardsScrollRef.value
+  if (!el) return
+  hasOverflow.value = el.scrollHeight - el.clientHeight > 1
+}
+
+// 窗口 resize 时重新检查
+let resizeTimer = null
+const onResize = () => {
+  if (resizeTimer) clearTimeout(resizeTimer)
+  resizeTimer = setTimeout(() => {
+    updateOverflow()
+  }, 100)
+}
+
+onMounted(async () => {
+  await nextTick()
+  updateOverflow()
+  window.addEventListener('resize', onResize)
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', onResize)
+  if (resizeTimer) clearTimeout(resizeTimer)
+})
+
+// 监听项目列表/分页变化
+watch([filteredProjects, currentPage, showFilterDialog], async () => {
+  await nextTick()
+  updateOverflow()
+}, { flush: 'post' })
+
+// 图片加载完成后也检查
+const onCardImageLoad = () => {
+  updateOverflow()
+}
 </script>
 
 <style scoped>
@@ -550,6 +595,7 @@ const metricsBound = computed(() => {
   border-radius: 32px;
   overflow: hidden;
   border: 1px solid #e4eaf4;
+  min-height: 0; 
 }
 
 .card-background {
@@ -566,7 +612,8 @@ const metricsBound = computed(() => {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 40px;
-  padding: 40px;
+  padding: 0;
+  min-height: fit-content; 
 }
 
 /* 卡片 */
@@ -732,7 +779,8 @@ const metricsBound = computed(() => {
 .fixed-footer-wrapper {
   position: absolute;
   right: 16px;
-  bottom: 16px;
+  bottom: 8px;
+  height: 64px;
   display: flex;
   justify-content: flex-end;
   pointer-events: auto !important;
@@ -1132,5 +1180,45 @@ const metricsBound = computed(() => {
 }
 .dialog-vertical-divider {
   display: none !important;
+}
+/* 只对自定义的 custom-btn 生效，避免影响全局按钮 */
+:deep(.custom-btn.p-button) {
+  background-color: #2A2C55 !important;
+  border: none !important;
+  color: #ffffff !important;
+  border-radius: 12px;
+  padding: 12px 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+:deep(.custom-btn.p-button:hover) {
+  background-color: #1f2344 !important; /* hover 稍微深一点 */
+  transform: translateY(-3px);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.25);
+}
+:deep(.custom-btn.p-button:active) {
+  background-color: #1f2344 !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2) inset;
+}
+.cards-scroll {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 64px;       /* 分页器预留高度 */
+  padding: 40px;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cards-scroll.with-scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+}
+
+.cards-scroll.no-scroll {
+  overflow: hidden;
 }
 </style>

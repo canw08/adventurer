@@ -162,10 +162,19 @@
           </div>
         </div>  
       </div>   
-      <div class="dialog-footer-left">
-      <Button label="Ask for leave" class="p-button-secondary" />
-      <Button label="Confirm" class="p-button-primary" />
-    </div>
+    <!-- ✅ 稳定写法：用方法名而不是模板内联箭头函数 -->
+<div class="dialog-footer-left">
+  <Button
+    label="Ask for leave"
+    class="custom-btn"
+    @click="toggleLeavePanel"
+  />
+  <Button
+    label="Confirm"
+    class="custom-btn"
+    @click="confirmLeave"
+  />
+</div>
     <!-- 右下角 Mandator -->
      
     <div class="assigned-box">
@@ -616,10 +625,11 @@ const goToQuestStore = () => {
 }
 /* task-card 样式用于 projects */
 .task-card {
+  --card-padding: 16px;          /* 定义统一间距 */
+  padding: var(--card-padding);  /* 上下左右统一 */
   background-color: white;
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2); 
- padding: 16px;
   display: flex;
   flex-direction: column;
   align-items: flex-start; 
@@ -632,8 +642,8 @@ const goToQuestStore = () => {
 .task-title {
   font-size: 18px;
   font-weight: bold;
-  margin-top: 0;
-  margin-bottom: 4px;
+  margin: 0;
+  padding: 0;  
   text-align: left; 
   width: 100%;
 }
@@ -795,7 +805,17 @@ const goToQuestStore = () => {
   outline: none !important; /* 去掉默认 outline */
   box-shadow: 0 4px 12px rgba(42, 44, 85, 0.3) !important; /* 聚焦时保留普通阴影 */
 }
+/* 作用于加了 custom-btn 的 Button */
+:deep(.custom-btn.p-button) {
+  background-color: #2A2C55 !important;
+  border-color: #2A2C55 !important;
+  color: #fff !important;
+}
 
+:deep(.custom-btn.p-button:hover) {
+  background-color: #1f2344 !important; /* hover 稍微深一点 */
+  border-color: #1f2344 !important;
+}
 .dialog-date {
   display: flex;
   align-items: center;
