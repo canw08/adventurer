@@ -78,99 +78,102 @@
     </div>
   </div>
 
-<!-- 弹窗 -->
-<Dialog
-  v-model:visible="showDialog"
-  modal
-  blockScroll
-  dismissableMask
-  :closable="false"
-  :style="{ width: '1100px', height: '700px', position: 'relative' }"
-  class="project-dialog"
->
-  <template #header>
-        <div class="dialog-custom-header">
-          <!-- 左侧返回按钮 -->
-          <div class="dialog-header-left">
-            <Button
-              icon="pi pi-arrow-left"
-              text
-              class="dialog-back-button"
-              @click="showDialog = false"
-            />
-          </div>
+  <!-- 弹窗 -->
+  <Dialog
+    v-model:visible="showDialog"
+    modal
+    blockScroll
+    dismissableMask
+    :closable="false"
+    :style="{ width: '1100px', height: '700px', position: 'relative' }"
+    class="project-dialog"
+  >
+    <template #header>
+      <div class="dialog-custom-header">
+        <!-- 左侧返回按钮 -->
+        <div class="dialog-header-left">
+          <Button
+            icon="pi pi-arrow-left"
+            text
+            class="dialog-back-button"
+            @click="showDialog = false"
+          />
+        </div>
 
-          <!-- 中间标题 + 时间 -->
-          <div class="dialog-header-center">
-            <span class="dialog-title">{{ selectedProject?.title || '' }}</span>
-            <span class="dialog-date-inline">
-              <i class="pi pi-clock"></i>
-              {{ selectedProject?.date }}
-            </span>
-          </div>
+        <!-- 中间标题 + 时间 -->
+        <div class="dialog-header-center">
+          <span class="dialog-title">{{ selectedProject?.title || '' }}</span>
+          <span class="dialog-date-inline">
+            <i class="pi pi-clock"></i>
+            {{ selectedProject?.date }}
+          </span>
+        </div>
 
-          <!-- 浮动右上角的等级标签（只显示） -->
-          <div class="floating-dialog-level">
-            Level {{ selectedProject?.level || '' }}
+        <!-- 浮动右上角的等级标签（只显示） -->
+        <div class="floating-dialog-level">
+          Level {{ selectedProject?.level || '' }}
+        </div>
+      </div>
+    </template>
+
+    <!-- ① 内容包裹层：先开 -->
+    <div class="dialog-content-wrapper">
+      <div class="dialog-left-section">
+        <div class="dialog-author">
+          <Avatar
+            :image="selectedProject?.avatar || 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png'"
+            shape="circle"
+            size="large"
+            style="width: 50px; height: 50px"
+          />
+          <span class="author-name">{{ selectedProject?.author}}</span>
+        </div>
+
+        <div class="dialog-description" v-html="safeDescription"></div>
+      </div>
+      <div class="dialog-grid-divider" aria-hidden="true"></div>
+      <div class="dialog-right-section">
+        <div class="right-level-spacer" aria-hidden="true">
+          Level {{ selectedProject?.level || '' }}
+        </div>
+        <!-- 纵向 3 条进度条：EXP / Coin / Hour（显示具体数值） -->
+        <div class="right-metrics">
+          <div v-for="m in metricsBound" :key="m.key" class="metric-item">
+            <!-- 上行：icon + 进度条 -->
+            <div class="metric-row">
+              <img :src="m.icon" alt="" class="metric-icon pixelated click-wiggle" />
+              <ProgressBar
+                :value="m.pct"
+                class="metric-bar"
+                :style="{ height: '28px','--bar-color': m.color }"
+              >
+                <span class="metric-text">{{ m.raw }}{{ m.unit }}</span>
+              </ProgressBar>
+            </div>
+            <!-- 下行：label -->
+            <div class="metric-label">{{ m.label }}</div>
           </div>
         </div>
-      </template>
-
-
-  <!-- ① 内容包裹层：先开 -->
-  <div class="dialog-content-wrapper">
-    <div class="dialog-left-section">
-      <div class="dialog-author">
-        <Avatar
-          :image="selectedProject?.avatar || 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png'"
-          shape="circle"
-          size="large"
-          style="width: 50px; height: 50px"
-        />
-        <span class="author-name">{{ selectedProject?.author}}</span>
       </div>
+    </div>
 
-      <div class="dialog-description" v-html="safeDescription"></div>
-      </div>
-    <div class="dialog-grid-divider" aria-hidden="true"></div>
-    <div class="dialog-right-section">
-     <div class="right-level-spacer" aria-hidden="true">
-       Level {{ selectedProject?.level || '' }}
-          </div>
-    <!-- 纵向 3 条进度条：EXP / Coin / Hour（显示具体数值） -->
-          <div class="right-metrics">
-            <div v-for="m in metricsBound" :key="m.key" class="metric-item">
-              <!-- 上行：icon + 进度条 -->
-              <div class="metric-row">
-                <img :src="m.icon" alt="" class="metric-icon pixelated click-wiggle" />
-                <ProgressBar :value="m.pct" class="metric-bar" :style="{ height: '28px','--bar-color': m.color }">
-                  <span class="metric-text">{{ m.raw }}{{ m.unit }}</span>
-                </ProgressBar>
-              </div>
-              <!-- 下行：label -->
-              <div class="metric-label">{{ m.label }}</div>
-            </div>
-          </div>
-        </div>  
-      </div>   
     <!-- ✅ 稳定写法：用方法名而不是模板内联箭头函数 -->
-<div class="dialog-footer-left">
-  <Button
-    label="Ask for leave"
-    class="custom-btn"
-    @click="toggleLeavePanel"
-  />
-  <Button
-    label="Confirm"
-    class="custom-btn"
-    @click="confirmLeave"
-  />
-</div>
+    <div class="dialog-footer-left">
+      <Button
+        label="Ask for leave"
+        class="custom-btn"
+        @click="toggleLeavePanel"
+      />
+      <Button
+        label="Confirm"
+        class="custom-btn"
+        @click="confirmLeave"
+      />
+    </div>
+
     <!-- 右下角 Mandator -->
-     
     <div class="assigned-box">
-      <div class="right-level-spacer" aria-hidden="true">
-          </div>
+      <div class="right-level-spacer" aria-hidden="true"></div>
       <span class="assigned-label">Assigned</span>
       <span class="assigned-name">{{ selectedProject?.mandator || '' }}</span>
       <Avatar
@@ -179,54 +182,54 @@
         style="width: 48px; height: 48px"
       />
     </div>
-  <!-- ② 内容包裹层：先关 ↑ 这一行必须在 OverlayPanel 之前 -->
+    <!-- ② 内容包裹层：先关 ↑ 这一行必须在 OverlayPanel 之前 -->
 
-  <!-- ③ OverlayPanel 放在 Dialog 内、content-wrapper 外 -->
-<!-- 二次弹窗：更大、圆角、上方一点点 -->
-<OverlayPanel
-  ref="leavePanel"
-  class="leave-overlay"
-  appendTo="body"
-  :dismissable="true"
-  :showCloseIcon="false"
->
-  <div class="leave-form">
-    <!-- 顶部：左头像 + 右 申请理由（单行） -->
-    <div class="leave-top">
-      <Avatar
-        :image="selectedProject?.avatar || 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png'"
-        shape="circle"
-        style="width: 56px; height: 56px"
-      />
-      <InputText
-        v-model="leaveTitle"
-        class="leave-title-input"
-        placeholder="申请理由（简要）"
-      />
-    </div>
+    <!-- ③ OverlayPanel 放在 Dialog 内、content-wrapper 外 -->
+    <!-- 二次弹窗：更大、圆角、上方一点点 -->
+    <OverlayPanel
+      ref="leavePanel"
+      class="leave-overlay"
+      appendTo="body"
+      :dismissable="true"
+      :showCloseIcon="false"
+    >
+      <div class="leave-form">
+        <!-- 顶部：左头像 + 右 申请理由（单行） -->
+        <div class="leave-top">
+          <Avatar
+            :image="selectedProject?.avatar || 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png'"
+            shape="circle"
+            style="width: 56px; height: 56px"
+          />
+          <InputText
+            v-model="leaveTitle"
+            class="leave-title-input"
+            placeholder="申请理由（简要）"
+          />
+        </div>
 
-    <!-- 中部：详情理由（多行） -->
-    <div class="leave-middle">
-      <Textarea
-        v-model="leaveDetail"
-        class="leave-detail-textarea"
-        :autoResize="true"
-        rows="6"
-        placeholder="详情理由（时间范围、交接说明等）"
-      />
-    </div>
+        <!-- 中部：详情理由（多行） -->
+        <div class="leave-middle">
+          <Textarea
+            v-model="leaveDetail"
+            class="leave-detail-textarea"
+            :autoResize="true"
+            rows="6"
+            placeholder="详情理由（时间范围、交接说明等）"
+          />
+        </div>
 
-    <!-- 底部：右下角 Submit -->
-    <div class="leave-bottom">
-      <Button
-        label="Submit"
-        class="custom-btn"
-        @click="submitLeave"
-      />
-    </div>
-  </div>
-</OverlayPanel>
-</Dialog>
+        <!-- 底部：右下角 Submit -->
+        <div class="leave-bottom">
+          <Button
+            label="Submit"
+            class="custom-btn"
+            @click="submitLeave"
+          />
+        </div>
+      </div>
+    </OverlayPanel>
+  </Dialog>
 </template>
 
 <route lang="yaml">

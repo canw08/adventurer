@@ -19,7 +19,7 @@ export default [
         volunteerTime: 2.5,
         level: 'F',
         title: null,
-        role: 'student',
+        role: 'teacher',
       });
     },
   },

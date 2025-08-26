@@ -1,4 +1,5 @@
 <template>
+  <Toast />
   <!-- 右侧主容器 -->
   <div class="main-content">
     <!-- 顶部栏 -->
@@ -177,7 +178,11 @@
 
       <!-- 接任务按钮（固定右下角） -->
       <div class="absolute-accept-button">
-        <Button label="Accept" class="custom-btn" />
+        <Button 
+          label="Accept" 
+          class="custom-btn" 
+          @click="applyForTask(selectedProject?.id)" 
+        />
       </div>
     </Dialog>
 
@@ -259,6 +264,10 @@ import solo1 from '../../assets/solo.png'
 import solo2 from '../../assets/solo2.png'
 
 import DOMPurify from 'dompurify'
+
+import { useToast } from 'primevue/usetoast'
+
+const toast = useToast()
 /* -------------------- 问候语 -------------------- */
 const period = computed(() => {
   const h = new Date().getHours()
@@ -507,6 +516,36 @@ watch([filteredProjects, currentPage, showFilterDialog], async () => {
 const onCardImageLoad = () => {
   updateOverflow()
 }
+
+// 接任务 API 调用
+const applyForTask = async (taskId) => {
+  if (!taskId) return
+  try {
+    await api.post(`/api/tasks/${taskId}/apply/`)
+    // 成功后：整页重新拉取数据
+    await fetchAllProjects()
+    showDialog.value = false
+
+    // 成功提示
+    toast.add({
+      severity: 'success',
+      summary: '已接受任务',
+      detail: '任务申请成功，列表已更新。',
+      life: 3000
+    })
+  } catch (err) {
+    console.error(err)
+    toast.add({
+      severity: 'error',
+      summary: '操作失败',
+      detail: (err?.response?.data?.detail) || '接受任务失败，请稍后再试。',
+      life: 4000
+    })
+  }
+}
+
+
+
 </script>
 
 
