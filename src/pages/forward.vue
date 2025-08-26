@@ -1,5 +1,4 @@
 <template>
-  <div class="quest-fullpage">
     <div class="container">
       <!-- 顶部：标题/日期/等级 -->
       <header class="top">
@@ -30,25 +29,30 @@
         </div>
       </section>
 
-      <section class="media">
-        <img src="/public/login.jpg" alt="login" class="media-img" />
-        <img src="/public/login.jpg" alt="login" class="media-img" />
-      </section>
+      <!-- 图片和指标 -->
+      <section class="content-row">
+        <section class="media">
+          <img src="/public/login.jpg" alt="login" class="media-img" />
+          <img src="/public/login.jpg" alt="login" class="media-img" />
+        </section>
 
-      <!-- 奖励条 -->
-        <div class="right-metrics">
-            <div v-for="m in metricsBound" :key="m.key" class="metric-item">
-              <!-- 上行：icon + 进度条 -->
-              <div class="metric-row">
-                <img :src="m.icon" alt="" class="metric-icon pixelated click-wiggle" />
-                <ProgressBar :value="m.pct" class="metric-bar" :style="{ height: '28px','--bar-color': m.color }">
-                  <span class="metric-text">{{ m.raw }}{{ m.unit }}</span>
-                </ProgressBar>
-              </div>
-              <!-- 下行：label -->
-              <div class="metric-label">{{ m.label }}</div>
+        <aside class="right-metrics">
+          <div v-for="m in metricsBound" :key="m.key" class="metric-item">
+            <div class="metric-row">
+              <img :src="m.icon" alt="" class="metric-icon pixelated click-wiggle" />
+              <!-- ✅ 进度条：改用 pbar-bg / pbar-fill -->
+              <ProgressBar
+                :value="m.pct"
+                class="metric-bar"
+                :style="{ height: '28px', '--bar-color': m.color, '--bar-track': '#E5E7EB' }"
+              >
+                <span class="metric-text">{{ m.raw }}{{ m.unit }}</span>
+              </ProgressBar>
             </div>
+            <div class="metric-label">{{ m.label }}</div>
           </div>
+        </aside>
+      </section>
 
       <!-- 底部：左按钮 + 右指派 -->
       <footer class="bottom">
@@ -61,7 +65,6 @@
         </div>
       </footer>
     </div>
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -69,10 +72,7 @@ import { computed, ref, defineComponent, h } from 'vue'
 
 const hostAvatar = 'https://api.dicebear.com/9.x/adventurer/svg?seed=bridgette'
 const assigneeAvatar = 'https://api.dicebear.com/9.x/adventurer/svg?seed=haoyang'
-// <script setup>
-const pics = [
-  'public/image/login.jpg',
-]
+
 const metricsBound = computed(() => {
   const p = selectedProject.value || {};
   return METRIC_DEFS.map(def => {
@@ -81,14 +81,13 @@ const metricsBound = computed(() => {
     return { ...def, raw, pct };
   });
 });
-// 统一的上限与单位（可按业务调整）
+
 const METRIC_DEFS = [
   { key: 'exp',  label: 'EXP',  max: 500, unit: '', icon: new URL('../assets/icon/exp.png',   import.meta.url).href, color: '#F58B40' },
   { key: 'coin', label: 'Coin', max: 100, unit: '', icon: new URL('../assets/icon/token.png', import.meta.url).href, color: '#FBE838' },
   { key: 'hour', label: 'Hour', max: 10,  unit: 'h', icon: new URL('../assets/icon/time.png',  import.meta.url).href, color: '#65D6ef'  },
 ]
 
-/* ✅ 补齐：selectedProject（如果你之后从接口赋值，可以把这里的初始值替换掉） */
 type Project = { exp?: number; coin?: number; hour?: number }
 const selectedProject = ref<Project>({
   exp: 500,
@@ -96,7 +95,6 @@ const selectedProject = ref<Project>({
   hour: 1,
 })
 
-/* ✅ 补齐：toNumber 工具 */
 const toNumber = (v: unknown) => {
   const n = Number(v)
   return Number.isFinite(n) ? n : 0
@@ -105,9 +103,10 @@ const toNumber = (v: unknown) => {
 const ProgressBar = defineComponent({
   name: 'ProgressBar',
   props: { value: { type: Number, required: true } },
-  setup(props, { slots }) {
+  setup(props, { slots, attrs }) {
+    // ✅ 把父级传来的 class/style 透传到根 div
     return () =>
-      h('div', { class: 'pbar-bg' }, [
+      h('div', { class: ['pbar-bg', attrs.class], style: attrs.style }, [
         h('div', {
           class: 'pbar-fill',
           style: { width: `${Math.max(0, Math.min(100, props.value))}%` }
@@ -115,218 +114,111 @@ const ProgressBar = defineComponent({
       ])
   }
 })
+
 </script>
 
 <style scoped>
-:root{
-  --ink:#2A2C56;
-  --muted:#9aa0af;
-  --orange:#FF8A42;
-  --yellow:#FFD84A;
-  --bar-bg:#D9D9D9;
-  --btn:#2A2C56;
+:root{ --ink:#2A2C56; --muted:#9aa0af; --orange:#FF8A42; --yellow:#FFD84A; --bar-bg:#D9D9D9; --btn:#2A2C56; }
+/* ✅ 注意：用 :deep 作用到子组件内部 DOM */
+:deep(.metric-bar) {        /* 这个类是你写在 <ProgressBar class="metric-bar"> 上的 */
+  flex: 1;                  /* 占满剩余空间，自适应宽度 */
+  height: 28px;
+  position: relative;
+  background: var(--bar-bg);
+  border-radius: 12px;
+  overflow: hidden;
+  min-width: 120px;
+  /* 避免被其它规则写死宽度 */
+  width: auto;
+}
+/* 进度填充条 */
+:deep(.pbar-fill) {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  display: flex; align-items: center; justify-content: flex-end;
+  padding-right: 10px;
+  font-weight: 800; font-size: 12px; color: #fff;
+  background: var(--bar-color, #65D6ef); /* 颜色来自你传入的 --bar-color */
+}
+.container{ height:100%; min-height:100vh; display:flex; flex-direction:column; padding:40px 48px 28px; }
+
+/* 顶部区 */
+.top{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+.title{ margin:0 0 10px 0; color:var(--ink); font-size:32px; font-weight:800; letter-spacing:.2px; }
+.date{ display:flex; align-items:center; gap:10px; color:#9aa0af; font-weight:800; font-size:18px; }
+.clock{ width:24px; height:24px; color:#b9beca; }
+.level{ align-self:flex-start; font-size:36px; font-weight:900; color:#6DEAFF; }
+
+/* 作者区 */
+.author{ display:grid; grid-template-columns:64px 1fr; gap:14px 16px; margin-top:28px; }
+.avatar{ width:64px; height:64px; border-radius:50%; }
+.meta .name{ color:var(--ink); font-size:20px; font-weight:700; }
+.meta .desc{ margin:8px 0 0 0; color:#222; line-height:1.7; grid-column:2 / -1; }
+
+/* ✅ 图片区：固定宽度，靠左，不居中 */
+.media {
+  display: grid;
+  grid-template-columns: repeat(2, 300px); /* 两张固定 300px */
+  gap: 20px;
+  max-width: 620px; /* 总宽 */
+  margin-left: 5%;
+}
+.media-img {
+  width: 300px;
+  height: 225px;
+  object-fit: cover;
+  border-radius: 10px;
 }
 
-/* 整页白底 */
-.quest-fullpage{
-  min-height:100vh;
-  background:#fff;
-}
-.container{
+/* 指标区 */
+.container {
   height:100%;
   min-height:100vh;
   display:flex;
   flex-direction:column;
   padding:40px 48px 28px;
 }
-
-/* 顶部区 */
-.top{
+.content-row {
   display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:16px;
-}
-.title{
-  margin:0 0 10px 0;
-  color:var(--ink);
-  font-size:32px;
-  font-weight:800;
-  letter-spacing:.2px;
-}
-.date{
-  display:flex; align-items:center; gap:10px;
-  color:#9aa0af;
-  font-weight:800;
-  font-size:18px;
-}
-.clock{ width:24px; height:24px; color:#b9beca; }
-
-.level{
-  align-self:flex-start;
-  font-size:36px;
-  font-weight:900;
-  color:#6DEAFF;
-  -webkit-text-stroke: 1px #bff3ff;
-  text-shadow: 0 1px 0 #bff3ff;
-  transform: translateY(6px);
+  flex-direction:column;
+  gap:28px;
+  margin:24px 0 16px;
+  /* ❌ 不要加 flex:1，这样 footer 才能贴底 */
 }
 
-/* 作者区 */
-.author{
-  display:grid;
-  grid-template-columns:64px 1fr;
-  gap:14px 16px;
-  margin-top:28px;
-}
-.avatar{
-  width:64px; height:64px; border-radius:50%;
-}
-.meta .name{
-  color:var(--ink); font-size:20px; font-weight:700;
-}
-.meta .desc{
-  margin:8px 0 0 0;
-  color:#222; line-height:1.7;
-  grid-column:2 / -1;
-}
-
-/* 图片占位 */
-/* 替换占位样式 */
-.media {
-  display: grid;
-  grid-template-columns: repeat(2, 300px);
-  gap: 28px;
-  margin: 24px 0 16px;
+.right-metrics {
+  position: static;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
   margin-left: 5%;
 }
-
-.media-img {
-  width: 300px;
-  height: 220px;
-  object-fit: cover;   /* 保证图片不变形 */
-  border-radius: 10px;
+.metric-item { display: flex; flex-direction: column; gap: 4px; }
+.metric-row { display: flex; align-items: center; gap: 0; gap: 6px;   /* 给 icon 和条留点间距 */}
+.metric-icon { width: 45px; height: 45px; flex-shrink: 0; margin-right: -18px; z-index: 2; }
+.metric-label { font-size: 13px; font-weight: 600; margin-left: 10px; color: #5a6275; }
+.metric-text { font-size: 12px; font-weight: 600; color:#fff; }
+/* ✅ 条容器：同时有 .pbar-bg 和 .metric-bar 类 */
+.metric-bar {
+  flex: 1;             /* 占满剩余空间 */
+  height: 28px;
+  background: var(--bar-bg);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  min-width: 120px;    /* 避免太窄 */
 }
-
-
-/* 奖励条 */
-.rewards{
-  display:grid;
-  gap:18px;
-  margin-top:4px;
-}
-.reward{
-  display:grid;
-  grid-template-columns: 44px 320px;
-  grid-template-rows: 20px auto;
-  column-gap:12px;
-  row-gap:6px;
-  align-items:center;
-}
-.icon-wrap{ grid-row: 1 / span 2; display:flex; align-items:center; justify-content:center; }
-.r-icon{ width:28px; height:28px; image-rendering: pixelated; }
-
-.bar-bg{
-  position:relative;
-  height:22px;
-  background:var(--bar-bg);
-  border-radius:12px;
-  overflow:hidden;
-}
-.bar-fill{
-  position:absolute; left:0; top:0; bottom:0;
-  display:flex; align-items:center; justify-content:flex-end;
-  padding-right:10px;
-  font-weight:800; font-size:12px; color:#fff;
-}
-.bar-orange{ background:var(--orange); }
-.bar-yellow{ background:var(--yellow); color:#2a2a2a; }
-.amount{ opacity:.95; }
-.under-label{
-  grid-column:2;
-  font-size:12px; color:#6b7280; font-weight:800;
-  margin-top:2px;
-}
-
 /* 底部 */
-.bottom{
-  margin-top:auto; /* 推到底部 */
-  display:flex; align-items:center; justify-content:space-between;
-  padding-top:22px;
-}
-.accept{
-  background:var(--btn);
-  color:#fff;
-  border:none;
-  padding:12px 58px;
-  font-weight:900;
-  border-radius:500px;
-  font-size:18px;
-  cursor:pointer;
-  background-color: #2A2C55;
-}
-.accept:active{ transform: translateY(1px); }
-
+.bottom{ margin-top:auto; display:flex; align-items:center; justify-content:space-between; padding-top:22px; }
+.accept{ background:var(--btn); color:#fff; border:none; padding:12px 58px; font-weight:900; border-radius:500px; font-size:18px; cursor:pointer; background-color: #2A2C55;}
 .assigned{ display:flex; align-items:center; gap:12px; }
 .muted{ color:#b9bcc6; font-weight:900; letter-spacing:.4px; }
 .who{ color:#111; font-weight:900; font-size:20px; }
 .assignee{ width:52px; height:52px; border-radius:50%; }
 
-@media (max-width: 1080px){
-  .media{ grid-template-columns: repeat(2, 1fr); }
-  .reward{ grid-template-columns: 44px 1fr; }
-}
-@media (max-width: 720px){
-  .container{ padding:24px 18px; }
-  .media{ grid-template-columns: 1fr; }
-}
-
-.right-metrics {
-  display: flex;
-  position: absolute;
-  flex-direction: column;
-  gap: var(--metric-gap);     /* 三条之间的间距 */
-  margin-top: -45px; /* 与 Level 的距离，= gap */
-  top: 65%;
-  margin-left: 5%;
-}
-.metric-item {
-  display: flex;
-  flex-direction: column;   /* 上下布局：第一行 icon+bar，第二行 label */
-  gap: 4px;
-}
-.metric-row {
-  display: flex;
-  align-items: center;
-  gap: 0px;                 /* icon 和 bar 的距离 */
-}
-.metric-icon {
-  width: 45px;
-  height: 45px;
-  flex-shrink: 0;           /* 图标固定大小，不会被压缩 */
-  margin-right: -18px;
-  z-index: 2;
-}
-.metric-bar {
-  flex: 1;                  /* 占满剩余空间 */
-  z-index: 1;
-}
-.metric-label {
-  text-align: left;       /* label 居中到 icon 下方 */
-  font-size: 13px;
-  font-weight: 600;
-  margin-left: 10px;
-  color: #5a6275;
-}
-.pixelated {
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-  image-rendering: -moz-crisp-edges;
-  -ms-interpolation-mode: nearest-neighbor; /* legacy IE */
-}
-.metric-text {
-  font-size: 12px;
-  font-weight: 600;
-  color: #FFf;
+/* 小屏下图片收缩 */
+@media (max-width: 700px){
+  .media{ grid-template-columns: 300px; max-width:300px; }
 }
 </style>

@@ -14,6 +14,10 @@ import './assets/main.css'
 // 注意：这里改成引入 initI18n，而不是直接 i18n
 import { initI18n } from './i18n'
 
+import Tooltip from 'primevue/tooltip'
+
+
+
 async function bootstrap() {
   const pinia = createPinia()
   const app = createApp(App)
@@ -33,6 +37,8 @@ async function bootstrap() {
   app.use(i18n)
 
   app.mount('#app')
+
+  app.directive('tooltip', Tooltip)
 }
 
 bootstrap()

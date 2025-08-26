@@ -41,10 +41,15 @@
       class="p-fluid my-task-dialog"
       :style="{ width: '1100px', maxWidth: '90vw' , height:'700px'}"
     >
-
-  <template #header>
-    <h2 class="dialog-header-title">Release a task</h2>
-  </template>
+      <template #header>
+      <div class="dialog-header-custom">
+        <h2 class="dialog-header-title">Release a task</h2>
+        <i 
+          class="pi pi-question-circle help-icon"
+          v-tooltip.top="'F级：志愿者搬两箱水 // E级：期中颁奖小哥 // 这两个任务的本质区别是时长以及需要完成的任务的难度。各位老师请根据自己想要发布的任务来自由的判断任务难度，并添加合适的任务奖励。'"
+        ></i>
+      </div>
+    </template>
 
     <div class="gapping">
       <!-- Choose level -->
@@ -429,7 +434,6 @@ const onFormSubmit = async (e) => {
 }
 
 const editorContent = ref('')
-const contentError = ref('')
 
 
 onMounted(async () => {
@@ -937,7 +941,19 @@ onMounted(async () => {
   color: #2A2C55;      /* 深蓝色 */
   margin: 0;           /* 去掉默认 margin */
 }
-
+.dialog-header-custom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.help-icon {
+  font-size: 20px;
+  color: #2A2C55;
+  cursor: pointer;
+}
+.help-icon:hover {
+  color: #8949d1;
+}
 .field-stack {
   display: flex;
   flex-direction: column;

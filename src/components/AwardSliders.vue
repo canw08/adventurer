@@ -1,6 +1,12 @@
 <template>
   <div class="p-field">
-    <label class="choose-size-label">Choose award</label>
+    <div class="choose-size-label-wrapper">
+      <label class="choose-size-label">Choose award</label>
+      <i
+        class="pi pi-question-circle help-icon"
+        v-tooltip.top="'Coins金币：学生用来购买一些有趣的道具/ EXP：学生用来升级/ HOURS：志愿者时长，请在任务是志愿者任务是添加，别的任务只需保持默认为0就好'"
+      ></i>
+    </div>
 
     <!-- EXP -->
 <div class="award-item">
@@ -368,4 +374,19 @@ function bubbleStyle(val: number, min: number, max: number) {
   height: 20px;
   object-fit: contain;
 }
+.choose-size-label-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px; /* 文字和问号间距 */
+}
+.help-icon {
+  font-size: 18px;
+  color: #2A2C55;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.help-icon:hover {
+  color: #8949d1;
+}
+
 </style>
