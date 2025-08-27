@@ -193,6 +193,104 @@
       </div>
     </div>
     </div>
+
+        <!-- ============ 项目详情弹窗（qdlg-* 命名空间） ============ -->
+    <Dialog
+      v-model:visible="showProjectDialog"
+      modal
+      blockScroll
+      dismissableMask
+      :closable="false"
+      :style="{ width: '1100px', height: '700px', position: 'relative' }"
+      class="qdlg-dialog"
+    >
+      <template #header>
+        <div class="qdlg-header">
+          <!-- 左侧返回 -->
+          <div class="qdlg-header-left">
+            <Button
+              icon="pi pi-arrow-left"
+              text
+              class="qdlg-back-btn"
+              @click="showProjectDialog = false"
+            />
+          </div>
+          <!-- 标题 + 时间 -->
+          <div class="qdlg-header-center">
+            <span class="qdlg-title">{{ selectedProject?.title || '' }}</span>
+            <span class="qdlg-date-inline">
+              <i class="pi pi-clock"></i>
+              {{ selectedProject?.date }}
+            </span>
+          </div>
+<!-- 编辑任务按钮（右上角小铅笔） -->
+          <Button
+            icon="pi pi-pencil"
+            class="qdlg-edit-task-btn p-button-rounded p-button-text"
+            v-tooltip.top="'编辑任务详情'"
+            severity="secondary"
+            @click="editThisTask"
+          />
+          <!-- 右上角 Level 只显示 -->
+          <div class="qdlg-level-chip">
+            Level {{ selectedProject?.level || '' }}
+          </div>
+        </div>
+      </template>
+
+      <div class="qdlg-content">
+        <div class="qdlg-left">
+          <div class="qdlg-author">
+            <Avatar
+              :image="selectedProject?.avatar || 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png'"
+              shape="circle"
+              size="large"
+              style="width: 50px; height: 50px"
+            />
+            <span class="qdlg-author-name">{{ selectedProject?.author }}</span>
+          </div>
+
+          <div class="qdlg-description" v-html="safeDescription"></div>
+        </div>
+
+        <div class="qdlg-divider" aria-hidden="true"></div>
+
+        <div class="qdlg-right">
+          <div class="qdlg-level-spacer" aria-hidden="true">
+            Level {{ selectedProject?.level || '' }}
+          </div>
+
+          <div class="qdlg-metrics">
+            <div v-for="m in metricsBound" :key="m.key" class="qdlg-metric-item">
+              <div class="qdlg-metric-row">
+                <img :src="m.icon" alt="" class="qdlg-metric-icon qdlg-pixelated" />
+                <ProgressBar
+                  :value="m.pct"
+                  class="qdlg-metric-bar"
+                  :style="{ height: '28px', '--bar-color': m.color }"
+                >
+                  <span class="qdlg-metric-text">{{ m.raw }}{{ m.unit }}</span>
+                </ProgressBar>
+              </div>
+              <div class="qdlg-metric-label">{{ m.label }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右下角 Assigned（显示用） -->
+      <div class="qdlg-assigned">
+        <div class="qdlg-level-spacer" aria-hidden="true"></div>
+        <span class="qdlg-assigned-label">Assigned</span>
+        <span class="qdlg-assigned-name">{{ selectedProject?.mandator || '' }}</span>
+        <Avatar
+          :image="selectedProject?.avatar || 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png'"
+          shape="circle"
+          style="width: 48px; height: 48px"
+        />
+      </div>
+    </Dialog>
+
 </template>
 
 <route lang="yaml">
@@ -215,7 +313,77 @@ import { useI18n } from 'vue-i18n'
 import { onMounted } from 'vue';
 import { showOnce } from '../../composables/tip-once.js'
 import api from '../../api.js'   // ✅ 引入你配置好的 axios 实例
+// ==== 新增 import（如果这些已在全局注册，可不重复 import）====
+import Dialog from 'primevue/dialog'
+import Avatar from 'primevue/avatar'
+import ProgressBar from 'primevue/progressbar'
+import DOMPurify from 'dompurify'
 
+// 如需按等级计算进度条的上下限范围（可自定义/也可简单固定）
+import { levelRanges } from '../../components/levelRange.js'
+// 三个图标（注意路径和你项目保持一致）
+const ICON_EXP  = new URL('../../assets/icon/exp.png', import.meta.url).href
+const ICON_COIN = new URL('../../assets/icon/token.png', import.meta.url).href
+const ICON_TIME = new URL('../../assets/icon/time.png', import.meta.url).href
+
+// ==== 新增：项目详情 Dialog 控制 ====
+const showProjectDialog = ref(false)     // 不要复用 showDialog
+const selectedProject = ref(null)
+
+function openProjectDialog(project) {
+  selectedProject.value = project
+  showProjectDialog.value = true
+}
+
+// ==== 新增：安全描述（将富文本 description 安全渲染）====
+const safeDescription = computed(() => {
+  const html = selectedProject.value?.description || '无任务说明'
+  return DOMPurify.sanitize(html)
+})
+
+// ==== 新增：右侧指标（EXP / Coin / Hour）====
+// 1) 工具：取数值
+const toNumber = (v) => {
+  if (typeof v === 'number') return v
+  if (typeof v === 'string') {
+    const m = v.match(/[\d.]+/)
+    return m ? Number(m[0]) : 0
+  }
+  return 0
+}
+
+// 2) 依据等级拿到范围（可自行定义 levelRanges；没有就给默认范围）
+const getBoundsByLevel = (level) => levelRanges?.[level] || { exp:[0,100], coin:[0,100], hours:[0,24] }
+
+// 3) 选中任务的范围
+const selectedBounds = computed(() => {
+  const lvl = selectedProject.value?.level
+  return getBoundsByLevel(lvl)
+})
+
+// 4) 指标定义
+const METRIC_DEFS = [
+  { key: 'exp',  label: 'EXP',  unit: '',  icon: ICON_EXP,  color: '#F58B40' },
+  { key: 'coin', label: 'Coin', unit: '',  icon: ICON_COIN, color: '#FBE838' },
+  { key: 'hour', label: 'Hour', unit: 'h', icon: ICON_TIME, color: '#65D6ef' },
+]
+
+// 5) 计算百分比并绑定给 UI
+const metricsBound = computed(() => {
+  const p = selectedProject.value || {}
+  const b = selectedBounds.value
+  return METRIC_DEFS.map(def => {
+    const raw = toNumber(p?.[def.key] ?? 0)
+    const [min, max] = b?.[def.key] ?? [0, 0]
+    let clamped = raw
+    if (max > min) {
+      if (clamped < min) clamped = min
+      if (clamped > max) clamped = max
+    }
+    const pct = (max > min) ? Math.round(((clamped - min) / (max - min)) * 100) : 0
+    return { ...def, raw, pct }
+  })
+})
 const userStore = useUserStore();
 const selectedLevel = ref('')   // 或 'Level F'
 const exp   = ref(0)
@@ -285,6 +453,8 @@ const allProjects = [
     status: 'ongoing',
     image: teamwork,
     exp: '300 exp',
+    coin: 200,
+    hour:15,
     level: 'E',
     avatar: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
     author: 'Amy Elsner',
@@ -298,6 +468,8 @@ const allProjects = [
     status: 'ongoing',
     image: teamwork,
     exp: '400 exp',
+    coin: 200,
+    hour:20,
     level: 'C',
     avatar: 'https://primefaces.org/cdn/primevue/images/avatar/onyamalimba.png',
     author: 'Onya Malimba',
@@ -311,6 +483,8 @@ const allProjects = [
     status: 'completed',
     image: teamwork,
     exp: '250 exp',
+    coin: 200,
+    hour:5,
     level: 'D',
     avatar: 'https://primefaces.org/cdn/primevue/images/avatar/ivanmagalhaes.png',
     author: 'Ivan Magalhaes',
@@ -324,6 +498,8 @@ const allProjects = [
     status: 'ongoing',
     image: teamwork,
     exp: '350 exp',
+    coin: 200,
+    hour:5,
     level: 'B',
     avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
     author: 'Xu Xuefeng',
@@ -442,6 +618,48 @@ onMounted(async () => {
     // 可做错误提示
   }
 });
+
+function parseDateLoose(s) {
+  if (!s) return null
+  // 直接尝试原字符串
+  const d = new Date(s)
+  if (!isNaN(d.getTime())) return d
+  // 宽松兜底：中英逗号/斜杠等
+  const s2 = String(s).replace('，', ',').replace(/\./g, '/')
+  const d2 = new Date(s2)
+  return isNaN(d2.getTime()) ? null : d2
+}
+
+function editThisTask() {
+  if (!selectedProject.value) return
+  const p = selectedProject.value
+
+  // ① 预填“发布任务”表单
+  bigTitle.value     = p.title || ''
+  editorContent.value = p.description || ''
+  // level：如果后端给的是 'E' 这种字母，转成 'Level E'
+  if (p.level === 'Design') {
+    selectedLevel.value = 'Design'
+  } else if (typeof p.level === 'string' && p.level.startsWith('Level ')) {
+    selectedLevel.value = p.level
+  } else if (p.level) {
+    selectedLevel.value = `Level ${p.level}`
+  } else {
+    selectedLevel.value = ''
+  }
+  // 三个奖励数值（用你已有的 toNumber 更稳）
+  exp.value   = typeof toNumber === 'function' ? toNumber(p.exp)  : (parseFloat(p.exp)  || 0)
+  coin.value  = typeof toNumber === 'function' ? toNumber(p.coin) : (parseFloat(p.coin) || 0)
+  hours.value = typeof toNumber === 'function' ? toNumber(p.hour) : (parseFloat(p.hour) || 0)
+
+  // 日期（发布弹窗里的 Calendar 需要 Date 对象）
+  taskDate.value = parseDateLoose(p.date)
+
+  // ② 关闭详情 → 打开发布
+  showProjectDialog.value = false
+  showDialog.value = true
+}
+
 </script>
 
 <style scoped>
@@ -1038,4 +1256,127 @@ onMounted(async () => {
 .gapBetweenElements{
   margin-right: 6.98px;
 }
+/* ========== qdlg-* 命名空间样式（项目详情弹窗） ========== */
+:deep(.p-dialog) { height: 100%; }
+
+.qdlg-dialog :deep(.p-dialog-header) { padding: 0 !important; }
+.qdlg-dialog :deep(.p-dialog-content) {
+  padding: 0 !important;
+  display: flex; flex-direction: column;
+  flex: 1 1 auto; min-height: 0;
+  height: auto !important; overflow: hidden;
+  position: relative; box-sizing: border-box;
+}
+:deep(.p-dialog-mask.p-component-overlay) {
+  backdrop-filter: blur(6px);
+  background-color: rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.qdlg-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: stretch;
+  padding: 0 16px;
+  box-sizing: border-box;
+  gap: 12px;
+}
+.qdlg-header-center { display: flex; flex-direction: column; justify-content: space-between; }
+.qdlg-back-btn { font-size: 18px; color: #333; }
+.qdlg-title { font-size: 30px; font-weight: bold; color: #1e1e1e; }
+.qdlg-date-inline { font-size: 16px; color: #666; display: flex; align-items: center; gap: 6px; margin-top: 5px; }
+.qdlg-level-chip {
+  position: absolute; top: 28px; right: 130px;
+  color: #2a2c52; font-weight: bold; font-size: 32px;
+  text-shadow: 0px 1px 3px rgba(0,0,0,0.2);
+  z-index: 1000; pointer-events: none;
+}
+
+.qdlg-content {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) 1px minmax(0, 1fr);
+  column-gap: 24px; padding: 24px; height: 100%;
+  box-sizing: border-box; position: relative; --divider-inset: 0px;
+}
+.qdlg-left { grid-column: 1; display: flex; flex-direction: column; padding-left: 24px; overflow: visible; }
+.qdlg-right {
+  grid-column: 3; display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-start;
+  padding: 8px 16px; --metric-gap: 16px; z-index: 2;
+}
+.qdlg-divider {
+  grid-column: 2; background-color: #ccc; border-radius: 1px;
+  align-self: stretch; margin-block: var(--divider-inset);
+}
+
+.qdlg-author { position: relative; display: flex; align-items: center; min-height: 40px; margin-bottom: 16px; margin-left: -14px; gap: 20px; }
+.qdlg-author :deep(.p-avatar) { position: static; left: calc(-50px - 8px); top: 0; }
+.qdlg-author-name { font-weight: 500; font-size: 20px; line-height: 1.2; margin: 0; }
+.qdlg-description {
+  color: #666; font-size: 16px; line-height: 1.6;
+  white-space: normal; overflow-wrap: anywhere;
+  margin: 0 0 0 60px; margin-top: -10px;
+}
+
+/* 右下角 Assigned */
+.qdlg-assigned {
+  position: absolute; right: 24px; bottom: 24px;
+  display: flex; align-items: center; gap: 12px; z-index: 1100;
+}
+.qdlg-assigned-label { font-size: 18px; color: #b8b8b8; font-weight: 600; }
+.qdlg-assigned-name { font-size: 22px; font-weight: 800; color: #000; letter-spacing: .5px; }
+
+/* 右栏指标 */
+.qdlg-level-spacer { font-weight: bold; font-size: 32px; line-height: 1.2; visibility: hidden; }
+.qdlg-metrics { display: flex; flex-direction: column; gap: var(--metric-gap); width: clamp(220px, 80%, 320px); margin: 0 auto; }
+.qdlg-metric-item { display: flex; flex-direction: column; gap: 4px; }
+.qdlg-metric-row { display: flex; align-items: center; width: 100%; position: relative; }
+.qdlg-metric-icon {
+  width: clamp(28px, 4vw, 45px); height: clamp(28px, 4vw, 45px);
+  margin-right: max(-12px, -2vw); flex-shrink: 0; z-index: 3; position: relative;
+}
+.qdlg-pixelated {
+  image-rendering: pixelated; image-rendering: crisp-edges; image-rendering: -moz-crisp-edges;
+  -ms-interpolation-mode: nearest-neighbor;
+}
+.qdlg-metric-bar { flex: 1; width: 100%; min-width: 120px; }
+.qdlg-metric-bar :deep(.p-progressbar) {
+  display: block; width: 100%; height: clamp(18px, 2.5vw, 28px);
+  border-radius: 999px; background: #eef2fb; overflow: hidden; position: relative; z-index: 1;
+}
+.qdlg-metric-bar :deep(.p-progressbar-value) { border-radius: 999px; background-color: var(--bar-color, #3b82f6); }
+.qdlg-metric-bar :deep(.p-progressbar .p-progressbar-content) { display: flex; align-items: center; justify-content: center; }
+.qdlg-metric-text { font-size: 12px; font-weight: 600; color: #fff; }
+
+/* 标题行：标题 + 编辑按钮并排，自动换行更友好 */
+.qdlg-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex-direction: row;       /* ← 别写成 row-reverse */
+}
+/* 编辑按钮贴近标题的样式（不再用绝对定位） */
+.qdlg-edit-btn :deep(.p-button-icon) {
+  font-size: 18px;
+}
+
+/* 定制 hover 颜色，避免默认绿色 */
+.qdlg-edit-btn.p-button,
+.qdlg-edit-btn.p-button:enabled {
+  color: #2A2C55;
+  background: transparent;
+  border-color: transparent;
+}
+.qdlg-edit-btn.p-button:hover,
+.qdlg-edit-btn.p-button:enabled:hover {
+  color: #2A2C55 !important;
+  background: rgba(42,44,85,.08) !important;
+  border-color: transparent !important;
+}
+.qdlg-edit-btn.p-button:focus,
+.qdlg-edit-btn.p-button:enabled:focus {
+  box-shadow: 0 0 0 2px rgba(42,44,85,.20) !important;
+}
+
 </style>
