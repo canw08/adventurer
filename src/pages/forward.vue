@@ -85,14 +85,14 @@ const metricsBound = computed(() => {
 const METRIC_DEFS = [
   { key: 'exp',  label: 'EXP',  max: 500, unit: '', icon: new URL('../assets/icon/exp.png',   import.meta.url).href, color: '#F58B40' },
   { key: 'coin', label: 'Coin', max: 100, unit: '', icon: new URL('../assets/icon/token.png', import.meta.url).href, color: '#FBE838' },
-  { key: 'hour', label: 'Hour', max: 10,  unit: 'h', icon: new URL('../assets/icon/time.png',  import.meta.url).href, color: '#65D6ef'  },
+  { key: 'hour', label: 'Hour', max: 10,  unit: 'h', icon: new URL('../assets/icon/time.png',  import.meta.url).href, color: '#65D6ef' },
 ]
 
 type Project = { exp?: number; coin?: number; hour?: number }
 const selectedProject = ref<Project>({
   exp: 500,
   coin: 85,
-  hour: 1,
+  hour: 5,
 })
 
 const toNumber = (v: unknown) => {
@@ -198,7 +198,7 @@ const ProgressBar = defineComponent({
 .metric-row { display: flex; align-items: center; gap: 0; gap: 6px;   /* 给 icon 和条留点间距 */}
 .metric-icon { width: 45px; height: 45px; flex-shrink: 0; margin-right: -18px; z-index: 2; }
 .metric-label { font-size: 13px; font-weight: 600; margin-left: 10px; color: #5a6275; }
-.metric-text { font-size: 12px; font-weight: 600; color:#fff; }
+.metric-text { font-size: 12px; font-weight: 600; color:#000000; }
 /* ✅ 条容器：同时有 .pbar-bg 和 .metric-bar 类 */
 .metric-bar {
   flex: 1;             /* 占满剩余空间 */
@@ -207,7 +207,7 @@ const ProgressBar = defineComponent({
   border-radius: 12px;
   overflow: hidden;
   position: relative;
-  min-width: 120px;    /* 避免太窄 */
+  min-width: 500px;    /* 避免太窄 */
 }
 /* 底部 */
 .bottom{ margin-top:auto; display:flex; align-items:center; justify-content:space-between; padding-top:22px; }
