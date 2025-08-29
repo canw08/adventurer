@@ -189,7 +189,7 @@
         >
           <div class="add-card-content">
             <i class="pi pi-plus large-plus" aria-hidden="true"></i>
-            <div class="add-text">{{ $t('questLog.getQuest') || '发布任务' }}</div>
+            <div class="add-text">{{ $t('questLog.publishQuest') || '发布任务' }}</div>
           </div>
         </div>
       </div>
@@ -365,7 +365,7 @@ function mapTaskToProject(task) {
     id: task.id,
     title: task.title,
     date: task.deadline, // 可是 ISO 或字符串，后续 parseDateLoose 兜底
-    status: task.is_accepted ? 'ongoing' : 'completed',
+    status: task.is_accepted ? 'completed' : 'ongoing',
     image: pickTaskImage(task),
     exp: `${task.experience_reward} exp`,
     coin: task.token_reward,
@@ -637,6 +637,8 @@ function editThisTask() {
 
   // 日期（发布弹窗里的 Calendar 需要 Date 对象）
   taskDate.value = parseDateLoose(p.date)
+
+  console.log(taskDate.value)
 
   // ② 关闭详情 → 打开发布
   showProjectDialog.value = false
@@ -1446,4 +1448,32 @@ function onPublishDialogHide() {
   color: #495057;                 /* 鼠标放上去图标变白 */
   background-color:rgba(42,44,85,.08);   /* 背景变成红色（可改成你喜欢的颜色） */
 }
+
+.add-card {
+  cursor: pointer;
+  display: flex;
+  align-items: center;     /* 垂直居中 */
+  justify-content: center; /* 水平居中 */
+  min-height: 200px;            /* 保持和普通卡片差不多的高度 */
+  min-width: 350px;   
+  border: 2px dashed rgba(0, 123, 255, 0.25);
+}
+.grid-container:has(.add-card) {
+  display: flex;              /* 改成 flex 布局 */
+  justify-content: center;    /* 水平居中 */
+  align-items: center;        /* 垂直居中（可选） */
+  min-height: 100%;           /* 保证占满容器高度 */
+}
+
+.add-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* 关键：纵向也居中 */
+  gap: 12px;
+  text-align: center;      /* 文本水平居中 */
+  user-select: none;
+}
+
+
 </style>
