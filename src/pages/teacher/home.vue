@@ -266,13 +266,20 @@
             <div v-for="m in metricsBound" :key="m.key" class="qdlg-metric-item">
               <div class="qdlg-metric-row">
                 <img :src="m.icon" alt="" class="qdlg-metric-icon qdlg-pixelated click-wiggle" />
-                <ProgressBar
-                  :value="m.pct"
-                  class="qdlg-metric-bar"
-                  :style="{ height: '28px', '--bar-color': m.color }"
-                >
-                  <span class="qdlg-metric-text">{{ m.raw }}{{ m.unit }}</span>
-                </ProgressBar>
+                <div class="qdlg-metric-bar-wrapper" style="position:relative;">
+                  <ProgressBar
+                    :value="m.pct"
+                    :showValue="false"
+                    class="qdlg-metric-bar"
+                    :style="{ height: '28px', '--bar-color': m.color }"
+                  />
+                  <span
+                    class="qdlg-metric-text"
+                    style="position:absolute;top:50%;left:93%;transform:translate(-50%,-50%);font-size:16px;font-weight:600;color:#2A2C55;pointer-events:none;"
+                  >
+                    {{ m.raw }}{{ m.unit }}
+                  </span>
+                </div>
               </div>
               <div class="qdlg-metric-label">{{ m.label }}</div>
             </div>
@@ -1360,12 +1367,12 @@ function onPublishDialogHide() {
   image-rendering: pixelated; image-rendering: crisp-edges; image-rendering: -moz-crisp-edges;
   -ms-interpolation-mode: nearest-neighbor;
 }
-.qdlg-metric-bar { flex: 1; width: 100%; min-width: 120px; }
+.qdlg-metric-bar { flex: 1; width: 100%; min-width: 180px; }
 .qdlg-metric-bar :deep(.p-progressbar) {
   display: block; width: 100%; height: clamp(18px, 2.5vw, 28px);
   border-radius: 999px; background: #eef2fb; overflow: hidden; position: relative; z-index: 1;
 }
-.qdlg-metric-bar :deep(.p-progressbar-value) { border-radius: 999px; background-color: var(--bar-color, #3b82f6); }
+.qdlg-metric-bar :deep(.p-progressbar-value) { background-color: var(--bar-color, #3b82f6); }
 .qdlg-metric-bar :deep(.p-progressbar .p-progressbar-content) { display: flex; align-items: center; justify-content: center; }
 .qdlg-metric-text { font-size: 12px; font-weight: 600; color: #fff; }
 
