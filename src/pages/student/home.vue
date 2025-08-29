@@ -143,12 +143,17 @@
             <div class="metric-row">
               <img :src="m.icon" alt="" class="metric-icon pixelated click-wiggle" />
               <ProgressBar
-                :value="m.pct"
-                class="metric-bar"
-                :style="{ height: '28px','--bar-color': m.color }"
-              >
-                <span class="metric-text">{{ m.raw }}{{ m.unit }}</span>
-              </ProgressBar>
+                    :value="m.pct"
+                    :showValue="false"
+                    class="metric-bar"
+                    :style="{ height: '28px', '--bar-color': m.color }"
+                  />
+                  <span
+                    class="metric-text"
+                    style="position:absolute;top:50%;left:93%;transform:translate(-50%,-50%);font-size:16px;font-weight:600;color:#2A2C55;pointer-events:none;"
+                  >
+                    {{ m.raw }}{{ m.unit }}
+                  </span>
             </div>
             <!-- 下行：label -->
             <div class="metric-label">{{ m.label }}</div>
@@ -398,31 +403,30 @@ const selectedBounds = computed(() => {
 
 // 原先有 max 的地方删掉它；保留 unit/icon/color
 const METRIC_DEFS = [
-  { key: 'exp',  label: 'EXP',  unit: '',  icon: new URL('../../assets/icon/exp.png', import.meta.url).href,  color: '#F58B40' },
+  { key: 'exp',  label: 'EXP',  unit: '',  icon: new URL('../../assets/icon/exp.png', import.meta.url).href,  color: '#11AF9B' },
   { key: 'coin', label: 'Coin', unit: '',  icon: new URL('../../assets/icon/token.png', import.meta.url).href, color: '#FBE838' },
-  { key: 'hour', label: 'Hour', unit: 'h', icon: new URL('../../assets/icon/time.png', import.meta.url).href,  color: '#65D6ef' },
+  { key: 'hour', label: 'Hour', unit: 'h', icon: new URL('../../assets/icon/time.png', import.meta.url).href,  color: '#4ACDF2' },
 ]
 
 // 百分比 = (raw - min) / (max - min)
 // 同时把 raw clamp 到 [min, max]，避免条溢出或负数
 const metricsBound = computed(() => {
   const p = selectedProject.value || {}
-  const b = selectedBounds.value   // { exp:[min,max], coin:[min,max], hours:[min,max] }
+  const b = selectedBounds.value || {}
 
   return METRIC_DEFS.map(def => {
     const raw = toNumber(p?.[def.key] ?? 0)
-    const [min, max] = b?.[def.key] ?? [0, 0]
-    let clamped = raw
-    if (max > min) {
-      if (clamped < min) clamped = min
-      if (clamped > max) clamped = max
-    }
-    const pct = (max > min) ? Math.round(((clamped - min) / (max - min)) * 100) : 0
 
-    // 你在 ProgressBar 里显示的文本，保留原样（也可以改为 `${raw}${def.unit} / ${max}${def.unit}`）
-    const text = `${raw}${def.unit}`
+    // ⭐ bounds 用 'hours'（复数），而 metric key 是 'hour'（单数）
+    const ranges = def.key === 'hour' ? b?.hours : b?.[def.key]
+    const [min, max] = Array.isArray(ranges) && ranges.length === 2 ? ranges : [0, 0]
 
-    return { ...def, raw, pct, text, min, max }
+    // 夹取 + 百分比
+    const clamped = max > min ? Math.min(Math.max(raw, min), max) : raw
+    const pct = max > min ? Math.round(((clamped - min) / (max - min)) * 100)
+                          : (raw > 0 ? 100 : 0) // ⭐ 没拿到范围时的兜底
+
+    return { ...def, raw, pct }
   })
 })
 
@@ -1042,7 +1046,6 @@ const goToQuestStore = () => {
 }
 
 .metric-bar :deep(.p-progressbar-value) {
-  border-radius: 999px;
   background-color: var(--bar-color, #3b82f6); /* 默认蓝色 */
 }
 

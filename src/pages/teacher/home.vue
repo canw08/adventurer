@@ -436,25 +436,30 @@ const selectedBounds = computed(() => {
   return getBoundsByLevel(lvl)
 })
 const METRIC_DEFS = [
-  { key: 'exp',  label: 'EXP',  unit: '',  icon: ICON_EXP,  color: '#F58B40' },
+  { key: 'exp',  label: 'EXP',  unit: '',  icon: ICON_EXP,  color: '#11AF9B' },
   { key: 'coin', label: 'Coin', unit: '',  icon: ICON_COIN, color: '#FBE838' },
-  { key: 'hour', label: 'Hour', unit: 'h', icon: ICON_TIME, color: '#65D6ef' },
+  { key: 'hour', label: 'Hours', unit: 'h', icon: ICON_TIME, color: '#4ACDF2' },
 ]
 const metricsBound = computed(() => {
   const p = selectedProject.value || {}
-  const b = selectedBounds.value
+  const b = selectedBounds.value || {}
+
   return METRIC_DEFS.map(def => {
     const raw = toNumber(p?.[def.key] ?? 0)
-    const [min, max] = b?.[def.key] ?? [0, 0]
-    let clamped = raw
-    if (max > min) {
-      if (clamped < min) clamped = min
-      if (clamped > max) clamped = max
-    }
-    const pct = (max > min) ? Math.round(((clamped - min) / (max - min)) * 100) : 0
+
+    // ⭐ bounds 用 'hours'（复数），而 metric key 是 'hour'（单数）
+    const ranges = def.key === 'hour' ? b?.hours : b?.[def.key]
+    const [min, max] = Array.isArray(ranges) && ranges.length === 2 ? ranges : [0, 0]
+
+    // 夹取 + 百分比
+    const clamped = max > min ? Math.min(Math.max(raw, min), max) : raw
+    const pct = max > min ? Math.round(((clamped - min) / (max - min)) * 100)
+                          : (raw > 0 ? 100 : 0) // ⭐ 没拿到范围时的兜底
+
     return { ...def, raw, pct }
   })
 })
+
 
 /* ===== 用户问候 & 右上角通知示例 ===== */
 const op = ref(null);
@@ -569,9 +574,9 @@ const onFormSubmit = async (e) => {
           html = html.replace(base64, uploadData.url)
         }
       }
+    }
     showDialog.value = false
     resetPublishForm()   // ✅ 新增：提交成功后清空
-    }
 
     const levelLetter = selectedLevel.value?.split(' ').pop() || ''
     const payload = {
@@ -1481,6 +1486,4 @@ function onPublishDialogHide() {
   text-align: center;      /* 文本水平居中 */
   user-select: none;
 }
-
-
 </style>
