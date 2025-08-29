@@ -9,6 +9,11 @@
   </div>
 </template>
 
+<route lang="yaml">
+meta:
+  requiresAuth: false
+</route>
+
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'   // ① 引入 router

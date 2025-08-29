@@ -2,7 +2,8 @@
   "questLog": {
     "title": "Home",
     "runningQuest": "Running Quest",
-    "getQuest" : "Get a quest"
+    "getQuest" : "Get a quest",
+    "publishQuest" : "Publish a quest"
   },
   "questBoard": 
   {

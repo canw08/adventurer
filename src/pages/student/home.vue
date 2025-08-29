@@ -309,8 +309,17 @@ function pickTaskImage(task) {
 }
 const safeDescription = computed(() => {
   const html = selectedProject.value?.description || '无任务说明'
-  return DOMPurify.sanitize(html)
+  const clean = DOMPurify.sanitize(html)
+  const div = document.createElement('div')
+  div.innerHTML = clean
+  div.querySelectorAll('img').forEach(img => {
+    img.style.maxWidth = '100%'
+    img.style.height = 'auto'
+    img.style.display = 'block'
+  })
+  return div.innerHTML
 })
+
 onMounted(async () => {
   try {
     const res = await api.get('/api/tasks/my-tasks/')

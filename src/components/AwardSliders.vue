@@ -362,7 +362,7 @@ function bubbleStyle(val: number, min: number, max: number) {
 }
 .exp-range  { --fill: #11AF9B; --base: #D9D9D9; }
 .coin-range { --fill: #F2D84A; --base: #D9D9D9; }
-.hours-range{ --fill: #64748B; --base: #D9D9D9; }
+.hours-range{ --fill: #4ACDF2; --base: #D9D9D9; }
 .award-label {
   display: flex;
   align-items: center;
