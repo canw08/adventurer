@@ -250,7 +250,7 @@
             <span class="qdlg-author-name">{{ selectedProject?.author }}</span>
           </div>
 
-          <div class="qdlg-description" v-html="safeDescription"></div>
+          <div class="qdlg-description rich-text" v-html="safeDescription"></div>
         </div>
 
         <div class="qdlg-divider" aria-hidden="true"></div>
@@ -263,7 +263,7 @@
           <div class="qdlg-metrics">
             <div v-for="m in metricsBound" :key="m.key" class="qdlg-metric-item">
               <div class="qdlg-metric-row">
-                <img :src="m.icon" alt="" class="qdlg-metric-icon qdlg-pixelated" />
+                <img :src="m.icon" alt="" class="qdlg-metric-icon qdlg-pixelated click-wiggle" />
                 <ProgressBar
                   :value="m.pct"
                   class="qdlg-metric-bar"
@@ -299,35 +299,81 @@ meta:
   requiresAuth: true
   roles: ['teacher']
 </route>
-
 <script setup>
-// src/mock/index.js
-import { useUserStore } from '../../stores/user';
-import '../../styles/overrides.css'
-import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue'
-import AwardSliders from '../../components/AwardSliders.vue' // 确认相对路径
-import { ref, computed } from 'vue'
+/* ===== Imports ===== */
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import teamwork from '../../assets/team.png'
+import { useUserStore } from '../../stores/user'
 import { useI18n } from 'vue-i18n'
-import { onMounted } from 'vue';
-import { showOnce } from '../../composables/tip-once.js'
-import api from '../../api.js'   // ✅ 引入你配置好的 axios 实例
-// ==== 新增 import（如果这些已在全局注册，可不重复 import）====
+import api from '../../api.js'
+import DOMPurify from 'dompurify'
+
+import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue'
 import Dialog from 'primevue/dialog'
 import Avatar from 'primevue/avatar'
 import ProgressBar from 'primevue/progressbar'
-import DOMPurify from 'dompurify'
 
-// 如需按等级计算进度条的上下限范围（可自定义/也可简单固定）
+import { showOnce } from '../../composables/tip-once.js'
 import { levelRanges } from '../../components/levelRange.js'
-// 三个图标（注意路径和你项目保持一致）
+
+import '../../styles/overrides.css'
+import teamwork from '../../assets/team.png'
+import solo1 from '../../assets/solo.png'
+import solo2 from '../../assets/solo2.png'
+
+/* ===== Icons ===== */
 const ICON_EXP  = new URL('../../assets/icon/exp.png', import.meta.url).href
 const ICON_COIN = new URL('../../assets/icon/token.png', import.meta.url).href
 const ICON_TIME = new URL('../../assets/icon/time.png', import.meta.url).href
 
-// ==== 新增：项目详情 Dialog 控制 ====
-const showProjectDialog = ref(false)     // 不要复用 showDialog
+/* ===== Router / i18n / store ===== */
+const router = useRouter()
+const { t } = useI18n()
+const userStore = useUserStore()
+
+/* ===== Tabs ===== */
+const activeTab = ref('ongoing')
+const tabOptions = ref([
+  { label: t('tabs.ongoing'), value: 'ongoing' },
+  { label: t('tabs.completed'), value: 'completed' }
+])
+
+/* ===== 项目数据：从后端获取 ===== */
+const allProjects = ref([])
+
+/** 把后端 task 映射成前端用的 project 结构（字段名尽量贴合你原本的 UI） */
+function mapTaskToProject(task) {
+  return {
+    id: task.id,
+    title: task.title,
+    date: task.deadline, // 可是 ISO 或字符串，后续 parseDateLoose 兜底
+    status: task.is_accepted ? 'ongoing' : 'completed',
+    image: pickTaskImage(task),
+    exp: `${task.experience_reward} exp`,
+    coin: task.token_reward,
+    hour: task.volunteerTime_reward,
+    level: task.required_level, // 例：'E' 或 'Level E'
+    avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${task.publisher_avatar || 'none'}`,
+    author: task.publisher_nickname,
+    description: task.description,
+    mandator: task.publisher_nickname,
+  }
+}
+
+/** 任务配图：team 固定 teamwork，其它根据 seed 选 solo1/solo2 */
+function pickTaskImage(task) {
+  if (task.task_type === 'team') return teamwork
+  const seedStr = task.deadline || String(task.id) || ''
+  let hash = 0
+  for (let i = 0; i < seedStr.length; i++) {
+    hash = (hash << 5) - hash + seedStr.charCodeAt(i)
+    hash |= 0
+  }
+  return Math.abs(hash) % 2 === 0 ? solo1 : solo2
+}
+
+/* ===== 详情 Dialog（与表单 Dialog 分离，保持 editThisTask 的行为） ===== */
+const showProjectDialog = ref(false) // 任务详情弹窗（editThisTask 会把它关掉）
 const selectedProject = ref(null)
 
 function openProjectDialog(project) {
@@ -335,14 +381,22 @@ function openProjectDialog(project) {
   showProjectDialog.value = true
 }
 
-// ==== 新增：安全描述（将富文本 description 安全渲染）====
+/* ===== 安全描述渲染 ===== */
 const safeDescription = computed(() => {
   const html = selectedProject.value?.description || '无任务说明'
-  return DOMPurify.sanitize(html)
+  const clean = DOMPurify.sanitize(html)
+  const div = document.createElement('div')
+  div.innerHTML = clean
+  div.querySelectorAll('img').forEach(img => {
+    img.style.maxWidth = '100%'
+    img.style.height = 'auto'
+    img.style.display = 'block'
+  })
+  return div.innerHTML
 })
 
-// ==== 新增：右侧指标（EXP / Coin / Hour）====
-// 1) 工具：取数值
+
+/* ===== 指标（EXP / Coin / Hour） ===== */
 const toNumber = (v) => {
   if (typeof v === 'number') return v
   if (typeof v === 'string') {
@@ -351,24 +405,16 @@ const toNumber = (v) => {
   }
   return 0
 }
-
-// 2) 依据等级拿到范围（可自行定义 levelRanges；没有就给默认范围）
 const getBoundsByLevel = (level) => levelRanges?.[level] || { exp:[0,100], coin:[0,100], hours:[0,24] }
-
-// 3) 选中任务的范围
 const selectedBounds = computed(() => {
   const lvl = selectedProject.value?.level
   return getBoundsByLevel(lvl)
 })
-
-// 4) 指标定义
 const METRIC_DEFS = [
   { key: 'exp',  label: 'EXP',  unit: '',  icon: ICON_EXP,  color: '#F58B40' },
   { key: 'coin', label: 'Coin', unit: '',  icon: ICON_COIN, color: '#FBE838' },
   { key: 'hour', label: 'Hour', unit: 'h', icon: ICON_TIME, color: '#65D6ef' },
 ]
-
-// 5) 计算百分比并绑定给 UI
 const metricsBound = computed(() => {
   const p = selectedProject.value || {}
   const b = selectedBounds.value
@@ -384,37 +430,51 @@ const metricsBound = computed(() => {
     return { ...def, raw, pct }
   })
 })
-const userStore = useUserStore();
-const selectedLevel = ref('')   // 或 'Level F'
+
+/* ===== 用户问候 & 右上角通知示例 ===== */
+const op = ref(null);
+const unreadCount = ref(2);
+const togglePanel = (event) => {
+  op.value?.toggle(event);
+  unreadCount.value = 0;
+}
+const period = computed(() => {
+  const h = new Date().getHours()
+  return h < 4 ? 'night' : h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening'
+})
+const greetingKey = computed(() => `greetings-teacher.${period.value}`)
+
+/* ===== 过滤视图数据 ===== */
+const filteredProjects = computed(() =>
+  allProjects.value.filter((p) => p.status === activeTab.value)
+)
+const runningProjects = computed(() =>
+  allProjects.value.filter((p) => p.status === 'ongoing')
+)
+
+/* ===== 路由跳转 ===== */
+const goToProfile = () => {
+  router.push('/teacher/home')
+}
+
+/* ===== 发布任务表单（保持你原逻辑，editThisTask 依赖这些状态） ===== */
+const showDialog = ref(false)          // 发布任务弹窗
+const selectedLevel = ref('')          // 或 'Level F'
 const exp   = ref(0)
 const coin  = ref(0)
 const hours = ref(0)
 const bigTitle = ref('')
-const router = useRouter()
-const { t } = useI18n()
-const activeTab = ref('ongoing')
-const tabOptions = ref([
-  { label: t('tabs.ongoing'), value: 'ongoing' },
-  { label: t('tabs.completed'), value: 'completed' }
-])
+const editorContent = ref('')
+const taskDate = ref(null)
 
-const isFormValid = computed(() => {
-  const hasAwards = exp.value > 0 || coin.value > 0 || hours.value > 0
-  const hasTitle  = bigTitle.value.trim() !== ''
-  const plainText = editorContent.value.replace(/<[^>]*>/g, '').trim()
-  const hasContent = plainText !== ''
-
-  const validDate =
-  taskDate.value instanceof Date &&
-  !isNaN(taskDate.value.getTime()) &&
-  taskDate.value.setHours(0,0,0,0) >= todayStart.value.getTime()
-  return hasAwards && hasTitle && hasContent && validDate
+const todayStart = computed(() => {
+  const d = new Date()
+  d.setHours(0, 0, 0, 0)
+  return d
 })
 
-function isValidDateValue(val) {
-  // PrimeVue Calendar 可能返回 Date、string、或 range 数组
+const isValidDateValue = (val) => {
   if (!val) return false
-  // range: [start, end]
   if (Array.isArray(val)) {
     if (val.length === 0) return false
     const first = val[0]
@@ -423,122 +483,32 @@ function isValidDateValue(val) {
   if (val instanceof Date) return !isNaN(val.getTime())
   return String(val).trim() !== ''
 }
-const todayStart = computed(() => {
-  const d = new Date()
-  d.setHours(0, 0, 0, 0)
-  return d
+
+const isFormValid = computed(() => {
+  const hasAwards = exp.value > 0 || coin.value > 0 || hours.value > 0
+  const hasTitle  = bigTitle.value.trim() !== ''
+  const plainText = editorContent.value.replace(/<[^>]*>/g, '').trim()
+  const hasContent = plainText !== ''
+  const validDate =
+    taskDate.value instanceof Date &&
+    !isNaN(taskDate.value.getTime()) &&
+    taskDate.value.setHours(0,0,0,0) >= todayStart.value.getTime()
+  return hasAwards && hasTitle && hasContent && validDate
 })
 
-const op = ref(null);
-const unreadCount = ref(2);
-const togglePanel = (event) => {
-  op.value.toggle(event);
-  unreadCount.value = 0;
-}
-
-
-const period = computed(() => {
-  const h = new Date().getHours()
-  return h < 4 ? 'night' : h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening'
-})
-
-// greetingKey 必须是字符串
-const greetingKey = computed(() => `greetings-teacher.${period.value}`)
-
-const allProjects = [
-  {
-    id: 1,
-    title: 'Volunteer Feeding Stray Cats',
-    date: '5 July, 2025',
-    status: 'ongoing',
-    image: teamwork,
-    exp: '300 exp',
-    coin: 200,
-    hour:15,
-    level: 'E',
-    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png',
-    author: 'Amy Elsner',
-    description: '中午十二点，在三棵树集合喂猫，时长为1小时，需要5–6人',
-    mandator: 'John Doe',
-  },
-  {
-    id: 2,
-    title: 'Organize Community Event',
-    date: '12 June, 2025',
-    status: 'ongoing',
-    image: teamwork,
-    exp: '400 exp',
-    coin: 200,
-    hour:20,
-    level: 'C',
-    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/onyamalimba.png',
-    author: 'Onya Malimba',
-    description: '下午两点，在活动中心组织志愿者会议，需要3人负责接待',
-    mandator: 'John Doe',
-  },
-  {
-    id: 3,
-    title: 'Schoolyard Cleanup Event',
-    date: '20 May, 2025',
-    status: 'completed',
-    image: teamwork,
-    exp: '250 exp',
-    coin: 200,
-    hour:5,
-    level: 'D',
-    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/ivanmagalhaes.png',
-    author: 'Ivan Magalhaes',
-    description: '早上九点集合，清理学校操场，需要10人，时长2小时',
-    mandator: 'John Doe',
-  },
-  {
-    id: 4,
-    title: 'Design Posters for Art Festival',
-    date: '15 August, 2025',
-    status: 'ongoing',
-    image: teamwork,
-    exp: '350 exp',
-    coin: 200,
-    hour:5,
-    level: 'B',
-    avatar: 'https://primefaces.org/cdn/primevue/images/avatar/xuxuefeng.png',
-    author: 'Xu Xuefeng',
-    description: '设计艺术节宣传海报，预计工作时间3小时，需要2位同学合作完成',
-    mandator: 'John Doe',
-  }
-];
-
-const filteredProjects = computed(() =>
-  allProjects.filter((p) => p.status === activeTab.value)
-)
-const runningProjects = computed(() =>
-  allProjects.filter((p) => p.status === 'ongoing')
-)
-const goToProfile = () => {
-  router.push('/teacher/home')
-}
-/* 弹窗相关 */
-const showDialog = ref(false)
 const levels = computed(() => {
   const baseLevels = ['Level F', 'Level E', 'Level D', 'Level C', 'Level B', 'Level A', 'Level S']
-  // 如果是 boss，额外加 Design
   if (userStore.userInfo.role === 'boss') {
     baseLevels.push('Design')
   }
   return baseLevels
 })
 
-const onLevelChange = (value) => {
-  showOnce('select-level-tip', '等级越高的任务奖励越丰厚，但等级越高对冒险者的限制会越多噢~ 【点击右上角小问号可查看示例】 ')
+const onLevelChange = () => {
+  showOnce('select-level-tip', '等级越高的任务奖励越丰厚，但等级越高对冒险者的限制会越多噢~ 【点击左上角小问号可查看示例】 ')
 }
 
-const taskDate = ref(null)
-
-/* Form + Editor 必需：初始值 / 校验 / 提交 */
-const initialValues = {
-  content: ''
-}
-
+const initialValues = { content: '' }
 const resolver = (values) => {
   const errors = {}
   if (!values.content || values.content.trim() === '') {
@@ -547,8 +517,9 @@ const resolver = (values) => {
   return { values, errors }
 }
 
+/* 图片/内容上传替换 + 提交 */
 const onFormSubmit = async (e) => {
-  e?.preventDefault?.();   // 防止页面刷新
+  e?.preventDefault?.()
   try {
     let html = editorContent.value
 
@@ -559,77 +530,69 @@ const onFormSubmit = async (e) => {
     for (const tag of matches) {
       const base64 = tag.match(/src="([^"]+)"/)?.[1]
       if (base64?.startsWith('data:image')) {
-        // 转成 Blob
-        const res = await fetch(base64)   // base64 转 Blob，这里还只能用 fetch
+        const res = await fetch(base64)
         const blob = await res.blob()
 
-        // 构造 FormData
         const fd = new FormData()
         fd.append('file', blob, `image-${Date.now()}.png`)
 
-        // ✅ 改成用 api 上传
         const uploadResp = await api.post('/api/upload', fd, {
           headers: { 'Content-Type': 'multipart/form-data' }
         })
         const uploadData = uploadResp.data
-
-        // 用返回的 URL 替换原来的 base64
         if (uploadData?.url) {
           html = html.replace(base64, uploadData.url)
         }
       }
     }
-    
+
     const levelLetter = selectedLevel.value?.split(' ').pop() || ''
-
-
-    // 构造最终任务数据
     const payload = {
       title: bigTitle.value,
       description: html,
       required_level: levelLetter,
-      experience_reward : exp.value,
+      experience_reward: exp.value,
       token_reward: coin.value,
       volunteerTime_reward: hours.value,
       deadline: taskDate.value ? taskDate.value.toISOString() : null,
-      task_type: "solo"
+      task_type: 'solo'
     }
-    console.log(payload);
 
-    // ✅ 改成用 api 调任务创建接口
     const resp = await api.post('/api/tasks/create/', payload)
-    const data = resp.data
-
-    console.log('任务创建成功:', data)
+    console.log('任务创建成功:', resp.data)
 
     showDialog.value = false
+
+    // 刷新任务列表
+    const res = await api.get('/api/tasks/my-tasks/')
+    allProjects.value = res.data.map(mapTaskToProject)
   } catch (err) {
     console.error('提交任务失败:', err)
   }
 }
 
-const editorContent = ref('')
-
-
-onMounted(async () => {
-  try {
-    await userStore.fetchUser();
-  } catch {
-    // 可做错误提示
-  }
-});
-
+/* ===== 工具函数（editThisTask 依赖） ===== */
 function parseDateLoose(s) {
   if (!s) return null
-  // 直接尝试原字符串
   const d = new Date(s)
   if (!isNaN(d.getTime())) return d
-  // 宽松兜底：中英逗号/斜杠等
   const s2 = String(s).replace('，', ',').replace(/\./g, '/')
   const d2 = new Date(s2)
   return isNaN(d2.getTime()) ? null : d2
 }
 
+/* ====== 挂载时获取用户与任务 ====== */
+onMounted(async () => {
+  try { await userStore.fetchUser() } catch {}
+  try {
+    const res = await api.get('/api/tasks/my-tasks/')
+    allProjects.value = res.data.map(mapTaskToProject)
+  } catch (err) {
+    console.error('加载任务失败:', err)
+  }
+})
+
+/* ====== 保持原样：不要修改 ====== */
 function editThisTask() {
   if (!selectedProject.value) return
   const p = selectedProject.value
@@ -660,7 +623,10 @@ function editThisTask() {
   showDialog.value = true
 }
 
+/* ===== 其他跳转 ===== */
+const goToQuestStore = () => { router.push('/student/task') }
 </script>
+
 
 <style scoped>
 /* 全局布局 */
@@ -1378,5 +1344,14 @@ function editThisTask() {
 .qdlg-edit-btn.p-button:enabled:focus {
   box-shadow: 0 0 0 2px rgba(42,44,85,.20) !important;
 }
+
+.rich-text img {
+  max-width: 100%;
+  height: auto;
+  display: block;     /* 避免行内空隙 */
+  margin: 8px 0;      /* 给点间距 */
+  border-radius: 6px; /* 看起来更美观，可选 */
+}
+
 
 </style>

@@ -59,7 +59,7 @@ router.beforeEach(async (to) => {
       return { path: '/login', query: { redirect: to.fullPath } }
     }
     // 已登录但没权限：按角色分流或 403
-    if (role === 'teacher') return { path: '/teacher' }
+    if (role === 'teacher') return { path: '/teacher/home' }
     if (role === 'student') return { path: '/student/home' }
     return { path: '/403' }
   }

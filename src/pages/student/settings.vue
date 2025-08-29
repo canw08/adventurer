@@ -81,7 +81,7 @@ const changeLang = async (code) => {
 
 const ackOpen = ref(false)
 const ackNames = [
-  'Alice', 'Bob', 'Charlie', 'Diana', 'Erin', 'Frank'
+  '王天瑞Eric'
 ]
 
 const onSignOut = () => {
