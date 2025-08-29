@@ -76,7 +76,12 @@
               <Avatar :image="project.avatar" shape="circle" style="width: 40px; height: 40px" />
               <span class="avatar-name">{{ project.author }}</span>
             </div>
-            <span class="task-level">Level {{ project.level }}</span>
+            <span
+  class="task-level"
+  :style="getLevelStyle(project.level)"
+>
+  {{ $t('common.level') }} {{ project.level }}
+</span>
           </div>
         </div>
       </div>
@@ -127,9 +132,12 @@
           </div>
 
           <!-- 浮动右上角的等级标签（只显示） -->
-          <div class="floating-dialog-level">
-            Level {{ selectedProject?.level || '' }}
-          </div>
+         <div
+  class="floating-dialog-level"
+  :style="getLevelStyle(selectedProject?.level)"
+>
+  Level {{ selectedProject?.level || '' }}
+</div>
         </div>
       </template>
 
@@ -551,7 +559,56 @@ const applyForTask = async (taskId) => {
   }
 }
 
+// 等级颜色映射
+const levelColors = {
+  S: '#C4A010',
+  A: '#DD4546',
+  B: '#DD7C1B',
+  C: '#E6D624',
+  D: '#8FD833',
+  E: '#2590D2',
+  F: '#911EC7'
+}
 
+// 工具函数：返回等级对应的颜色
+const getLevelColor = (level) => {
+  return levelColors[level] || '#333' // 找不到就用默认色
+}
+
+// 提亮颜色：amount 取 0~1，建议 0.3 左右
+function lighten(hex, amount = 0.3) {
+  const nhex = hex.replace('#', '')
+  const bigint = parseInt(nhex, 16)
+  let r = (bigint >> 16) & 255
+  let g = (bigint >> 8) & 255
+  let b = bigint & 255
+  r = Math.min(255, Math.floor(r + (255 - r) * amount))
+  g = Math.min(255, Math.floor(g + (255 - g) * amount))
+  b = Math.min(255, Math.floor(b + (255 - b) * amount))
+  const toHex = (v) => v.toString(16).padStart(2, '0')
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`
+}
+
+function getLevelStyle(level) {
+  const stroke = levelColors[level] || '#333333'      // 描边用原始颜色
+  const base = lighten(stroke, 0.3)                   // 字体颜色 = 提亮版
+  return {
+    color: base,
+    fontStyle: 'italic',
+    WebkitTextStrokeWidth: '1px',
+    WebkitTextStrokeColor: stroke,
+    textShadow: [
+      `0  1px 0 ${stroke}`,
+      `0 -1px 0 ${stroke}`,
+      `1px 0  0 ${stroke}`,
+      `-1px 0  0 ${stroke}`,
+      `1px  1px 0 ${stroke}`,
+      `-1px 1px 0 ${stroke}`,
+      `1px -1px 0 ${stroke}`,
+      `-1px -1px 0 ${stroke}`
+    ].join(', ')
+  }
+}
 
 </script>
 
@@ -782,11 +839,9 @@ const applyForTask = async (taskId) => {
 }
 
 .task-level {
-  font-weight: bold;
   font-size: 22px;
   text-align: right;
-  color: #C3F9E6 !important;
-  -webkit-text-stroke: 1px #1BA5BF;
+  font-weight: bold;
 }
 
 /* Assigned 卡片配色与水印 */
@@ -913,12 +968,9 @@ const applyForTask = async (taskId) => {
   position: absolute;
   top: 28px;
   right: 130px;
-  color: #2a2c52;
   font-weight: bold;
   font-size: 32px;
-  text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-  pointer-events: none;
+  text-shadow: none; /* 避免和行内的 text-shadow 叠加产生脏边 */
 }
 
 /* =========================
