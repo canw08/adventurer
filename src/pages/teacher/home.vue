@@ -31,7 +31,7 @@
     <Button
       icon="pi pi-plus"
       class="floating-new-quest-btn custom-round-button p-button-rounded p-button-icon-only"
-      @click="showDialog = true"
+      @click="openNewTaskDialog"
     />
 
     <!-- 发布任务弹窗 -->
@@ -40,6 +40,7 @@
       modal
       class="p-fluid my-task-dialog"
       :style="{ width: '1100px', maxWidth: '90vw' , height:'700px'}"
+      @hide="onPublishDialogHide"
     >
       <template #header>
       <div class="dialog-header-custom">
@@ -116,6 +117,7 @@
         <!-- 富文本编辑表单（替换原 Textarea+自定义提交按钮） -->
         <Form
           v-slot="$form"
+          :key="formKey"
           :resolver="resolver"
           :initialValues="initialValues"
           @submit="onFormSubmit"
@@ -289,6 +291,22 @@
           style="width: 48px; height: 48px"
         />
       </div>
+
+              <!-- 左下角按钮 -->
+        <div class="qdlg-footer-left">
+          <Button 
+            label="Approve" 
+            icon="pi pi-check" 
+            class="approve-btn"
+            @click="onApprove"
+          />
+          <Button 
+            icon="pi pi-share-alt" 
+            class="share-btn p-button-rounded p-button-text" 
+            v-tooltip.top="'分享任务'"
+            @click="onShare"
+          />
+        </div>
     </Dialog>
 
 </template>
@@ -544,6 +562,8 @@ const onFormSubmit = async (e) => {
           html = html.replace(base64, uploadData.url)
         }
       }
+    showDialog.value = false
+    resetPublishForm()   // ✅ 新增：提交成功后清空
     }
 
     const levelLetter = selectedLevel.value?.split(' ').pop() || ''
@@ -596,7 +616,7 @@ onMounted(async () => {
 function editThisTask() {
   if (!selectedProject.value) return
   const p = selectedProject.value
-
+  isEditing.value = true   // ✅ 新增：标记为编辑模式
   // ① 预填“发布任务”表单
   bigTitle.value     = p.title || ''
   editorContent.value = p.description || ''
@@ -625,6 +645,41 @@ function editThisTask() {
 
 /* ===== 其他跳转 ===== */
 const goToQuestStore = () => { router.push('/student/task') }
+
+// 新增：是否处于“编辑已存在任务”模式
+const isEditing = ref(false)
+
+// 新增：强制让发布表单重渲染用（清空校验/Editor等内部状态）
+const formKey = ref(0)
+
+// 新增：重置“发布任务”表单
+function resetPublishForm() {
+  selectedLevel.value = ''
+  exp.value = 0
+  coin.value = 0
+  hours.value = 0
+  bigTitle.value = ''
+  editorContent.value = ''
+  taskDate.value = null
+
+  // 让 <Form> / Editor 等子组件重新挂载，清掉内部状态与校验
+  formKey.value++
+}
+
+// 新增：打开“新建任务”弹窗（先清空）
+function openNewTaskDialog() {
+  isEditing.value = false
+  resetPublishForm()
+  showDialog.value = true
+}
+
+// 新增：发布弹窗关闭时逻辑（从编辑模式退出后，清空一次）
+function onPublishDialogHide() {
+  if (isEditing.value) {
+    isEditing.value = false
+    resetPublishForm()
+  }
+}
 </script>
 
 
@@ -1352,6 +1407,43 @@ const goToQuestStore = () => { router.push('/student/task') }
   margin: 8px 0;      /* 给点间距 */
   border-radius: 6px; /* 看起来更美观，可选 */
 }
+.qdlg-footer-left {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  display: flex;
+  gap: 12px;
+}
+/* 默认状态 */
+:deep(.approve-btn.p-button) {
+  background-color: #2A2C55 !important;
+  border-color: #FFFFFF !important;
+  color: #fff !important;
+}
+/* 分享是 text 样式，需要改文字/图标颜色和 hover 背景 */
+:deep(.share-btn.p-button.p-button-text) {
+  color: #fff;
+  background-color: #2A2C55 !important;
+  border-color: #2A2C55;
+}
 
+:deep(.approve-btn.p-button),
+:deep(.share-btn.p-button) {
+  transition: transform 0.2s ease; /* 平滑过渡 */
+}
 
+:deep(.approve-btn.p-button:hover),
+:deep(.share-btn.p-button:hover) {
+  transform: translateY(-2px);; /* 垂直方向拉高 8% */
+  /* 如果你想整体变大，用 scale(1.05) */
+}
+:deep(.qdlg-back-btn.p-button) {
+  color: #495057;              /* 默认文字/图标颜色 */
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+:deep(.qdlg-back-btn.p-button:hover) {
+  color: #495057;                 /* 鼠标放上去图标变白 */
+  background-color:rgba(42,44,85,.08);   /* 背景变成红色（可改成你喜欢的颜色） */
+}
 </style>
