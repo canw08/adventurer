@@ -55,7 +55,9 @@
                 />
                 <span class="avatar-name">{{ project.author }}</span>
               </div>
-              <span class="task-level">{{ $t('common.level') }} {{ project.level }}</span>
+              <span class="task-level" :style="getLevelStyle(project.level)">
+  {{ $t('common.level') }} {{ project.level }}
+</span>
             </div>
           </div>
         </template>
@@ -110,9 +112,9 @@
         </div>
 
         <!-- 浮动右上角的等级标签（只显示） -->
-        <div class="floating-dialog-level">
-          Level {{ selectedProject?.level || '' }}
-        </div>
+        <div class="floating-dialog-level" :style="getLevelStyle(selectedProject?.level)">
+  Level {{ selectedProject?.level || '' }}
+</div>
       </div>
     </template>
 
@@ -441,6 +443,57 @@ const greetingKey = computed(() => `greetings-student.${period.value}`)
 const goToQuestStore = () => {
   router.push('/student/task')
 }
+// 等级颜色映射
+const levelColors = {
+  S: '#C4A010',
+  A: '#DD4546',
+  B: '#DD7C1B',
+  C: '#E6D624',
+  D: '#8FD833',
+  E: '#2590D2',
+  F: '#911EC7'
+}
+
+// 工具函数：返回等级对应的颜色
+const getLevelColor = (level) => {
+  return levelColors[level] || '#333' // 找不到就用默认色
+}
+
+// 提亮颜色：amount 取 0~1，建议 0.3 左右
+function lighten(hex, amount = 0.3) {
+  const nhex = hex.replace('#', '')
+  const bigint = parseInt(nhex, 16)
+  let r = (bigint >> 16) & 255
+  let g = (bigint >> 8) & 255
+  let b = bigint & 255
+  r = Math.min(255, Math.floor(r + (255 - r) * amount))
+  g = Math.min(255, Math.floor(g + (255 - g) * amount))
+  b = Math.min(255, Math.floor(b + (255 - b) * amount))
+  const toHex = (v) => v.toString(16).padStart(2, '0')
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`
+}
+
+function getLevelStyle(level) {
+  const stroke = levelColors[level] || '#333333'      // 描边用原始颜色
+  const base = lighten(stroke, 0.3)                   // 字体颜色 = 提亮版
+  return {
+    color: base,
+    fontStyle: 'italic',
+    WebkitTextStrokeWidth: '0.5px',
+    WebkitTextStrokeColor: stroke,
+    textShadow: [
+      `0  1px 0 ${stroke}`,
+      `0 -1px 0 ${stroke}`,
+      `1px 0  0 ${stroke}`,
+      `-1px 0  0 ${stroke}`,
+      `1px  1px 0 ${stroke}`,
+      `-1px 1px 0 ${stroke}`,
+      `1px -1px 0 ${stroke}`,
+      `-1px -1px 0 ${stroke}`
+    ].join(', ')
+  }
+}
+
 </script>
 
 
@@ -550,8 +603,6 @@ const goToQuestStore = () => {
   color: #888;
   margin-left: 4px;
 }
-
-
 .announcement-panel {
   width: 300px;
   background-color: #fffefc;
@@ -588,7 +639,6 @@ const goToQuestStore = () => {
   padding: 0;
   min-height: 40px;
 }
-
 .greeting {
   font-style: italic;
   font-size: 18px;
@@ -720,7 +770,7 @@ const goToQuestStore = () => {
 .task-level {
   color: #0099ff; 
   font-weight: bold;
-  font-size: 16px;
+  font-size: 20px;
   text-align: right;
 }
 .avatar-wrapper {

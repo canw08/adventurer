@@ -570,6 +570,7 @@ const levelColors = {
   F: '#911EC7'
 }
 
+
 // 工具函数：返回等级对应的颜色
 const getLevelColor = (level) => {
   return levelColors[level] || '#333' // 找不到就用默认色
@@ -589,13 +590,22 @@ function lighten(hex, amount = 0.3) {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`
 }
 
+const hexToRgba = (hex, alpha = 1) => {
+  const v = hex.replace('#', '');
+  const bigint = parseInt(v, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
 function getLevelStyle(level) {
   const stroke = levelColors[level] || '#333333'      // 描边用原始颜色
   const base = lighten(stroke, 0.3)                   // 字体颜色 = 提亮版
   return {
     color: base,
     fontStyle: 'italic',
-    WebkitTextStrokeWidth: '1px',
+    WebkitTextStrokeWidth: '0.3px',
     WebkitTextStrokeColor: stroke,
     textShadow: [
       `0  1px 0 ${stroke}`,
