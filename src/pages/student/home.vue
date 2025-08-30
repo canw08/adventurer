@@ -165,7 +165,7 @@
         @click="toggleLeavePanel"
       />
       <Button
-        label="Confirm"
+        label="Prompting"
         class="custom-btn"
         @click="confirmLeave"
       />

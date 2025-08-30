@@ -372,13 +372,13 @@ function mapTaskToProject(task) {
     id: task.id,
     title: task.title,
     date: task.deadline, // 可是 ISO 或字符串，后续 parseDateLoose 兜底
-    status: task.is_accepted ? 'completed' : 'ongoing',
+    status: task.is_completed ? 'completed' : 'ongoing',
     image: pickTaskImage(task),
     exp: `${task.experience_reward} exp`,
     coin: task.token_reward,
     hour: task.volunteerTime_reward,
     level: task.required_level, // 例：'E' 或 'Level E'
-    avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${task.publisher_avatar || 'none'}`,
+    avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${task.publisher_avatar || 'none'}&skinColor=ecad80,f2d3b1`,
     author: task.publisher_nickname,
     description: task.description,
     mandator: task.publisher_nickname,

@@ -131,7 +131,7 @@ async function proceed() {
     // 成功后再跳转
     fading.value = true
     setTimeout(() => {
-      router.push('/animations/setup')
+      router.push('/teacher/home')
     }, FADE_MS)
   } catch (err) {
     console.error('更新用户资料失败', err)

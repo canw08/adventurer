@@ -74,7 +74,7 @@ const scriptsByRole = {
 }
 
 const redirectByRole = {
-  teacher: '/teacher',
+  teacher: '/teacher/setup',
   student: '/student/setup',
   admin: '/admin/dashboard',
   // 未识别角色或未登录的兜底
