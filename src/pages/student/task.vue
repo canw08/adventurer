@@ -148,12 +148,12 @@
           <!-- ✅ ID（author name）与左边框的对齐：依赖 --rail -->
           <div class="dialog-author">
             <!-- 动态：跟随 selectedProject.avatar -->
-<Avatar
-  :image="selectedProject?.avatar || 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png'"
-  shape="circle"
-  size="large"
-  style="width: 50px; height: 50px"
-/>
+            <Avatar
+              :image="selectedProject?.avatar || 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png'"
+              shape="circle"
+              size="large"
+              style="width: 50px; height: 50px"
+            />
             <span class="author-name">{{ selectedProject?.author }}</span>
           </div>
 
@@ -173,9 +173,18 @@
               <!-- 上行：icon + 进度条 -->
               <div class="metric-row">
                 <img :src="m.icon" alt="" class="metric-icon pixelated click-wiggle" />
-                <ProgressBar :value="m.pct" class="metric-bar" :style="{ height: '28px','--bar-color': m.color }">
-                  <span class="metric-text">{{ m.raw }}{{ m.unit }}</span>
-                </ProgressBar>
+                  <ProgressBar
+                    :value="m.pct"
+                    :showValue="false"
+                    class="metric-bar"
+                    :style="{ height: '28px', '--bar-color': m.color }"
+                  />
+                  <span
+                    class="metric-text"
+                    style="position:absolute;top:50%;left:93%;transform:translate(-50%,-50%);font-size:16px;font-weight:600;color:#2A2C55;pointer-events:none;"
+                  >
+                    {{ m.raw }}{{ m.unit }}
+                  </span>
               </div>
               <!-- 下行：label -->
               <div class="metric-label">{{ m.label }}</div>
@@ -455,33 +464,31 @@ const pickBounds = (b, key) => {
 
 // 用于 UI 的度量元数据（去掉固定 max，只保留单位/图标/颜色）
 const METRIC_DEFS = [
-  { key: 'exp',  label: 'EXP',  unit: '',  icon: new URL('../../assets/icon/exp.png', import.meta.url).href,  color: '#F58B40' },
+  { key: 'exp',  label: 'EXP',  unit: '',  icon: new URL('../../assets/icon/exp.png', import.meta.url).href,  color: '#11AF9B' },
   { key: 'coin', label: 'Coin', unit: '',  icon: new URL('../../assets/icon/token.png', import.meta.url).href, color: '#FBE838' },
-  { key: 'hour', label: 'Hour', unit: 'h', icon: new URL('../../assets/icon/time.png', import.meta.url).href,  color: '#65D6ef' },
+  { key: 'hour', label: 'Hour', unit: 'h', icon: new URL('../../assets/icon/time.png', import.meta.url).href,  color: '#4ACDF2' },
 ];
 
 // 百分比 = (raw - min) / (max - min)，并对 raw 做 clamp，避免溢出或负值
 const metricsBound = computed(() => {
-  const p = selectedProject.value || {};
-  const b = selectedBounds.value;
+  const p = selectedProject.value || {}
+  const b = selectedBounds.value || {}
 
   return METRIC_DEFS.map(def => {
-    const raw = toNumber(p?.[def.key] ?? 0);
-    const [min, max] = pickBounds(b, def.key);
-    let clamped = raw;
+    const raw = toNumber(p?.[def.key] ?? 0)
 
-    if (max > min) {
-      if (clamped < min) clamped = min;
-      if (clamped > max) clamped = max;
-    }
+    // ⭐ bounds 用 'hours'（复数），而 metric key 是 'hour'（单数）
+    const ranges = def.key === 'hour' ? b?.hours : b?.[def.key]
+    const [min, max] = Array.isArray(ranges) && ranges.length === 2 ? ranges : [0, 0]
 
-    const pct = (max > min) ? Math.round(((clamped - min) / (max - min)) * 100) : 0;
-    // 进度条文本：原值（可改为 `${raw}/${max}${def.unit}`）
-    const text = `${raw}${def.unit}`;
+    // 夹取 + 百分比
+    const clamped = max > min ? Math.min(Math.max(raw, min), max) : raw
+    const pct = max > min ? Math.round(((clamped - min) / (max - min)) * 100)
+                          : (raw > 0 ? 100 : 0) // ⭐ 没拿到范围时的兜底
 
-    return { ...def, raw, pct, text, min, max };
-  });
-});
+    return { ...def, raw, pct }
+  })
+})
 
 /* -------------------- 卡片区域溢出控制 -------------------- */
 const cardsScrollRef = ref(null)     // 绑定 DOM
@@ -1245,7 +1252,6 @@ function getLevelStyle(level) {
 }
 
 .metric-bar :deep(.p-progressbar-value) {
-  border-radius: 999px;
   background-color: var(--bar-color, #3b82f6); /* 默认蓝色 */
 }
 
