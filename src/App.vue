@@ -15,7 +15,6 @@ const route = useRoute()
 html, body {
   margin: 0;
   padding: 0;
-  overflow-y: hidden; /* 禁止上下滚动 */
 }
 
 .layout-container,

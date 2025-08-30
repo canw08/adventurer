@@ -119,5 +119,41 @@ export default [
       };
     },
   },
-
+  {
+    url: /\/api\/tasks\/\d+$/,
+    method: 'get',
+    response: () => {
+      return {
+        id: 3,
+        publisher: 'silverteacher',
+        accepted_by: ['扣2科比复活失败'],
+        invited_users: [],
+        leader: '扣2科比复活失败',
+        title: '打扫图书馆',
+        accepted_by: [
+          {
+            "id": 1,
+            "nickname": "扣1复活科比",
+            "avatar": "T4Nh4vKllH5NrXygw5JtXfHzM0ULmTcla9kZlEJQfnIZ3pxD51"
+          }
+        ],
+        description: '整理图书馆的书籍并清扫地面',
+        task_type: 'solo',
+        maximum_users: 1,
+        required_level: 'F',
+        experience_reward: 100,
+        token_reward: 20,
+        volunteerTime_reward: 0.0,
+        image: null,
+        deadline: '2025-08-20T18:00:00Z',
+        is_completed: true,
+        is_expired: false,
+        is_accepted: true,
+        is_started: true,
+        created_at: '2025-08-14T07:22:59.834162Z',
+        updated_at: '2025-08-14T07:40:40.798383Z',
+        cancel_requested: false,
+      };
+    },
+  },
 ];

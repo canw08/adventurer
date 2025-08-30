@@ -41,7 +41,7 @@
 >
       <div class="grid-container">
         <div
-          v-for="project in paginatedProjects"
+          v-for="project in filteredProjects"
           :key="project.id"
           class="task-card"
           :class="{ 'assigned-card': project.status === 'assigned' }"
@@ -80,7 +80,7 @@
   class="task-level"
   :style="getLevelStyle(project.level)"
 >
-  {{ $t('common.level') }} {{ project.level }}
+  Level {{ project.level }}
 </span>
           </div>
         </div>
@@ -91,7 +91,7 @@
       <div class="fixed-footer-wrapper">
         <Paginator
           :rows="rowsPerPage"
-          :totalRecords="filteredProjects.length"
+          :totalRecords="totalRecords"
           :first="currentPage * rowsPerPage"
           @page="(e) => (currentPage = e.page)"
           style="background-color: white; border-radius: 12px; padding: 4px 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);"
@@ -300,28 +300,25 @@ const openProjectDialog = (project) => {
   showDialog.value = true;
 };
 
-/* -------------------- 数据源（从 mock API 分页获取） -------------------- */
-const allProjects = ref([]);
+/* -------------------- 数据源（服务端分页获取） -------------------- */
+const allProjects = ref([]);        // 当前页的数据
 const loading = ref(false);
 const loadError = ref('');
+const totalRecords = ref(0);        // 服务端总条数（用于分页器）
+const pageSize = 4;                 // 与模板里的 :rows 保持一致
 
 // 简单日期展示：直接透传
 const formatDate = (s) => s || '';
 
 // 模拟你示例中的图片逻辑 + badge 字段
 function pickTaskImage(task) {
-  // 团队任务固定用 teamwork
   if (task.task_type === 'team') return teamwork;
-
-  // 用发布时间（deadline）作为种子
   const seedStr = task.deadline || String(task.id) || '';
   let hash = 0;
   for (let i = 0; i < seedStr.length; i++) {
     hash = (hash << 5) - hash + seedStr.charCodeAt(i);
-    hash |= 0; // 转成 32 位整数
+    hash |= 0;
   }
-
-  // 根据 hash 奇偶数来决定用哪张
   return Math.abs(hash) % 2 === 0 ? solo1 : solo2;
 }
 
@@ -330,10 +327,9 @@ function mapTaskToProject(task) {
     id: task.id,
     title: task.title,
     date: formatDate(task.deadline),
-    // 参照你给的代码：is_accepted → ongoing；否则 completed
-    status: task.is_accepted ? 'accepted' : 'available',
+    status: task.is_accepted ? 'assigned' : 'available',
     image: pickTaskImage(task),
-    exp: `${task.experience_reward} EXP`,      // 加 EXP 后缀
+    exp: `${task.experience_reward} EXP`,
     coin: task.token_reward,
     hour: task.volunteerTime_reward,
     level: task.required_level || 'F',
@@ -344,34 +340,10 @@ function mapTaskToProject(task) {
   }
 }
 
-const fetchAllProjects = async () => {
-  loading.value = true;
-  loadError.value = '';
-  try {
-    const acc = [];
-    let page = 1;
-    // 拉取分页直到 next 为空（使用你之前的 /api/tasks/ mock 接口）
-    while (true) {
-      const { data } = await api.get('/api/tasks/', { params: { page } });
-      const results = Array.isArray(data?.results) ? data.results : [];
-      acc.push(...results.map(mapTaskToProject));
-      if (!data?.next) break;
-      page += 1;
-    }
-    allProjects.value = acc;
-  } catch (err) {
-    console.error(err);
-    loadError.value = '加载任务失败';
-    allProjects.value = [];
-  } finally {
-    loading.value = false;
-  }
-};
-
-/* -------------------- 筛选状态（ongoing/completed + level 多选） -------------------- */
-const activeTab = ref('available');          // 生效状态
-const showFilterDialog = ref(false);       // Filter 弹窗显隐
-const tempTab = ref(activeTab.value);      // 弹窗临时状态
+/* -------------------- 筛选状态（tab + level 多选） -------------------- */
+const activeTab = ref('null');
+const showFilterDialog = ref(false);
+const tempTab = ref(activeTab.value);
 const levelOptions = [
   { label: 'Level F', value: 'F' },
   { label: 'Level E', value: 'E' },
@@ -382,19 +354,16 @@ const levelOptions = [
   { label: 'Level S', value: 'S' },
   { label: 'Level S*', value: 'S*' },
 ];
-const selectedLevels = ref([]); // 生效中的 level 集合
-const tempLevels = ref([]);     // 弹窗内临时 level 集合
+const selectedLevels = ref([]);
+const tempLevels = ref([]);
 
-/* -------------------- 过滤 + 分页 -------------------- */
-// ongoing 时包含 assigned（保持老逻辑兼容）
-// === 过滤逻辑 ===
+/* -------------------- 过滤（当前页内） -------------------- */
 const filteredProjects = computed(() => {
-  const statusFiltered = allProjects.value.filter(
-    (p) => p.status === activeTab.value
-  )
-  if (!selectedLevels.value?.length) return statusFiltered;
-  return statusFiltered.filter((p) => selectedLevels.value.includes(p.level));
+  // 只做等级过滤，不做状态过滤
+  if (!selectedLevels.value?.length) return allProjects.value
+  return allProjects.value.filter((p) => selectedLevels.value.includes(p.level))
 })
+
 
 const safeDescription = computed(() => {
   const html = selectedProject.value?.description || '无任务说明'
@@ -409,30 +378,72 @@ const safeDescription = computed(() => {
   return div.innerHTML
 })
 
-
-const currentPage = ref(0);
-const rowsPerPage = 4;
-const paginatedProjects = computed(() => {
-  const start = currentPage.value * rowsPerPage;
-  return filteredProjects.value.slice(start, start + rowsPerPage);
-});
+/* -------------------- 分页状态（服务端分页） -------------------- */
+const currentPage = ref(0); // 0 基，用于配合 Paginator；请求时用 currentPage + 1
+const rowsPerPage = pageSize;
 
 /* -------------------- 方法 -------------------- */
-const applyFilter = () => {
-  activeTab.value = tempTab.value;
-  selectedLevels.value = [...tempLevels.value];
-  showFilterDialog.value = false;
-  currentPage.value = 0; // 重置到第一页
-};
+// 只加载“指定页”的数据（page 从 1 开始）
+const fetchPage = async (page = 1, isAssigned = null) => {
+  loading.value = true
+  loadError.value = ''
+  try {
+    const params = {
+      page,
+      page_size: rowsPerPage
+    }
+    // ⭐ 只有在手动筛选时才加 is_accepted
+    if (isAssigned === true) params.is_accepted = true
+    if (isAssigned === false) params.is_accepted = false
+
+    const { data } = await api.get('/api/tasks/', { params })
+    const results = Array.isArray(data?.results) ? data.results : []
+    allProjects.value = results.map(mapTaskToProject)
+    totalRecords.value = Number.isFinite(data?.count) ? data.count : (data?.total ?? results.length)
+  } catch (err) {
+    console.error(err)
+    loadError.value = '加载任务失败'
+    allProjects.value = []
+    totalRecords.value = 0
+  } finally {
+    loading.value = false
+  }
+}
+
+// 应用筛选：重置到第 1 页并请求
+const applyFilter = async () => {
+  activeTab.value = tempTab.value
+  selectedLevels.value = [...tempLevels.value]
+  showFilterDialog.value = false
+  currentPage.value = 0
+
+  // ⭐ 只有手动切换才决定是否加 is_accepted
+  let flag = null
+  if (activeTab.value === 'assigned') flag = true
+  if (activeTab.value === 'available') flag = false
+
+  await fetchPage(1, flag)
+}
+
 const confirmFilter = () => applyFilter();
 
 /* -------------------- 监听 -------------------- */
+// 打开筛选弹窗时同步临时值
 watch(showFilterDialog, (v) => {
   if (v) {
     tempTab.value = activeTab.value;
     tempLevels.value = [...selectedLevels.value];
   }
 });
+
+// 翻页时请求对应页（Paginator 会把 e.page 设为 0 基索引）
+watch(currentPage, async (newIdx, oldIdx) => {
+  if (newIdx === oldIdx) return
+  let flag = null
+  if (activeTab.value === 'assigned') flag = true
+  if (activeTab.value === 'available') flag = false
+  await fetchPage(newIdx + 1, flag)  // ⭐ 默认 null，只有筛选时才 true/false
+})
 
 // 提取数字：'400 exp' -> 400；数字则原样返回
 const toNumber = (v) => {
@@ -445,63 +456,51 @@ const toNumber = (v) => {
 };
 
 /* -------------------- 进度条：按等级动态上下限 -------------------- */
-// 允许 'A' / 'Level A' / 'A级' 等多种键，levelRanges 内需自行准备这些映射
 const getBoundsByLevel = (level) => levelRanges?.[level] || null;
 
-// 当前选中任务的上下限：{ exp:[min,max], coin:[min,max], hours:[min,max] }
 const selectedBounds = computed(() => {
   const lvl = selectedProject.value?.level;
   const bounds = getBoundsByLevel(lvl);
-  return bounds || { exp:[0,100], coin:[0,100], hours:[0,24] }; // 兜底
+  return bounds || { exp:[0,100], coin:[0,100], hours:[0,24] };
 });
 
-// 注意：我们项目字段是 'hour'，而范围表是 'hours'，这里做一次键位适配
 const pickBounds = (b, key) => {
   if (!b) return [0, 0];
   if (key === 'hour') return b.hours ?? [0, 0];
   return b[key] ?? [0, 0];
 };
 
-// 用于 UI 的度量元数据（去掉固定 max，只保留单位/图标/颜色）
 const METRIC_DEFS = [
   { key: 'exp',  label: 'EXP',  unit: '',  icon: new URL('../../assets/icon/exp.png', import.meta.url).href,  color: '#11AF9B' },
   { key: 'coin', label: 'Coin', unit: '',  icon: new URL('../../assets/icon/token.png', import.meta.url).href, color: '#FBE838' },
   { key: 'hour', label: 'Hour', unit: 'h', icon: new URL('../../assets/icon/time.png', import.meta.url).href,  color: '#4ACDF2' },
 ];
 
-// 百分比 = (raw - min) / (max - min)，并对 raw 做 clamp，避免溢出或负值
 const metricsBound = computed(() => {
   const p = selectedProject.value || {}
   const b = selectedBounds.value || {}
 
   return METRIC_DEFS.map(def => {
     const raw = toNumber(p?.[def.key] ?? 0)
-
-    // ⭐ bounds 用 'hours'（复数），而 metric key 是 'hour'（单数）
     const ranges = def.key === 'hour' ? b?.hours : b?.[def.key]
     const [min, max] = Array.isArray(ranges) && ranges.length === 2 ? ranges : [0, 0]
-
-    // 夹取 + 百分比
     const clamped = max > min ? Math.min(Math.max(raw, min), max) : raw
     const pct = max > min ? Math.round(((clamped - min) / (max - min)) * 100)
-                          : (raw > 0 ? 100 : 0) // ⭐ 没拿到范围时的兜底
-
+                          : (raw > 0 ? 100 : 0)
     return { ...def, raw, pct }
   })
 })
 
 /* -------------------- 卡片区域溢出控制 -------------------- */
-const cardsScrollRef = ref(null)     // 绑定 DOM
-const hasOverflow = ref(false)       // 是否需要滚动
+const cardsScrollRef = ref(null)
+const hasOverflow = ref(false)
 
-// 检查是否溢出
 const updateOverflow = () => {
   const el = cardsScrollRef.value
   if (!el) return
   hasOverflow.value = el.scrollHeight - el.clientHeight > 1
 }
 
-// 窗口 resize 时重新检查
 let resizeTimer = null
 const onResize = () => {
   if (resizeTimer) clearTimeout(resizeTimer)
@@ -511,7 +510,8 @@ const onResize = () => {
 }
 
 onMounted(async () => {
-  await fetchAllProjects();   // 从 mock 接口加载数据（分页）
+  // 初次加载：available，第 1 页
+  await fetchPage(1, null)
   await nextTick()
   updateOverflow()
   window.addEventListener('resize', onResize)
@@ -521,13 +521,12 @@ onBeforeUnmount(() => {
   if (resizeTimer) clearTimeout(resizeTimer)
 })
 
-// 监听项目列表/分页变化
-watch([filteredProjects, currentPage, showFilterDialog], async () => {
+// 监听项目列表/分页变化（仅用于溢出计算）
+watch([filteredProjects, showFilterDialog], async () => {
   await nextTick()
   updateOverflow()
 }, { flush: 'post' })
 
-// 图片加载完成后也检查
 const onCardImageLoad = () => {
   updateOverflow()
 }
@@ -537,11 +536,12 @@ const applyForTask = async (taskId) => {
   if (!taskId) return
   try {
     await api.post(`/api/tasks/${taskId}/apply/`)
-    // 成功后：整页重新拉取数据
-    await fetchAllProjects()
     showDialog.value = false
 
-    // 成功提示
+    // 接受任务后，按当前 tab + 当前页重新拉取
+    const wantAssigned = activeTab.value === 'assigned'
+    await fetchPage(currentPage.value + 1, wantAssigned)
+
     toast.add({
       severity: 'success',
       summary: '已接受任务',
@@ -571,12 +571,10 @@ const levelColors = {
 }
 
 
-// 工具函数：返回等级对应的颜色
 const getLevelColor = (level) => {
-  return levelColors[level] || '#333' // 找不到就用默认色
+  return levelColors[level] || '#333'
 }
 
-// 提亮颜色：amount 取 0~1，建议 0.3 左右
 function lighten(hex, amount = 0.3) {
   const nhex = hex.replace('#', '')
   const bigint = parseInt(nhex, 16)
@@ -600,8 +598,8 @@ const hexToRgba = (hex, alpha = 1) => {
 };
 
 function getLevelStyle(level) {
-  const stroke = levelColors[level] || '#333333'      // 描边用原始颜色
-  const base = lighten(stroke, 0.3)                   // 字体颜色 = 提亮版
+  const stroke = levelColors[level] || '#333333'
+  const base = lighten(stroke, 0.3)
   return {
     color: base,
     fontStyle: 'italic',
@@ -619,7 +617,6 @@ function getLevelStyle(level) {
     ].join(', ')
   }
 }
-
 </script>
 
 
