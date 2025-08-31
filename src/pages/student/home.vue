@@ -266,7 +266,9 @@ import { levelRanges } from '../../components/levelRange.js'
 import teamwork from '../../assets/team.png'
 import solo1 from '../../assets/solo.png'
 import solo2 from '../../assets/solo2.png'
+import { useToast } from 'primevue/usetoast'
 
+const toast = useToast()
 const router = useRouter()
 const { t } = useI18n()
 
@@ -366,9 +368,20 @@ const confirmLeave = () => {
 }
 const submitLeave = () => {
   if (!leaveTitle.value.trim()) {
-    console.warn('申请理由不能为空')
+    toast.add({
+      severity: 'error',
+      summary: '提交失败',
+      detail: '申请理由不能为空',
+      life: 2000
+    })
     return
   }
+  toast.add({
+    severity: 'success',
+    summary: '提交成功',
+    detail: '取消任务请求已发送',
+    life: 2000
+  })
   console.log('Submit leave:', {
     project: selectedProject.value?.title,
     title: leaveTitle.value,
