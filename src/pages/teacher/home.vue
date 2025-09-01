@@ -1,5 +1,4 @@
 <template>
-
   <!-- 右侧 -->
   <div class="main-content">
       <div class="main-header">
@@ -305,6 +304,8 @@
             label="Approve" 
             icon="pi pi-check" 
             class="approve-btn"
+            :loading="loadingApprove"
+            :disabled="loadingApprove"
             @click="onApprove"
           />
           <Button 
@@ -345,6 +346,113 @@ import '../../styles/overrides.css'
 import teamwork from '../../assets/team.png'
 import solo1 from '../../assets/solo.png'
 import solo2 from '../../assets/solo2.png'
+import { useToast } from 'primevue/usetoast'
+
+const toast = useToast()
+const loadingApprove = ref(false)
+
+async function onApprove() {
+  const id = selectedProject.value?.id
+  if (!id || loadingApprove.value) return
+  loadingApprove.value = true
+  try {
+    await api.post(`/api/tasks/${id}/complete/`)
+
+    // 本地状态更新：把该任务标记为 completed
+    const idx = allProjects.value.findIndex(p => p.id === id)
+    if (idx !== -1) {
+      allProjects.value[idx] = { ...allProjects.value[idx], status: 'completed' }
+    }
+    if (selectedProject.value) {
+      selectedProject.value = { ...selectedProject.value, status: 'completed' }
+    }
+
+    toast.add({
+      severity: 'success',
+      summary: '操作成功',
+      detail: '任务已标记为完成',
+      life: 2500
+    })
+    showProjectDialog.value = false
+  } catch (err) {
+    console.error('完成任务失败:', err)
+    const msg =
+      err?.response?.data?.detail ||
+      err?.message ||
+      '操作失败，请稍后重试'
+    toast.add({
+      severity: 'error',
+      summary: '操作失败',
+      detail: msg,
+      life: 3500
+    })
+  } finally {
+    loadingApprove.value = false
+  }
+}
+
+/** 分享：复制当前任务 id 到剪贴板（带兜底） */
+async function onShare() {
+  const id = selectedProject.value?.id
+  if (!id) {
+    toast.add({
+      severity: 'warn',
+      summary: '无法分享',
+      detail: '当前没有选中的任务',
+      life: 2500
+    })
+    return
+  }
+
+  const text = String(id)
+
+  // 先尝试现代 API
+  try {
+    await navigator.clipboard.writeText(text)
+    toast.add({
+      severity: 'success',
+      summary: '已复制',
+      detail: `任务 ID ${text} 已复制到剪贴板`,
+      life: 2000
+    })
+    return
+  } catch (_) {
+    // 忽略，走兜底
+  }
+
+  // 兜底（HTTP/不安全上下文或老浏览器）
+  try {
+    const ta = document.createElement('textarea')
+    ta.value = text
+    ta.style.position = 'fixed'
+    ta.style.opacity = '0'
+    ta.style.pointerEvents = 'none'
+    document.body.appendChild(ta)
+    ta.focus()
+    ta.select()
+    const ok = document.execCommand('copy')
+    document.body.removeChild(ta)
+
+    if (ok) {
+      toast.add({
+        severity: 'success',
+        summary: '已复制',
+        detail: `任务 ID ${text} 已复制到剪贴板`,
+        life: 2000
+      })
+    } else {
+      throw new Error('execCommand 复制失败')
+    }
+  } catch (err) {
+    console.error('复制失败:', err)
+    toast.add({
+      severity: 'warn',
+      summary: '复制失败',
+      detail: `请手动复制：${text}`,
+      life: 4000
+    })
+  }
+}
 
 /* ===== Icons ===== */
 const ICON_EXP  = new URL('../../assets/icon/exp.png', import.meta.url).href

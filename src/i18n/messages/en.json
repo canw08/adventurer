@@ -3,7 +3,9 @@
     "title": "Home",
     "runningQuest": "Running Quest",
     "getQuest" : "Get a quest",
-    "publishQuest" : "Publish a quest"
+    "publishQuest" : "Publish a quest",
+    "prompting" : "Prompting",
+    "askleave" : "Ask for leave"
   },
   "questBoard": 
   {
@@ -35,7 +37,7 @@
   },
   "notifications": {
     "systemName": "system",
-    "type": { "system": "System Notification", "invite": "Invitation Notification", "unknown": "Notification" },
+    "type": { "system": "System Notification", "invite": "Invitation Notification", "completion_request" : "Completion request", "unknown": "Notification" },
     "markAll": "Mark All as Read",
     "showAll": "Show All Notifications",
     "clickToView": "Click to View Details",
@@ -60,5 +62,26 @@
   "setup": 
   {
     "nickname" : "Enter your nickname (think carefully!)"
+  },
+  "toasts": {
+    "common": {
+      "errorSummary": "Submission failed",
+      "errorDetailFallback": "Request failed. Please try again later."
+    },
+    "validation": {
+      "errorSummary": "Validation error",
+      "leaveReasonRequired": "Reason for cancellation cannot be empty."
+    },
+    "urge": {
+      "successSummary": "Request sent",
+      "successDetail": "Please wait for the teacher to review your completion."
+    },
+    "cancel": {
+      "successSummary": "Submitted",
+      "successDetail": "Task cancellation request has been sent."
+    },
+    "loadTasksError": {
+      "consoleTag": "Failed to load tasks:"
+    }
   }
 }

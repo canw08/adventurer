@@ -105,6 +105,7 @@ import { showOnce } from '../../composables/tip-once.js'
 // === 异步加载各类弹窗（每种 typeKey 一个组件） ===
 const DialogSystem = defineAsyncComponent(() => import('./dialogs/AnnouncementDialogSystem.vue'))
 const DialogInvite   = defineAsyncComponent(() => import('./dialogs/AnnouncementDialogInvite.vue'))
+const DialogApprove   = defineAsyncComponent(() => import('./dialogs/AnnouncementDialogApprove.vue'))
 // const DialogPR     = defineAsyncComponent(() => import('./dialogs/AnnouncementDialogPR.vue'))
 // …根据需要继续扩展
 
@@ -112,6 +113,7 @@ const DialogInvite   = defineAsyncComponent(() => import('./dialogs/Announcement
 const dialogRegistry = {
   system: DialogSystem,
   invite:   DialogInvite,
+  completion_request : DialogApprove
   // pr:     DialogPR,
   // unknown 或未注册类型都回退到 system
 }
@@ -197,12 +199,20 @@ function fmt(iso){
 
 /** 头像：缺省给固定 seed；system 用 bottts，其他用 adventurer */
 function dicebear(name, seed) {
-  const s = seed || 'bridgette'
-  if (name && name.toLowerCase() === 'system') {
-    return `https://api.dicebear.com/9.x/bottts/svg?seed=${encodeURIComponent(s)}`
+  // 如果没有传 seed，就默认用 bottts
+  if (!seed || seed == "none") {
+    return `https://api.dicebear.com/9.x/bottts/svg?seed=system`
   }
-  return `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(s)}`
+
+  // 如果 name 是 system，也用 bottts
+  if (name && name.toLowerCase() === 'system') {
+    return `https://api.dicebear.com/9.x/bottts/svg?seed=${encodeURIComponent(seed)}`
+  }
+
+  // 其他情况用 adventurer
+  return `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(seed)}`
 }
+
 
 // ===== 浮动“全部标记为已读”按钮状态与逻辑 =====
 const expanded = ref(false) // 是否展开状态（显示“全部标记为已读”文字）

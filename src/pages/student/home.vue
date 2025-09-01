@@ -167,12 +167,12 @@
     <!-- ✅ 稳定写法：用方法名而不是模板内联箭头函数 -->
     <div class="dialog-footer-left">
       <Button
-        label="Ask for leave"
+        :label="$t('questLog.askleave')"
         class="custom-btn"
         @click="toggleLeavePanel"
       />
       <Button
-        label="Prompting"
+        :label="$t('questLog.prompting')"
         class="custom-btn"
         @click="confirmLeave"
       />
@@ -362,35 +362,92 @@ const leaveDetail = ref('')
 const toggleLeavePanel = (event) => {
   leavePanel.value?.toggle(event)
 }
-const confirmLeave = () => {
-  console.log('Leave confirmed for project:', selectedProject.value?.title)
-  leavePanel.value?.hide()
+const confirmLeave = async () => {
+  try {
+    const url = `/api/tasks/${selectedProject.value?.id}/urge-approval/`
+    const res = await api.post(url)
+
+    toast.add({
+      severity: 'success',
+      summary: t('toasts.urge.successSummary'),
+      detail: t('toasts.urge.successDetail'),
+      life: 2000
+    })
+
+    console.log('Submit leave (server response):', res.data)
+
+    // 清空并关闭
+    leaveTitle.value = ''
+    leaveDetail.value = ''
+    leavePanel.value?.hide()
+  } catch (err) {
+    const msg =
+      err?.response?.data?.message ||
+      err?.response?.data?.detail ||
+      err?.message ||
+      t('toasts.common.errorDetailFallback')
+
+    toast.add({
+      severity: 'error',
+      summary: t('toasts.common.errorSummary'),
+      detail: msg,
+      life: 2500
+    })
+    console.error('Submit leave error:', err)
+  }
 }
-const submitLeave = () => {
+
+const submitLeave = async () => {
+  // 基础校验
   if (!leaveTitle.value.trim()) {
     toast.add({
       severity: 'error',
-      summary: '提交失败',
-      detail: '申请理由不能为空',
+      summary: t('toasts.validation.errorSummary'),
+      detail: t('toasts.validation.leaveReasonRequired'),
       life: 2000
     })
     return
   }
-  toast.add({
-    severity: 'success',
-    summary: '提交成功',
-    detail: '取消任务请求已发送',
-    life: 2000
-  })
-  console.log('Submit leave:', {
-    project: selectedProject.value?.title,
-    title: leaveTitle.value,
-    detail: leaveDetail.value
-  })
-  leaveTitle.value = ''
-  leaveDetail.value = ''
-  leavePanel.value?.hide()
+
+  try {
+    const url = `/api/tasks/${selectedProject.value?.id}/cancel/`
+    const payload = {
+      summary: leaveTitle.value.trim(),
+      detail: leaveDetail.value?.trim() || ''
+    }
+
+    const res = await api.post(url, payload)
+
+    toast.add({
+      severity: 'success',
+      summary: t('toasts.cancel.successSummary'),
+      detail: t('toasts.cancel.successDetail'),
+      life: 2000
+    })
+
+    console.log('Submit leave (server response):', res.data)
+
+    // 清空并关闭
+    leaveTitle.value = ''
+    leaveDetail.value = ''
+    leavePanel.value?.hide()
+  } catch (err) {
+    const msg =
+      err?.response?.data?.message ||
+      err?.response?.data?.detail ||
+      err?.message ||
+      t('toasts.common.errorDetailFallback')
+
+    toast.add({
+      severity: 'error',
+      summary: t('toasts.common.errorSummary'),
+      detail: msg,
+      life: 2500
+    })
+    console.error('Submit leave error:', err)
+  }
 }
+
 
 // ====== Metrics绑定 ======
 const toNumber = (v) => {

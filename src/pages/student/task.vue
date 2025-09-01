@@ -194,7 +194,10 @@
       </div>
 
       <!-- 接任务按钮（固定右下角） -->
-      <div class="absolute-accept-button">
+      <div 
+        v-if="selectedProject?.status !== 'assigned'" 
+        class="absolute-accept-button"
+      >
         <Button 
           label="Accept" 
           class="custom-btn" 

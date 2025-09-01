@@ -2,7 +2,7 @@
 import { defineStore } from 'pinia'
 import api from '../api.js';
 
-const KNOWN_TYPES = new Set(['system', 'invite'])
+const KNOWN_TYPES = new Set(['system', 'invite',"completion_request"])
 const normalizeTypeKey = (k) => (KNOWN_TYPES.has(k) ? k : 'unknown')
 
 export const useAnnouncementStore = defineStore('announcements', {

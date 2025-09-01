@@ -58,5 +58,26 @@
   },
   "setup": {
     "nickname": "输入您的昵称（认真点!）"
+  },
+  "toasts": {
+    "common": {
+      "errorSummary": "提交失败",
+      "errorDetailFallback": "请求失败，请稍后重试"
+    },
+    "validation": {
+      "errorSummary": "校验失败",
+      "leaveReasonRequired": "申请理由不能为空"
+    },
+    "urge": {
+      "successSummary": "请求发送成功",
+      "successDetail": "请等待老师审核您的完成情况"
+    },
+    "cancel": {
+      "successSummary": "提交成功",
+      "successDetail": "取消任务请求已发送"
+    },
+    "loadTasksError": {
+      "consoleTag": "加载任务失败:"
+    }
   }
 }
