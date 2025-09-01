@@ -110,10 +110,12 @@ meta:
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import api from '../../api'
+import axios from 'axios';
 import DOMPurify from 'dompurify'
 import ProgressBar from 'primevue/progressbar'              // ✅ 用 PrimeVue 的进度条
 import { levelRanges } from '../../components/levelRange.js' // ✅ 等级上下限
+
+const api = axios.create({});
 
 const route = useRoute()
 const task = ref<any>(null)
