@@ -138,10 +138,10 @@ const timeText = computed(() => {
 });
 
 const currentExp = computed(() =>
-  Number(userStore?.userInfo?.experience ?? 200 - userStore?.userInfo?.current_level_xp ?? 100)
+  Number(userStore?.userInfo?.experience - userStore?.userInfo?.current_level_xp)
 )
 const nextExp = computed(() =>
-  Math.max(1, Number(userStore?.userInfo?.next_level_xp ?? 1000) - userStore?.userInfo?.current_level_xp ?? 100) // 防止除零
+  Math.max(1, Number(userStore?.userInfo?.next_level_xp ?? 0) - userStore?.userInfo?.current_level_xp ?? 0) // 防止除零
 )
 
 const percent = computed(() => {
