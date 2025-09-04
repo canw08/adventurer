@@ -56,8 +56,8 @@
                 <span class="avatar-name">{{ project.author }}</span>
               </div>
               <span class="task-level" :style="getLevelStyle(project.level)">
-  {{ $t('common.level') }} {{ project.level }}
-</span>
+                Level {{ project.level }}
+              </span>
             </div>
           </div>
         </template>

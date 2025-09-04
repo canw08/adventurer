@@ -393,7 +393,7 @@ async function onApprove() {
 
 /** 分享：复制当前任务 id 到剪贴板（带兜底） */
 async function onShare() {
-  const id = selectedProject.value?.id
+  const id = "http://117.72.148.123/forward/" + selectedProject.value?.id
   if (!id) {
     toast.add({
       severity: 'warn',

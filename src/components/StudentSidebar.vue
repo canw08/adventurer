@@ -164,23 +164,58 @@ onMounted(async () => {
 });
 
 const copyId = async () => {
+  const text = userStore.userInfo.identifier ?? '';
+
+  // 兜底方案（execCommand）
+  const legacyCopy = () => {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = t;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      ta.setSelectionRange(0, ta.value.length);
+      const ok = document.execCommand('copy'); // 兼容旧浏览器/非安全上下文
+      document.body.removeChild(ta);
+      return ok;
+    } catch {
+      return false;
+    }
+  };
+
   try {
-    await navigator.clipboard.writeText(userStore.userInfo.identifier)
-    toast.add({
-      severity: 'success',
-      summary: '已复制',
-      detail: 'ID 已复制到剪切板',
-      life: 2000
-    })
+    // 优先使用新 API：仅在安全上下文且 API 可用时
+    if (window.isSecureContext && navigator.clipboard?.writeText) {
+      // 尽量避免在这里做与复制无关的 await（比如先 await 接口）
+      await navigator.clipboard.writeText(text);
+      toast.add({ severity: 'success', summary: '已复制', detail: 'ID 已复制到剪切板', life: 2000 });
+      return;
+    }
+
+    // 非安全上下文或不支持 -> 兜底
+    const ok = legacyCopy(text);
+    if (ok) {
+      toast.add({ severity: 'success', summary: '已复制', detail: 'ID 已复制到剪切板', life: 2000 });
+    } else {
+      throw new Error('legacy copy failed');
+    }
   } catch (err) {
+    // 给出更可诊断的提示
+    const hint = !window.isSecureContext
+      ? '当前页面不是 HTTPS，浏览器禁止访问剪切板。'
+      : '浏览器拒绝了写入剪切板（可能缺少用户手势或被策略限制）。';
+
     toast.add({
       severity: 'error',
       summary: '复制失败',
-      detail: '请手动复制 ID',
-      life: 2000
-    })
+      detail: `请手动复制 ID。${hint}`,
+      life: 3000
+    });
   }
-}
+};
+
 </script>
 
 <style scoped>
