@@ -62,6 +62,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useReward } from 'vue-rewards'
 import { useTipBuddy } from '../../composables/useTipBuddy'
+import { useUserStore } from '../../stores/user'
 import api from '../../api'
 const { show } = useTipBuddy()
 const router = useRouter()
@@ -139,7 +140,8 @@ async function proceed() {
       nickname: nickname.value,
       avatar: randomStr.value,
     })
-
+    const userStore = useUserStore();
+    await userStore.refreshUser();
     // 成功后再跳转
     fading.value = true
     setTimeout(() => {

@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia';
 import api from '../api.js';
 
-
 export const useUserStore = defineStore('user', {
   state: () => ({
     userInfo: null,
@@ -11,6 +10,9 @@ export const useUserStore = defineStore('user', {
   actions: {
     async fetchUser() {
       if (this.userInfo) return this.userInfo; // 有数据就直接返回，避免重复请求
+      return this.refreshUser();
+    },
+    async refreshUser() {
       this.loading = true;
       this.error = null;
       try {

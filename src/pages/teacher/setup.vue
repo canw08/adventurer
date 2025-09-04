@@ -52,6 +52,8 @@ import { useRouter } from 'vue-router'
 import { useReward } from 'vue-rewards'
 import { useTipBuddy } from '../../composables/useTipBuddy'
 import api from '../../api'
+import { useUserStore } from '../../stores/user'
+
 const { show } = useTipBuddy()
 const router = useRouter()
 
@@ -127,6 +129,9 @@ async function proceed() {
     await api.post('/api/users/update-profile/', {
       avatar: randomStr.value,
     })
+
+    const userStore = useUserStore();
+    await userStore.refreshUser();
 
     // 成功后再跳转
     fading.value = true
