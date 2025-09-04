@@ -137,7 +137,7 @@ export default [
             "avatar": "T4Nh4vKllH5NrXygw5JtXfHzM0ULmTcla9kZlEJQfnIZ3pxD51"
           }
         ],
-        description: '整理图书馆的书籍并清扫地面',
+        description: '整理图书馆的书籍并清扫地面<p>ddd</p><p>ddd</p><p>ddd</p><p>ddd</p><p>ddd</p><p>ddd</p><p>ddd</p><p>ddd</p>',
         task_type: 'solo',
         maximum_users: 1,
         required_level: 'F',

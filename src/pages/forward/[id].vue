@@ -9,7 +9,10 @@
             <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/>
             <path d="M12 7v5.2l3.6 1.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           </svg>
-          <span>{{ formatDate(task.deadline) }}</span>
+          <span class="qdlg-date-inline">
+            <i class="pi pi-clock"></i>
+            {{ formatDate(selectedProject?.date, true) }}
+          </span>
         </div>
       </div>
       <div class="level">Level {{ task.required_level }}</div>
@@ -32,25 +35,29 @@
         <img v-if="task.image" :src="task.image" alt="task image" class="media-img" />
       </section>
 
-      <aside class="right-metrics">
-        <div v-for="m in metricsBound" :key="m.key" class="metric-item">
-          <div class="metric-row">
-            <img :src="m.icon" alt="" class="metric-icon pixelated click-wiggle" />
-            <!-- ✅ PrimeVue ProgressBar -->
-            <ProgressBar
-              :value="m.pct"
-              :showValue="false"
-              class="metric-bar"
-              :style="{ '--bar-color': m.color }"
-            />
-            <!-- ✅ 数值（右侧悬浮） -->
-            <span class="metric-text">
-              {{ m.raw }}{{ m.unit }}
-            </span>
+            <!-- 右栏指标区域（包含 ProgressBar） -->
+      <div class="qdlg-metrics">
+        <div v-for="m in metricsBound" :key="m.key" class="qdlg-metric-item">
+          <div class="qdlg-metric-row">
+            <img :src="m.icon" alt="" class="qdlg-metric-icon qdlg-pixelated click-wiggle" />
+            <div class="qdlg-metric-bar-wrapper" style="position:relative;">
+              <ProgressBar
+                :value="m.pct"
+                :showValue="false"
+                class="qdlg-metric-bar"
+                :style="{ height: '28px', '--bar-color': m.color }"
+              />
+              <span
+                class="qdlg-metric-text"
+                style="position:absolute;top:50%;left:93%;transform:translate(-50%,-50%);font-size:16px;font-weight:600;color:#2A2C55;pointer-events:none;"
+              >
+                {{ m.raw }}{{ m.unit }}
+              </span>
+            </div>
           </div>
-          <div class="metric-label">{{ m.label }}</div>
+          <div class="qdlg-metric-label">{{ m.label }}</div>
         </div>
-      </aside>
+      </div>
 
     </section>
 
@@ -114,7 +121,22 @@ import axios from 'axios';
 import DOMPurify from 'dompurify'
 import ProgressBar from 'primevue/progressbar'              // ✅ 用 PrimeVue 的进度条
 import { levelRanges } from '../../components/levelRange.js' // ✅ 等级上下限
-
+import { formatDate } from '@/utils/date'  // 确保导出的名字一致
+// ==== 依赖的导入 ====
+// 简单的日期格式化（台湾时区），支持 Date 或字符串
+const formatDate = (input: string | number | Date | null | undefined, withTime = false) => {
+  if (input == null || input === '') return ''
+  const d = input instanceof Date ? input : new Date(input as any)
+  if (isNaN(d.getTime())) return ''
+  const opts: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    timeZone: 'Asia/Taipei',
+    ...(withTime ? { hour: '2-digit', minute: '2-digit' } : {})
+  }
+  return new Intl.DateTimeFormat('zh-TW', opts).format(d)
+}
 const api = axios.create({});
 
 const route = useRoute()
@@ -153,7 +175,43 @@ const mapTaskToMetrics = (t: any) => ({
   coin: Number(t?.token_reward ?? 0),
   hour: Number(t?.volunteerTime_reward ?? 0),
 })
-const toNumber = (v: any) => {
+// 需在父级存在：当前被查看的任务
+const selectedProject = ref(null)
+
+// ==== 图标与颜色（每根进度条的配置） ====
+const ICON_EXP  = new URL('../../assets/icon/exp.png', import.meta.url).href
+const ICON_COIN = new URL('../../assets/icon/token.png', import.meta.url).href
+const ICON_TIME = new URL('../../assets/icon/time.png', import.meta.url).href
+
+const METRIC_DEFS = [
+  { key: 'exp',  label: 'EXP',  unit: '',  icon: ICON_EXP,  color: '#11AF9B' },
+  { key: 'coin', label: 'Coin', unit: '',  icon: ICON_COIN, color: '#FBE838' },
+  { key: 'hour', label: 'Hours', unit: 'h', icon: ICON_TIME, color: '#4ACDF2' },
+]
+
+const fetchTask = async (id: string | number) => {
+  try {
+    const resp = await api.get(`/api/tasks/${id}/`)
+    task.value = resp.data
+
+    // 关键：把接口字段映射成进度条期望的键名
+    selectedProject.value = {
+      ...mapTaskToMetrics(resp.data),       // 提供 exp/coin/hour
+      level: resp.data?.required_level || '', // 供范围计算
+      date:  resp.data?.deadline || ''        // 若别处还在用
+    }
+  } catch (e) {
+    console.error('加载任务失败', e)
+  }
+}
+onMounted(() => {
+  fetchTask(route.params.id as string)
+})
+watch(() => route.params.id, (newId) => {
+  if (newId) fetchTask(newId as string)
+})
+// ==== 工具函数 ====
+const toNumber = (v) => {
   if (typeof v === 'number') return v
   if (typeof v === 'string') {
     const m = v.match(/[\d.]+/)
@@ -161,56 +219,34 @@ const toNumber = (v: any) => {
   }
   return 0
 }
+const getBoundsByLevel = (level) => levelRanges?.[level] || { exp:[0,100], coin:[0,100], hours:[0,24] }
 
-// 取对应等级的范围；未命中给兜底
-const getBoundsByLevel = (level: string) => levelRanges?.[level] || { exp:[0,100], coin:[0,100], hours:[0,24] }
-const selectedBounds = computed(() => getBoundsByLevel(task.value?.required_level))
+// ==== 根据任务等级计算每个指标的范围 ====
+const selectedBounds = computed(() => {
+  const lvl = selectedProject.value?.level
+  return getBoundsByLevel(lvl)
+})
 
-// UI 定义
-const METRIC_DEFS = [
-  { key: 'exp',  label: 'EXP',  unit: '',  icon: new URL('../../assets/icon/exp.png',   import.meta.url).href, color: '#11AF9B' },
-  { key: 'coin', label: 'Coin', unit: '',  icon: new URL('../../assets/icon/token.png', import.meta.url).href, color: '#FBE838' },
-  { key: 'hour', label: 'Hour', unit: 'h', icon: new URL('../../assets/icon/time.png',  import.meta.url).href, color: '#4ACDF2' },
-]
-
-// 百分比 = (raw - min) / (max - min)，并把 raw clamp 到范围内
+// ==== 核心：给 ProgressBar 的显示数据（百分比 pct、原始值 raw、颜色 color 等） ====
 const metricsBound = computed(() => {
-  if (!task.value) return []
-  const metricVals = mapTaskToMetrics(task.value)
-  const b = selectedBounds.value
+  const p = selectedProject.value || {}
+  const b = selectedBounds.value || {}
 
   return METRIC_DEFS.map(def => {
-    const raw = toNumber(metricVals[def.key as 'exp'|'coin'|'hour'] ?? 0)
-    const ranges = def.key === 'hour' ? b.hours : (b as any)[def.key]
+    const raw = toNumber(p?.[def.key] ?? 0)
+
+    // 注意：范围对象里是 'hours'（复数），而数据键是 'hour'（单数）
+    const ranges = def.key === 'hour' ? b?.hours : b?.[def.key]
     const [min, max] = Array.isArray(ranges) && ranges.length === 2 ? ranges : [0, 0]
+
+    // 计算进度百分比
     const clamped = max > min ? Math.min(Math.max(raw, min), max) : raw
-    const pct = max > min ? Math.round(((clamped - min) / (max - min)) * 100) : (raw > 0 ? 100 : 0)
+    const pct = max > min ? Math.round(((clamped - min) / (max - min)) * 100)
+                          : (raw > 0 ? 100 : 0)
+
     return { ...def, raw, pct }
   })
 })
-
-/** ========== 获取任务详情 ========== */
-const fetchTask = async (id: string | number) => {
-  try {
-    const resp = await api.get(`/api/tasks/${id}/`) // 保持和你的 mock/后端一致（末尾 /）
-    task.value = resp.data
-  } catch (e) {
-    console.error('加载任务失败', e)
-  }
-}
-
-onMounted(() => {
-  fetchTask(route.params.id as string)
-})
-watch(() => route.params.id, (newId) => {
-  if (newId) fetchTask(newId as string)
-})
-
-/** ========== 工具函数 ========== */
-const formatDate = (iso: string) => {
-  if (!iso) return ''
-  return new Date(iso).toLocaleString()
-}
 </script>
 
 <style scoped>
@@ -235,7 +271,7 @@ const formatDate = (iso: string) => {
 .top{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
 .title{ margin:0 0 10px 0; color:var(--ink); font-size:32px; font-weight:800; letter-spacing:.2px; }
 .date{ display:flex; align-items:center; gap:10px; color:#9aa0af; font-weight:800; font-size:18px; }
-.clock{ width:24px; height:24px; color:#b9beca; }
+.clock{ width:24px; height:24px; color:#2A2C55; }
 .level{ align-self:flex-start; font-size:36px; font-weight:900; color:#6DEAFF; }
 
 .author{ display:grid; grid-template-columns:64px 1fr; gap:14px 16px; margin-top:28px; }
@@ -258,12 +294,48 @@ const formatDate = (iso: string) => {
 }
 
 .content-row { display:flex; flex-direction:column; gap:28px; margin:24px 0 16px; }
-.right-metrics { position: static; align-self: flex-start; display: flex; flex-direction: column; gap: 12px; margin-top: 12px; margin-left: 5%; }
-.metric-item { display: flex; flex-direction: column; gap: 4px; }
-.metric-row { display: flex; align-items: center; gap: 6px; position:relative; }
-.metric-icon { width: 45px; height: 45px; flex-shrink: 0; margin-right: -18px; z-index: 2; }
-.metric-label { font-size: 13px; font-weight: 600; margin-left: 10px; color: #5a6275; }
-.metric-text { font-size: 12px; font-weight: 600; color:#000000; }
+/* 右栏容器与条目布局 */
+.qdlg-metrics { display: flex; flex-direction: column; gap: var(--metric-gap); width: clamp(220px, 80%, 320px); margin: 0; align-items: flex-start; margin-left: 5%;}
+.qdlg-metric-item { display: flex; flex-direction: column; gap: 4px; }
+.qdlg-metric-row { display: flex; align-items: center; width: 100%; position: relative; }
+
+/* 左侧图标（可选，若你只要进度条可忽略） */
+.qdlg-metric-icon {
+  width: clamp(28px, 4vw, 45px); height: clamp(28px, 4vw, 45px);
+  margin-right: max(-12px, -2vw); flex-shrink: 0; z-index: 3; position: relative;
+}
+.qdlg-pixelated {
+  image-rendering: pixelated; image-rendering: crisp-edges; image-rendering: -moz-crisp-edges;
+  -ms-interpolation-mode: nearest-neighbor;
+}
+
+/* ProgressBar 外层容器 */
+.qdlg-metric-bar { flex: 1; width: 100%; min-width: 180px; }
+
+/* PrimeVue ProgressBar 的外观重置 */
+.qdlg-metric-bar :deep(.p-progressbar) {
+  display: block;
+  width: 100%;
+  height: clamp(18px, 2.5vw, 28px);
+  border-radius: 999px;
+  background: #eef2fb;      /* 背景槽颜色 */
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+/* 使用 CSS 变量控制进度颜色（由内联 style 的 --bar-color 传入） */
+.qdlg-metric-bar :deep(.p-progressbar-value) {
+  background-color: var(--bar-color, #3b82f6);
+}
+
+/* 若展示数值文本在条内（这里我们关掉 showValue，所以仅作保底） */
+.qdlg-metric-bar :deep(.p-progressbar .p-progressbar-content) {
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* 覆盖条右端显示的原始值文本（非 PrimeVue 自带，是额外的 span） */
+.qdlg-metric-text { font-size: 12px; font-weight: 600; color: #fff; }
 
 .bottom{ margin-top:auto; display:flex; align-items:center; justify-content:space-between; padding-top:22px; }
 .accept{ background:var(--btn); color:#fff; border:none; padding:12px 58px; font-weight:900; border-radius:500px; font-size:18px; cursor:pointer; background-color: #2A2C55;}
