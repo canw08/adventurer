@@ -65,6 +65,11 @@ meta:
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { setLocale } from '../../i18n/index.js'   // 👈 引入你写的 setLocale 方法
+import { useRouter } from 'vue-router'
+import { useUserStore } from '../../stores/user'
+
+const userStore = useUserStore();
+const router = useRouter();
 
 const { locale, t } = useI18n()
 
@@ -87,6 +92,8 @@ const ackNames = [
 
 const onSignOut = () => {
   // TODO: 接入你的登出逻辑
+  userStore.clearUser()
+  router.push('/');
   console.log('Sign out clicked')
 }
 </script>
