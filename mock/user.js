@@ -17,7 +17,7 @@ export default [
         current_level_xp: 500,
         tokens: 623,
         volunteerTime: 2.5,
-        level: 'D',
+        level: 'S',
         title: null,
         role: 'student',
       });

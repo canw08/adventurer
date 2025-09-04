@@ -32,8 +32,17 @@
         </transition>
       </div>
 
-      <h2 class="user-name">{{ userStore.userInfo.nickname || userStore.userInfo.username }}</h2>
-      
+      <h2 class="user-name">
+        <span class="name-text">{{ userStore.userInfo.nickname || userStore.userInfo.username }}</span>
+        <img
+          v-if="levelIcon"
+          :src="levelIcon"
+          :alt="`Level ${levelLetter}`"
+          :title="`Level ${levelLetter}`"
+          class="level-badge"
+        />
+      </h2>
+
       <p class="user-id" @click="copyId">
         ID {{ userStore.userInfo.identifier }}
       </p>
@@ -156,6 +165,23 @@ const goToLog = () => router.push('/student/home');
 const goToBoard = () => router.push('/student/task');
 const goToTeam = () => router.push('/student/settings');
 const isActive = (path) => route.path === path;
+
+// 等级字母（来自 userStore）——没有就用 'D' 兜底
+const levelLetter = computed(() => {
+  const raw = userStore?.userInfo?.level ?? 'D'
+  // 规范化为单大写字母（如果后面有 S/A/B 等扩展也兼容）
+  return String(raw).trim().toUpperCase().slice(0, 1)
+})
+
+// 根据等级字母拼出 svg 路径；资源不存在时返回 null（避免 404 报错）
+const levelIcon = computed(() => {
+  try {
+    return new URL(`../assets/icon/levels/${levelLetter.value}.svg`, import.meta.url).href
+  } catch {
+    return null
+  }
+})
+
 
 onMounted(async () => {
   try {
@@ -448,6 +474,28 @@ const copyId = async () => {
 .stat-icon-time,
 .stat-icon-time + .stat-text {
   transform: translateY(-17px);
+}
+
+
+.user-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;              /* 名称与徽章的间距 */
+  line-height: 1.1;      /* 稍紧凑一点的行高以防抖动 */
+}
+
+.name-text {
+  display: inline-block;
+}
+
+.level-badge {
+  height: 1em;           /* 核心：与当前字体等高 */
+  width: auto;
+  vertical-align: -0.125em; /* 轻微下沉，视觉与字形中线对齐 */
+  /* SVG 默认是矢量，保持平滑即可，不需要像素化 */
+  /* 若想在 hover 时给点反馈，可解注释下两行 */
+  /* transition: transform .2s ease; */
+  /* .user-name:hover .level-badge { transform: scale(1.05); } */
 }
 
 </style>
