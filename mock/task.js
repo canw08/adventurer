@@ -126,7 +126,6 @@ export default [
       return {
         id: 3,
         publisher: 'silverteacher',
-        accepted_by: ['扣2科比复活失败'],
         invited_users: [],
         leader: '扣2科比复活失败',
         title: '打扫图书馆',
@@ -135,6 +134,21 @@ export default [
             "id": 1,
             "nickname": "扣1复活科比",
             "avatar": "T4Nh4vKllH5NrXygw5JtXfHzM0ULmTcla9kZlEJQfnIZ3pxD51"
+          },
+                    {
+            "id": 1,
+            "nickname": "扣1复活科比",
+            "avatar": "T4Nh4vKllH5NXygw5JtXfHzM0ULmTcla9kZlEJQfnIZ3pxD51"
+          },
+          {
+            "id": 1,
+            "nickname": "扣1复活科比",
+            "avatar": "T4Nh4vlH5NrXygw5JtXfHzM0ULmTcla9kZlEJQfnIZ3pxD51"
+          },
+          {
+            "id": 1,
+            "nickname": "扣1复活科比",
+            "avatar": "T4Nh4vlH5NrXygw5JtXfHzM0ULmTcla9kZlEJQfnIZ3pxD51"
           }
         ],
         description: '整理图书馆的书籍并清扫地面<p>ddd</p><p>ddd</p><p>ddd</p><p>ddd</p><p>ddd</p><p>ddd</p><p>ddd</p><p>ddd</p>',

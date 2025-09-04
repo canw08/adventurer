@@ -23,7 +23,14 @@ async function bootstrap() {
   const app = createApp(App)
 
   app.use(ToastService)
-  app.use(PrimeVue, { theme: { preset: Aura } })
+  app.use(PrimeVue, {
+    theme: {
+      preset: Aura,       // Aura 主题
+      options: {
+        darkModeSelector: false // ⬅️ 关闭暗色模式支持，强制亮色
+      }
+    }
+  })
   app.use(ConfirmationService)
   app.use(router)
 

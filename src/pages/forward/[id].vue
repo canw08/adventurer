@@ -65,45 +65,18 @@
     <footer class="bottom">
       <button class="accept">Accept</button>
 
-      <!-- 头像叠加：点击可查看详情 -->
-      <div
-        v-if="task.accepted_by?.length"
-        class="assignees"
-        role="button"
-        :aria-label="`assignees ${task.accepted_by.length}`"
-        @click="showAssignees = true"
-        title="查看参与者"
-      >
-        <!-- 只渲染前三个：第 2 个覆盖在第 1 个上；第 3 个不再叠 -->
-        <img
-          v-for="(u, idx) in visibleAssignees"
-          :key="u.id"
-          class="assignee avtr"
-          :class="idx === 1 ? 'overlap' : ''"
-          :src="avatarUrl(u)"
-          alt="assignee avatar"
-        />
-        <!-- 超过 3 个时显示 +N，不再继续叠 -->
-        <span v-if="task.accepted_by.length > 3" class="more-pill">
-          +{{ task.accepted_by.length - 3 }}
-        </span>
-      </div>
-
-      <!-- 详情弹窗 -->
-      <Dialog v-model:visible="showAssignees" modal header="Assigned">
-        <ul class="assignees-list">
-          <li v-for="u in task.accepted_by" :key="u.id" class="assignee-row">
-            <img :src="avatarUrl(u)" class="avtr sm" alt="" />
-            <div class="assignee-info">
-              <div class="assignee-name">{{ u.nickname }}</div>
-              <div class="assignee-id">ID: {{ u.id }}</div>
-            </div>
-          </li>
-        </ul>
-      </Dialog>
+      <AssigneesStack
+        v-if="task?.accepted_by?.length"
+        :users="task.accepted_by"
+        :max-visible="3"
+        :size="44"
+        :dialog-title="'Assigned'"
+        :dialog-width="'420px'"
+        :avatar-url-fn="avatarUrl"
+        @open="showAssignees = true"
+        @close="showAssignees = false"
+      />
     </footer>
-
-
   </div>
   <div v-else class="loading">Loading...</div>
 </template>
@@ -122,6 +95,7 @@ import DOMPurify from 'dompurify'
 import ProgressBar from 'primevue/progressbar'              // ✅ 用 PrimeVue 的进度条
 import { levelRanges } from '../../components/levelRange.js' // ✅ 等级上下限
 import { formatDate } from '@/utils/date'  // 确保导出的名字一致
+import AssigneesStack from '../../components/AssigneesStack.vue'
 // ==== 依赖的导入 ====
 // 简单的日期格式化（台湾时区），支持 Date 或字符串
 const formatDate = (input: string | number | Date | null | undefined, withTime = false) => {
