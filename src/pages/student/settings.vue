@@ -48,7 +48,7 @@
 
       <!-- 左下角署名 -->
       <div class="footer-note">
-        王灿，张皓阳，周心阳，鲍语瞳，代若辰 with love
+        王灿，张皓阳，周心阳，鲍语暄，代若辰 with love
       </div>
     </div>
   </div>
