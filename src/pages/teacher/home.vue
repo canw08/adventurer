@@ -684,7 +684,6 @@ const onFormSubmit = async (e) => {
       }
     }
     showDialog.value = false
-    resetPublishForm()   // ✅ 新增：提交成功后清空
 
     const levelLetter = selectedLevel.value?.split(' ').pop() || ''
     const payload = {
@@ -706,6 +705,8 @@ const onFormSubmit = async (e) => {
     // 刷新任务列表
     const res = await api.get('/api/tasks/my-tasks/')
     allProjects.value = res.data.map(mapTaskToProject)
+    
+    resetPublishForm()   // ✅ 新增：提交成功后清空
   } catch (err) {
     console.error('提交任务失败:', err)
   }
