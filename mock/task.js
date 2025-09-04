@@ -120,7 +120,7 @@ export default [
     },
   },
   {
-    url: /\/api\/tasks\/\d+$/,
+    url: '/api/tasks/3/',
     method: 'get',
     response: () => {
       return {
