@@ -286,20 +286,24 @@
         </div>
       </div>
 
-      <!-- 右下角 Assigned（显示用） -->
-      <div class="qdlg-assigned qdlg-assigned-stack">
-        <span class="qdlg-assigned-label">Assigned</span>
+        <!-- 右下角 Assigned（显示用） -->
+        <div
+          v-if="selectedProject?.accepted_by && selectedProject.accepted_by.length > 0"
+          class="qdlg-assigned qdlg-assigned-stack"
+        >
+          <span class="qdlg-assigned-label">Assigned</span>
 
-        <AssigneesStack
-          :users="selectedProject?.accepted_by || []"
-          :max-visible="3"
-          :size="44"
-          :overlap-offset="18"
-          :avatar-url-fn="avatarUrl"
-          :dialog-title="'Assigned'"
-          :dialog-width="'420px'"
-        />
-      </div>
+          <AssigneesStack
+            :users="selectedProject.accepted_by"
+            :max-visible="3"
+            :size="44"
+            :overlap-offset="18"
+            :avatar-url-fn="avatarUrl"
+            :dialog-title="'Assigned'"
+            :dialog-width="'420px'"
+          />
+        </div>
+
 
               <!-- 左下角按钮 -->
         <div class="qdlg-footer-left">
