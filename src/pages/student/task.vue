@@ -194,6 +194,7 @@
       </div>
 
       <!-- 接任务按钮（固定右下角） -->
+      <!-- 未接取：显示 Accept 按钮 -->
       <div 
         v-if="selectedProject?.status !== 'assigned'" 
         class="absolute-accept-button"
@@ -204,6 +205,24 @@
           @click="applyForTask(selectedProject?.id)" 
         />
       </div>
+
+      <!-- 已接取：显示接取者头像叠加 -->
+      <div 
+        v-else 
+        class="absolute-accept-button assigned-stack"
+      >
+        <span class="assigned-label">Assigned</span>
+        <AssigneesStack
+          :users="selectedProject?.accepted_by || []"
+          :max-visible="3"
+          :size="44"
+          :overlap-offset="18"
+          :avatar-url-fn="avatarUrl"
+          :dialog-title="'Assigned'"
+          :dialog-width="'420px'"
+        />
+      </div>
+
     </Dialog>
 
     <!-- ✅ 筛选弹窗 -->
@@ -286,6 +305,7 @@ import solo2 from '../../assets/solo2.png'
 import DOMPurify from 'dompurify'
 
 import { useToast } from 'primevue/usetoast'
+import AssigneesStack from '../../components/AssigneesStack.vue'
 
 const toast = useToast()
 /* -------------------- 问候语 -------------------- */
@@ -339,7 +359,13 @@ function mapTaskToProject(task) {
     avatar: `https://api.dicebear.com/9.x/adventurer/svg?skinColor=ecad80,f2d3b1&seed=${task.publisher_avatar}` || `https://api.dicebear.com/9.x/adventurer/svg?seed=none`,
     author: task.publisher_nickname || 'Anonymous',
     description: task.description || '',
-    mandator: task.publisher_nickname || 'Anonymous',
+    accepted_by: Array.isArray(task.accepted_by)
+      ? task.accepted_by.map(u => ({
+          id: u.id,
+          nickname: u.nickname || u.name || 'User',
+          avatar: u.avatar
+        }))
+      : []
   }
 }
 
@@ -359,6 +385,10 @@ const levelOptions = [
 ];
 const selectedLevels = ref([]);
 const tempLevels = ref([]);
+
+const avatarUrl = (u) =>
+  `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(u?.avatar || u?.nickname || u?.name || 'user')}&skinColor=ecad80,f2d3b1`
+
 
 /* -------------------- 过滤（当前页内） -------------------- */
 const filteredProjects = computed(() => {
@@ -543,7 +573,8 @@ const applyForTask = async (taskId) => {
 
     // 接受任务后，按当前 tab + 当前页重新拉取
     const wantAssigned = activeTab.value === 'assigned'
-    await fetchPage(currentPage.value + 1, wantAssigned)
+    currentPage = 0
+    await fetchPage(currentPage + 1, wantAssigned)
 
     toast.add({
       severity: 'success',
@@ -1352,5 +1383,15 @@ function getLevelStyle(level) {
   margin: 8px 0;      /* 给点间距 */
   border-radius: 6px; /* 看起来更美观，可选 */
 }
+.absolute-accept-button.assigned-stack {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* “Assigned” 与头像叠加之间的距离 */
+}
 
+.assigned-label {
+  font-size: 18px;
+  color: #b8b8b8;        /* 灰色 */
+  font-weight: 600;
+}
 </style>

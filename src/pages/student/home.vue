@@ -179,16 +179,21 @@
     </div>
 
     <!-- 右下角 Mandator -->
+    <!-- 右下角 Mandator -->
     <div class="assigned-box">
-      <div class="right-level-spacer" aria-hidden="true"></div>
       <span class="assigned-label">Assigned</span>
-      <span class="assigned-name">{{ selectedProject?.mandator || '' }}</span>
-      <Avatar
-        :image="selectedProject?.avatar || 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png'"
-        shape="circle"
-        style="width: 48px; height: 48px"
+
+      <AssigneesStack
+        :users="selectedProject?.accepted_by || []"
+        :max-visible="3"
+        :size="44"
+        :overlap-offset="18"
+        :avatar-url-fn="avatarUrl"
+        :dialog-title="'Assigned'"
+        :dialog-width="'420px'"
       />
     </div>
+
     <!-- ② 内容包裹层：先关 ↑ 这一行必须在 OverlayPanel 之前 -->
 
     <!-- ③ OverlayPanel 放在 Dialog 内、content-wrapper 外 -->
@@ -268,6 +273,8 @@ import solo1 from '../../assets/solo.png'
 import solo2 from '../../assets/solo2.png'
 import { useToast } from 'primevue/usetoast'
 
+import AssigneesStack from '../../components/AssigneesStack.vue'
+
 const toast = useToast()
 const router = useRouter()
 const { t } = useI18n()
@@ -297,7 +304,11 @@ function mapTaskToProject(task) {
     avatar: `https://api.dicebear.com/9.x/adventurer/svg?skinColor=ecad80,f2d3b1&seed=${task.publisher_avatar}` || `https://api.dicebear.com/9.x/adventurer/svg?seed=none`,
     author: task.publisher_nickname,
     description: task.description,
-    mandator: task.publisher_nickname,
+    accepted_by: Array.isArray(task.accepted_by) ? task.accepted_by.map(u => ({
+      id: u.id,
+      nickname: u.nickname,
+      avatar: u.avatar
+    })) : []
   }
 }
 
@@ -513,6 +524,11 @@ const greetingKey = computed(() => `greetings-student.${period.value}`)
 const goToQuestStore = () => {
   router.push('/student/task')
 }
+
+// 透明底头像（SVG）
+const avatarUrl = (u) =>
+  `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(u?.avatar || u?.nickname || u?.name || 'user')}&skinColor=ecad80,f2d3b1`
+
 // 等级颜色映射
 const levelColors = {
   S: '#C4A010',

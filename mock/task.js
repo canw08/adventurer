@@ -26,6 +26,13 @@ export default [
         {
           id: 4,
           title: '打扫图书馆',
+          accepted_by: [
+            {
+              "id": 1,
+              "nickname": "扣1复活科比",
+              "avatar": "T4Nh4vKllH5NrXygw5JtXfHzM0ULmTcla9kZlEJQfnIZ3pxD51"
+            },
+          ],
           description: '整理图书馆的书籍并清扫地面',
           task_type: 'solo',
           deadline: '2025-08-20 18:00',
@@ -51,6 +58,13 @@ export default [
         {
           id: 14,
           title: '打扫图书馆',
+          accepted_by: [
+            {
+              "id": 1,
+              "nickname": "扣1复活科比",
+              "avatar": "T4Nh4vKllH5NrXygw5JtXfHzM0ULmTcla9kZlEJQfnIZ3pxD51"
+            },
+          ],
           description: '整理图书馆的书籍并清扫地面',
           task_type: 'solo',
           deadline: '2025-08-29 18:00',
@@ -59,7 +73,7 @@ export default [
           volunteerTime_reward: 0.0,
           publisher_nickname: 'silverteacher',
           publisher_avatar: '',
-          is_accepted: false,
+          is_accepted: true,
           required_level: 'F',
         },
         {
