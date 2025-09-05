@@ -287,14 +287,17 @@
       </div>
 
       <!-- 右下角 Assigned（显示用） -->
-      <div class="qdlg-assigned">
-        <div class="qdlg-level-spacer" aria-hidden="true"></div>
+      <div class="qdlg-assigned qdlg-assigned-stack">
         <span class="qdlg-assigned-label">Assigned</span>
-        <span class="qdlg-assigned-name">{{ selectedProject?.mandator || '' }}</span>
-        <Avatar
-          :image="selectedProject?.avatar || 'https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png'"
-          shape="circle"
-          style="width: 48px; height: 48px"
+
+        <AssigneesStack
+          :users="selectedProject?.accepted_by || []"
+          :max-visible="3"
+          :size="44"
+          :overlap-offset="18"
+          :avatar-url-fn="avatarUrl"
+          :dialog-title="'Assigned'"
+          :dialog-width="'420px'"
         />
       </div>
 
@@ -347,6 +350,13 @@ import teamwork from '../../assets/team.png'
 import solo1 from '../../assets/solo.png'
 import solo2 from '../../assets/solo2.png'
 import { useToast } from 'primevue/usetoast'
+
+import AssigneesStack from '../../components/AssigneesStack.vue'
+
+
+const avatarUrl = (u) =>
+  `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(u?.avatar || u?.nickname || u?.name || 'user')}&skinColor=ecad80,f2d3b1`
+
 
 const toast = useToast()
 const loadingApprove = ref(false)
@@ -489,7 +499,13 @@ function mapTaskToProject(task) {
     avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${task.publisher_avatar || 'none'}&skinColor=ecad80,f2d3b1`,
     author: task.publisher_nickname,
     description: task.description,
-    mandator: task.publisher_nickname,
+    accepted_by: Array.isArray(task.accepted_by)
+      ? task.accepted_by.map(u => ({
+          id: u.id,
+          nickname: u.nickname || u.name || 'User',
+          avatar: u.avatar
+        }))
+      : []
   }
 }
 
