@@ -160,7 +160,7 @@ function normalizeLevel(lvl?: string): string {
 
 function pickStep(min:number, max:number) {
   const span = max - min
-  if (span <= 5) return 0.5
+  if (span <= 25) return 0.5
   if (span <= 50) return 1
   if (span <= 200) return 5
   if (span <= 1000) return 10

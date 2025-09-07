@@ -54,8 +54,7 @@
               <h3 class="task-title">{{ project.title }}</h3>
 
               <div class="task-time">
-                <i class="pi pi-clock"></i>
-                <label>DDL:</label>
+                <label>DDL</label>
                 <span>{{ project.date }}</span>
               </div>
 
