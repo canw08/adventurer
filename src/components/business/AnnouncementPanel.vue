@@ -106,6 +106,8 @@ import { showOnce } from '../../composables/tip-once.js'
 const DialogSystem = defineAsyncComponent(() => import('./dialogs/AnnouncementDialogSystem.vue'))
 const DialogInvite   = defineAsyncComponent(() => import('./dialogs/AnnouncementDialogInvite.vue'))
 const DialogApprove   = defineAsyncComponent(() => import('./dialogs/AnnouncementDialogApprove.vue'))
+const DialogCancel = defineAsyncComponent(() => import('./dialogs/AnnouncementDialogCancel.vue'))
+
 // const DialogPR     = defineAsyncComponent(() => import('./dialogs/AnnouncementDialogPR.vue'))
 // …根据需要继续扩展
 
@@ -113,7 +115,8 @@ const DialogApprove   = defineAsyncComponent(() => import('./dialogs/Announcemen
 const dialogRegistry = {
   system: DialogSystem,
   invite:   DialogInvite,
-  completion_request : DialogApprove
+  completion_request : DialogApprove,
+  cancel_request: DialogCancel,
   // pr:     DialogPR,
   // unknown 或未注册类型都回退到 system
 }
@@ -180,14 +183,6 @@ function toggle(e){
   op.value?.toggle(e)
 }
 
-// 打开某一条公告对应的弹窗
-function open(a){
-  current.value = a
-  visible.value = true
-  op.value?.hide()
-  if (!a.read) store.markRead(a.id)
-}
-
 // 日期格式化（与你原来的保持一致）
 function fmt(iso){
   return new Intl.DateTimeFormat('zh-CN', {
@@ -210,7 +205,7 @@ function dicebear(name, seed) {
   }
 
   // 其他情况用 adventurer
-  return `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(seed)}`
+  return `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(seed)}&skinColor=ecad80,f2d3b1`
 }
 
 
@@ -224,19 +219,41 @@ const buttonLabel = computed(() => {
   return '✔'
 })
 
+function open(a){
+  // 如果是 system，始终允许打开
+  if (a.typeKey === 'system') {
+    current.value = a
+    visible.value = true
+    op.value?.hide()
+    if (!a.read) {
+      store.markRead(a.id)
+    }
+    return
+  }
+
+  // 非 system，只能打开未读的
+  if (!a.read) {
+    current.value = a
+    visible.value = true
+    op.value?.hide()
+  }
+}
+
+
 function handleClearClick() {
   if (!expanded.value) {
     // 第一次点击：进入展开态
     expanded.value = true
     done.value = false
   } else if (!done.value) {
-    // 第二次点击：执行全部标记为已读，进入完成态
-    for (const a of store.ordered) {
-      if (!a.read) store.markRead(a.id)
-    }
-    done.value = true
+    // 第二次点击：仅把 system 未读批量标记为已读
+    store.markAllSystemRead()
+      .finally(() => {
+        done.value = true
+      })
   }
 }
+
 
 // 面板收起时还原浮动按钮状态
 function resetClearButton() {

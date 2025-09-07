@@ -43,10 +43,10 @@
     >
       <template #header>
       <div class="dialog-header-custom">
-        <h2 class="dialog-header-title">Release a task</h2>
+        <h2 class="dialog-header-title">{{ $t('teacherHome.releaaseTask') }}</h2>
         <i 
           class="pi pi-question-circle help-icon"
-          v-tooltip.top="'F级：志愿者搬两箱水 // E级：期中颁奖小哥 // 这两个任务的本质区别是时长以及需要完成的任务的难度。各位老师请根据自己想要发布的任务来自由的判断任务难度，并添加合适的任务奖励。'"
+          v-tooltip.top="$t('teacherHome.helpText')"
         ></i>
       </div>
     </template>
@@ -54,7 +54,7 @@
     <div class="gapping">
       <!-- Choose level -->
         <div class="p-field">
-          <label class="choose-size-label">Choose level</label>
+          <label class="choose-size-label">{{ $t('teacherHome.chooseLevel') }}</label>
           <div class="level-options">
             <div v-for="level in levels" :key="level" class="level-item">
               <RadioButton 
@@ -85,7 +85,7 @@
       <div class="gapping">
         <!-- 任务日期 -->
         <div class="p-field field-stack">
-          <label class="choose-size-label">Task Details</label>
+          <label class="choose-size-label">{{ $t('teacherHome.taskDetails') }}</label>
           <!-- 让输入框占满一行或指定宽度都可以 -->
           <div class="pos">
            <span class="p-float-label">
@@ -94,7 +94,7 @@
               v-model="taskDate"
               inputId="taskDateInput"
               dateFormat="mm/dd/yy"
-              placeholder="MM/DD/YYYY"
+              :placeholder="$t('teacherHome.datePlaceholder')"
               showIcon
               class="task-date-input"
               :minDate="todayStart"
@@ -108,7 +108,7 @@
       <div class="gapping">
         <!-- 新增：任务大标题 -->
         <div class="p-field pos">
-          <InputText id="bigTitle" v-model="bigTitle" placeholder="Enter main title" style="width: 100%;" />
+          <InputText id="bigTitle" v-model="bigTitle" :placeholder="$t('teacherHome.bigTitle')" style="width: 100%;" />
         </div>
       </div>
 
@@ -137,7 +137,7 @@
             class="submitPosition"
             type="submit"
             severity="secondary"
-            label="Submit"
+            :label="$t('teacherHome.submit')"
             :disabled="!isFormValid"
           />
         </Form>
@@ -172,7 +172,9 @@
                 />
                 <span class="avatar-name">{{ project.author }}</span>
               </div>
-              <span class="task-level">{{ $t('common.level') }} {{ project.level }}</span>
+              <span class="task-level" :style="getLevelStyle(project.level)">
+                Level {{ project.level }}
+              </span>
             </div>
           </div>
         </template>
@@ -188,7 +190,7 @@
         >
           <div class="add-card-content">
             <i class="pi pi-plus large-plus" aria-hidden="true"></i>
-            <div class="add-text">{{ $t('questLog.publishQuest') || '发布任务' }}</div>
+            <div class="add-text">{{ $t('questLog.publishQuest') }}</div>
           </div>
         </div>
       </div>
@@ -213,6 +215,7 @@
               icon="pi pi-arrow-left"
               text
               class="qdlg-back-btn"
+              :aria-label="$t('common.back')"
               @click="showProjectDialog = false"
             />
           </div>
@@ -228,12 +231,12 @@
           <Button
             icon="pi pi-pencil"
             class="qdlg-edit-task-btn p-button-rounded p-button-text"
-            v-tooltip.top="'编辑任务详情'"
+            v-tooltip.top="$t('teacherHome.editTask')"
             severity="secondary"
             @click="editThisTask"
           />
           <!-- 右上角 Level 只显示 -->
-          <div class="qdlg-level-chip">
+          <div class="floating-dialog-level" :style="getLevelStyle(selectedProject?.level)">
             Level {{ selectedProject?.level || '' }}
           </div>
         </div>
@@ -258,7 +261,7 @@
 
         <div class="qdlg-right">
           <div class="qdlg-level-spacer" aria-hidden="true">
-            Level {{ selectedProject?.level || '' }}
+            {{ $t('common.level') }} {{ selectedProject?.level || '' }}
           </div>
 
           <div class="qdlg-metrics">
@@ -308,7 +311,7 @@
               <!-- 左下角按钮 -->
         <div class="qdlg-footer-left">
           <Button 
-            label="Approve" 
+            :label="$t('teacherHome.approve')" 
             icon="pi pi-check" 
             class="approve-btn"
             :loading="loadingApprove"
@@ -318,13 +321,14 @@
           <Button 
             icon="pi pi-share-alt" 
             class="share-btn p-button-rounded p-button-text" 
-            v-tooltip.top="'分享任务'"
+            v-tooltip.top="$t('teacherHome.shareTask')"
             @click="onShare"
           />
         </div>
     </Dialog>
 
 </template>
+
 
 <route lang="yaml">
 meta:
@@ -823,6 +827,50 @@ function onPublishDialogHide() {
     resetPublishForm()
   }
 }
+const levelColors = {
+  S: '#C4A010',
+  A: '#DD4546',
+  B: '#DD7C1B',
+  C: '#E6D624',
+  D: '#8FD833',
+  E: '#2590D2',
+  F: '#911EC7'
+}
+
+
+function getLevelStyle(level) {
+  const stroke = levelColors[level] || '#333333'      // 描边用原始颜色
+  const base = lighten(stroke, 0.3)                   // 字体颜色 = 提亮版
+  return {
+    color: base,
+    fontStyle: 'italic',
+    WebkitTextStrokeWidth: '0.5px',
+    WebkitTextStrokeColor: stroke,
+    textShadow: [
+      `0  1px 0 ${stroke}`,
+      `0 -1px 0 ${stroke}`,
+      `1px 0  0 ${stroke}`,
+      `-1px 0  0 ${stroke}`,
+      `1px  1px 0 ${stroke}`,
+      `-1px 1px 0 ${stroke}`,
+      `1px -1px 0 ${stroke}`,
+      `-1px -1px 0 ${stroke}`
+    ].join(', ')
+  }
+}
+
+function lighten(hex, amount = 0.3) {
+  const nhex = hex.replace('#', '')
+  const bigint = parseInt(nhex, 16)
+  let r = (bigint >> 16) & 255
+  let g = (bigint >> 8) & 255
+  let b = bigint & 255
+  r = Math.min(255, Math.floor(r + (255 - r) * amount))
+  g = Math.min(255, Math.floor(g + (255 - g) * amount))
+  b = Math.min(255, Math.floor(b + (255 - b) * amount))
+  const toHex = (v) => v.toString(16).padStart(2, '0')
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`
+}
 </script>
 
 
@@ -1111,7 +1159,7 @@ function onPublishDialogHide() {
 .task-level {
   color: #0099ff; 
   font-weight: bold;
-  font-size: 16px;
+  font-size: 20px;
   text-align: right;
 }
 .avatar-wrapper {

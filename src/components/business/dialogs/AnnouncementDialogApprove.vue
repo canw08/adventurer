@@ -18,13 +18,11 @@
       <div class="sysdlg__date">{{ fmt(announcement.dateISO) }}</div>
 
       <div class="invite__body">
-
-
         <div class="sysdlg__content">
           {{ announcement.content }}
         </div>
 
-        <!-- 可选信息区：比如邀请对象/链接等（根据你的数据结构可删改） -->
+        <!-- 可选信息区 -->
         <div v-if="announcement?.target" class="invite__meta">
           <span class="invite__meta-key">{{ t('common.target') || '目标' }}：</span>
           <span class="invite__meta-val">{{ announcement.target }}</span>
@@ -41,14 +39,18 @@
     <template #footer>
       <!-- 拒绝：浅色描边按钮 -->
       <Button
-        :label="t('common.decline') || '拒绝'"
+        :label="t('common.notComplete') || '拒绝'"
         class="custom-outline-btn"
+        :loading="loadingDecline"
+        :disabled="loadingAccept || loadingDecline"
         @click="onDecline"
       />
       <!-- 接受：主色按钮 -->
       <Button
-        :label="t('common.accept') || '接受'"
+        :label="t('common.markComplete') || '接受'"
         class="custom-close-btn"
+        :loading="loadingAccept"
+        :disabled="loadingAccept || loadingDecline"
         @click="onAccept"
       />
     </template>
@@ -60,6 +62,9 @@ import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
+import { useToast } from 'primevue/usetoast'
+import api from '../../../api.js'
+import { useAnnouncementStore } from '../../../stores/announcement'
 
 const props = defineProps({
   visible: { type: Boolean, default: undefined },
@@ -77,6 +82,8 @@ const emit = defineEmits([
 ])
 
 const { t } = useI18n()
+const toast = useToast()
+const store = useAnnouncementStore()
 
 // 可见性双向绑定
 const innerVisible = ref(!!(props.visible ?? props.modelValue ?? false))
@@ -116,15 +123,125 @@ function fmt(iso) {
   }
 }
 
-function onAccept() {
-  emit('accept', props.announcement)
-  innerVisible.value = false
+// —— 动作与接口 —— //
+const loadingAccept = ref(false)
+const loadingDecline = ref(false)
+
+/**
+ * 根据实际数据结构取任务 ID：
+ * 你可以按需调整候选键位
+ */
+function getTaskId(a) {
+  return a?.taskid ?? null
 }
 
-function onDecline() {
-  emit('decline', props.announcement)
-  innerVisible.value = false
+async function markReadIfNeeded() {
+  const a = props.announcement
+  if (a && !a.read) {
+    try {
+      await store.markRead(a.id)
+    } catch (e) {
+      // 标记已读失败不阻塞主流程，仅提示
+      console.error('标记已读失败', e)
+      toast.add({
+        severity: 'warn',
+        summary: t('common.warning') || '提示',
+        detail: t('notifications.readFail') || '消息已处理，但标记已读失败',
+        life: 2500
+      })
+    }
+  }
 }
+
+async function onAccept() {
+  const taskId = getTaskId(props.announcement)
+  if (!taskId) {
+    toast.add({
+      severity: 'error',
+      summary: t('common.failed') || '失败',
+      detail: t('errors.missingTaskId') || '缺少任务 ID，无法执行接受操作',
+      life: 3000
+    })
+    return
+  }
+  loadingAccept.value = true
+  try {
+    await api.post(`/api/tasks/${taskId}/complete/`)
+    await markReadIfNeeded()
+    toast.add({
+      severity: 'success',
+      summary: t('common.success') || '成功',
+      detail: t('notifications.accepted') || '已接受完成请求',
+      life: 2000
+    })
+    emit('accept', props.announcement)
+    innerVisible.value = false
+  } catch (e) {
+    console.error(e)
+    toast.add({
+      severity: 'error',
+      summary: t('common.failed') || '失败',
+      detail: e?.response?.data?.detail || e?.message || (t('errors.unknown') || '操作失败，请稍后重试'),
+      life: 3500
+    })
+  } finally {
+    loadingAccept.value = false
+  }
+}
+
+async function onDecline() {
+  console.log(props.announcement);
+  
+  const taskId = getTaskId(props.announcement)
+  if (!taskId) {
+    toast.add({
+      severity: 'error',
+      summary: t('common.failed') || '失败',
+      detail: t('errors.missingTaskId') || '缺少任务 ID，无法执行拒绝操作',
+      life: 3000
+    })
+    return
+  }
+
+  // 从 announcement 中取 requester_id
+  const requesterId = props.announcement?.userid
+  if (!requesterId) {
+    toast.add({
+      severity: 'error',
+      summary: t('common.failed') || '失败',
+      detail: '缺少 requester_id，无法执行拒绝操作',
+      life: 3000
+    })
+    return
+  }
+
+  loadingDecline.value = true
+  try {
+    await api.post(`/api/tasks/${taskId}/reject-complete/`, {
+      requester_id: requesterId
+    })
+    await markReadIfNeeded()
+    toast.add({
+      severity: 'success',
+      summary: t('common.success') || '成功',
+      detail: t('notifications.rejected') || '已拒绝完成请求',
+      life: 2000
+    })
+    emit('decline', props.announcement)
+    innerVisible.value = false
+  } catch (e) {
+    console.error(e)
+    toast.add({
+      severity: 'error',
+      summary: t('common.failed') || '失败',
+      detail: e?.response?.data?.detail || e?.message || (t('errors.unknown') || '操作失败，请稍后重试'),
+      life: 3500
+    })
+  } finally {
+    loadingDecline.value = false
+  }
+}
+
 </script>
 
 <style scoped>

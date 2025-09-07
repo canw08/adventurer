@@ -113,8 +113,8 @@
 
         <!-- 浮动右上角的等级标签（只显示） -->
         <div class="floating-dialog-level" :style="getLevelStyle(selectedProject?.level)">
-  Level {{ selectedProject?.level || '' }}
-</div>
+          Level {{ selectedProject?.level || '' }}
+        </div>
       </div>
     </template>
 
@@ -294,7 +294,7 @@ function mapTaskToProject(task) {
     id: task.id,
     title: task.title,
     date: task.deadline,   
-    status: task.is_accepted ? 'ongoing' : 'completed', 
+    status: task.is_completed ? 'completed' : 'ongoing', 
     // 根据任务类型选择图片
     image: pickTaskImage(task),
     exp: task.experience_reward + ' EXP', // 加 EXP 后缀
@@ -350,9 +350,13 @@ onMounted(async () => {
 })
 
 // ====== 过滤 ======
-const filteredProjects = computed(() =>
-  allProjects.value.filter((p) => p.status === activeTab.value)
-)
+const filteredProjects = computed(() => {
+  if (!activeTab.value) {
+    return allProjects.value
+  }
+
+  return allProjects.value.filter((p) => p.status === activeTab.value)
+})
 const runningProjects = computed(() =>
   allProjects.value.filter((p) => p.status === 'ongoing')
 )

@@ -2,15 +2,26 @@
   "questLog": {
     "title": "Home",
     "runningQuest": "Running Quest",
-    "getQuest" : "Get a quest",
-    "publishQuest" : "Publish a quest",
-    "prompting" : "Prompting",
-    "askleave" : "Ask for leave"
+    "getQuest": "Get a quest",
+    "publishQuest": "Publish a quest",
+    "prompting": "Prompting",
+    "askleave": "Ask for leave"
   },
-  "questBoard": 
-  {
-    "title" : "Board",
-    "filter" : "Filter"
+  "questBoard": {
+    "title": "Board",
+    "filter": "Filter"
+  },
+  "teacherHome": {
+    "releaaseTask": "Release a task",
+    "chooseLevel": "Choose level",
+    "taskDetails": "Task Details",
+    "helpText": "F-level: Volunteer carries two boxes of water // E-level: Awards helper for midterm // The essential difference is duration and task difficulty. Please judge freely and add proper rewards.",
+    "datePlaceholder": "MM/DD/YYYY",
+    "bigTitle": "Enter main title",
+    "submit": "Submit",
+    "editTask": "Edit task details",
+    "approve": "Approve",
+    "shareTask": "Share task"
   },
   "greetings-student": {
     "night": "Burning the midnight oil, adventurer?",
@@ -31,37 +42,57 @@
   "common": {
     "na": "N/A",
     "level": "Level",
-    "close" : "Close",
+    "close": "Close",
     "decline": "Decline",
-    "accept" : "Accept"
+    "accept": "Accept",
+    "markComplete": "Mark as Completed",
+    "notComplete": "Not Completed",
+    "warning": "Warning",
+    "success": "Success",
+    "failed": "Failed",
+    "target": "Target",
+    "reason": "Reason",
+    "applicant": "Applicant"
   },
   "notifications": {
     "systemName": "system",
-    "type": { "system": "System Notification", "invite": "Invitation Notification", "completion_request" : "Completion request", "unknown": "Notification" },
+    "type": {
+      "system": "System Notification",
+      "invite": "Invitation Notification",
+      "completion_request": "Completion request",
+      "unknown": "Notification",
+      "cancel_request": "Cancellation request"
+    },
     "markAll": "Mark All as Read",
     "showAll": "Show All Notifications",
     "clickToView": "Click to View Details",
-    "zeroInbox" : "Inbox Zero achieved — all is calm."
+    "zeroInbox": "Inbox Zero achieved — all is calm.",
+    "empty": "Nothing to display",
+    "readFail": "Action succeeded, but failed to mark as read.",
+    "accepted": "Completion request accepted",
+    "rejected": "Completion request rejected"
   },
-  "sidebar": 
-  {
-    "home" : "Home",
-    "board" : "Board",
-    "settings" : "Settings"
+  "sidebar": {
+    "home": "Home",
+    "board": "Board",
+    "settings": "Settings"
   },
-  "settings":
-  {
-    "title" : "Settings",
-    "signOut" : "Sign out"
+  "settings": {
+    "title": "Settings",
+    "signOut": "Sign out"
   },
-  "login": 
-  {
-    "username" : "Enter your User ID",
-    "password" : "Enter your password"
+  "teacherCancel": {
+    "approve": "Approve cancellation",
+    "reject": "Reject cancellation",
+    "toastApprove": "Cancellation approved.",
+    "toastReject": "Cancellation rejected."
   },
-  "setup": 
-  {
-    "nickname" : "Enter your nickname (think carefully!)"
+  "login": {
+    "username": "Enter your User ID",
+    "password": "Enter your password"
+  },
+  "setup": {
+    "nickname": "Enter your nickname (think carefully!)"
   },
   "toasts": {
     "common": {
@@ -83,5 +114,9 @@
     "loadTasksError": {
       "consoleTag": "Failed to load tasks:"
     }
+  },
+  "errors": {
+    "missingTaskId": "Missing task ID; cannot proceed.",
+    "unknown": "Operation failed, please try again later."
   }
 }
