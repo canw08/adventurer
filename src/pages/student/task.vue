@@ -55,6 +55,7 @@
 
               <div class="task-time">
                 <i class="pi pi-clock"></i>
+                <label>DDL:</label>
                 <span>{{ project.date }}</span>
               </div>
 

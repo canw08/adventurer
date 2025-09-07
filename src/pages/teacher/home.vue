@@ -94,7 +94,7 @@
               v-model="taskDate"
               inputId="taskDateInput"
               dateFormat="mm/dd/yy"
-              :placeholder="$t('teacherHome.datePlaceholder')"
+              placeholder="MM/DD/YYYY(ddl date)"
               showIcon
               class="task-date-input"
               :minDate="todayStart"
@@ -157,7 +157,10 @@
             <h3 class="task-title">{{ project.title }}</h3>
             <div class="task-time">
               <i class="pi pi-clock"></i>
-              <span>{{ project.date }}</span>
+              <span>
+                <label>DDL:</label>
+                {{ project.date }}
+              </span>
             </div>
             <div class="task-exp">{{ project.exp || $t('common.na') }}</div>
             <div class="task-teamwork">
@@ -224,6 +227,7 @@
             <span class="qdlg-title">{{ selectedProject?.title || '' }}</span>
             <span class="qdlg-date-inline">
               <i class="pi pi-clock"></i>
+              <label>DDL:</label>
               {{ selectedProject?.date }}
             </span>
           </div>
@@ -1409,13 +1413,12 @@ function lighten(hex, amount = 0.3) {
 .submitPosition{
   margin-top: 14px;
   font-size: 20px;
-  margin-left: 85%;
-  border-radius: 20px;
+  margin-left: 89%;
+  border-radius: 12px;
+  padding: 12px 24px;
   border-color: #003366;
   background-color: #003366;
   color: #fff;
-  padding-left: 4%;
-  padding-right: 4%;
   margin-bottom: 16px;
 }
 /* ① PrimeVue 3.x：通过 input:checked 选中态改色 */
@@ -1610,12 +1613,15 @@ function lighten(hex, amount = 0.3) {
   background-color: #2A2C55 !important;
   border-color: #FFFFFF !important;
   color: #fff !important;
+  border-radius: 12px;
+  padding: 12px 24px;
 }
 /* 分享是 text 样式，需要改文字/图标颜色和 hover 背景 */
 :deep(.share-btn.p-button.p-button-text) {
   color: #fff;
   background-color: #2A2C55 !important;
   border-color: #2A2C55;
+  padding: 24px;
 }
 
 :deep(.approve-btn.p-button),

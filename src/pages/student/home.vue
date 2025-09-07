@@ -40,6 +40,7 @@
             <h3 class="task-title">{{ project.title }}</h3>
             <div class="task-time">
               <i class="pi pi-clock"></i>
+              <label>DDL:</label>
               <span>{{ project.date }}</span>
             </div>
             <div class="task-exp">{{ project.exp || $t('common.na') }}</div>
@@ -107,6 +108,7 @@
           <span class="dialog-title">{{ selectedProject?.title || '' }}</span>
           <span class="dialog-date-inline">
             <i class="pi pi-clock"></i>
+            <label>DDL:</label>
             {{ selectedProject?.date }}
           </span>
         </div>
