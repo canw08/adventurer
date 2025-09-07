@@ -575,7 +575,7 @@ const applyForTask = async (taskId) => {
     // 接受任务后，按当前 tab + 当前页重新拉取
     const wantAssigned = activeTab.value === 'assigned'
     currentPage.value = 0
-    await fetchPage(currentPage + 1, wantAssigned)
+    await fetchPage(currentPage.value + 1, wantAssigned)
 
     toast.add({
       severity: 'success',
