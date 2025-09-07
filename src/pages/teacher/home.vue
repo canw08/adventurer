@@ -156,9 +156,8 @@
           >
             <h3 class="task-title">{{ project.title }}</h3>
             <div class="task-time">
-              <i class="pi pi-clock"></i>
               <span>
-                <label>DDL:</label>
+                <label>DDL</label>
                 {{ project.date }}
               </span>
             </div>
@@ -226,8 +225,7 @@
           <div class="qdlg-header-center">
             <span class="qdlg-title">{{ selectedProject?.title || '' }}</span>
             <span class="qdlg-date-inline">
-              <i class="pi pi-clock"></i>
-              <label>DDL:</label>
+              <label>DDL</label>
               {{ selectedProject?.date }}
             </span>
           </div>
