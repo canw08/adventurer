@@ -16,9 +16,9 @@
             </span>
           </div>
         </div>
-        <div class="level">Level {{ task.required_level }}</div>
       </header>
 
+      <div class="level">Level {{ task.required_level }}</div>
       <!-- 作者信息 -->
       <section class="author">
         <img class="avatar" :src="hostAvatar" alt="host avatar" />
@@ -498,7 +498,7 @@ const metricsBound = computed(() => {
 .page{
   /* 灰色背景就是左右“空出来的空间” */
   background: #f3f4f6;              /* 你也可以换成 #eef1f5 */
-  min-height: 100dvh;
+  height: 100dvh;
   /* 给两侧一个基础内边距，避免巨屏贴边难看 */
   padding: 0 clamp(12px, 4vw, 24px);
 }
@@ -511,7 +511,7 @@ const metricsBound = computed(() => {
   background: #fff;                 /* 白色卡片 */
   border-radius: 16px;              /* 圆角 */
   box-shadow: 0 8px 24px rgba(0,0,0,.06);
-  min-height: 100px;               /* 让卡片至少与视口等高 */
+  min-height: 120px;               /* 让卡片至少与视口等高 */
   padding: 32px 36px 28px;          /* 适当放大内边距以配合卡片感 */
 }
 
