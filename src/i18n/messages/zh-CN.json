@@ -11,6 +11,18 @@
     "title": "委托墙\n",
     "filter": "筛选"
   },
+  "teacherHome": {
+    "releaaseTask": "发布任务",
+    "chooseLevel": "选择级别",
+    "taskDetails": "任务详情",
+    "helpText": "F级：志愿者搬运两箱水 // E级：期中礼仪小哥 // 本质区别在于时长和任务难度，请自由判断，并适当添加奖励。",
+    "datePlaceholder": "月/日/年",
+    "bigTitle": "输入标题",
+    "submit": "提交",
+    "editTask": "编辑任务详情",
+    "approve": "批准完成",
+    "shareTask": "分享任务"
+  },
   "greetings-student": {
     "night": "你不要命了，冒险者？",
     "morning": "早上好，冒险者",
@@ -32,7 +44,15 @@
     "level": "等级",
     "close": "关闭",
     "decline": "拒绝",
-    "accept": "接受"
+    "accept": "接受",
+    "markComplete": "标记为已完成",
+    "notComplete": "未完成",
+    "warning": "警告",
+    "success": "成功",
+    "failed": "失败",
+    "target": "目标",
+    "reason": "原因",
+    "applicant": "申请人"
   },
   "notifications": {
     "systemName": "系统",
@@ -40,12 +60,17 @@
       "system": "系统通知",
       "invite": "邀请通知",
       "completion_request": "审核请求",
-      "unknown": "通知"
+      "unknown": "通知",
+      "cancel_request": "取消请求"
     },
     "markAll": "全部标记为已读",
     "showAll": "显示所有通知",
     "clickToView": "点击查看详情",
-    "zeroInbox": "皇上，今朝无奏章，一切安然。"
+    "zeroInbox": "皇上，今朝无奏章，一切安然。",
+    "empty": "无话可说",
+    "readFail": "操作成功，但未能标记为已读。",
+    "accepted": "完成请求已接受",
+    "rejected": "完成请求被拒绝"
   },
   "sidebar": {
     "home": "营地\n",
@@ -55,6 +80,12 @@
   "settings": {
     "title": "设置",
     "signOut": "退出登录"
+  },
+  "teacherCancel": {
+    "approve": "同意取消请求",
+    "reject": "拒绝取消请求\n",
+    "toastApprove": "取消申请被同意",
+    "toastReject": "取消申请被拒绝"
   },
   "login": {
     "username": "输入您的用户ID",
@@ -83,5 +114,9 @@
     "loadTasksError": {
       "consoleTag": "加载任务失败:"
     }
+  },
+  "errors": {
+    "missingTaskId": "缺少任务ID,无法使用。",
+    "unknown": "操作失败，请稍后重试。"
   }
 }
