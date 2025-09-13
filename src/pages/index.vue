@@ -415,4 +415,6 @@ html, body {
 @supports not ((backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px))) {
   .glass { background: rgba(255, 255, 255, 0.75); }
 }
+
+
 </style>
