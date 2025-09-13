@@ -52,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from "vue";
+import { computed, reactive, ref,onMounted  } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from '../stores/user'
 const router = useRouter();
@@ -199,6 +199,48 @@ async function login() {
     submitting.value = false;
   }
 }
+// ======= Token 工具：检查本地 token 是否过期（JWT 常见做法）=======
+function isJwtValid(token: string | null): boolean {
+  if (!token) return false;
+  try {
+    const base64 = token.split(".")[1];
+    if (!base64) return false;
+    const json = JSON.parse(decodeURIComponent(atob(base64).split("").map(c =>
+      "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)
+    ).join("")));
+    if (typeof json.exp !== "number") return true; // 无 exp 当作有效（由接口再兜底）
+    return json.exp * 1000 > Date.now();
+  } catch {
+    // 不是标准 JWT，交由服务端/接口兜底
+    return true;
+  }
+}
+onMounted(async () => {
+  const access = localStorage.getItem("access_token");
+  const refresh = localStorage.getItem("refresh_token");
+
+  // 有 token 且看起来没过期，则尝试拉取用户信息并按业务跳转
+  if (access && refresh && isJwtValid(access)) {
+    try {
+      const userStore = useUserStore();
+      const user = await userStore.fetchUser(); // 若后端校验失败会抛错
+
+      const noAvatar = !user?.avatar || String(user.avatar).trim() === "none";
+      if (noAvatar) {
+        // 与登录成功后的逻辑保持一致（黑幕淡入后跳转）
+        fading.value = true;
+        window.setTimeout(() => {
+          router.replace("/animations/login");
+        }, FADE_MS);
+      } else {
+        router.replace("/student/home");
+      }
+    } catch {
+      // token 失效或网络错误：留在登录页即可，用户可以重新登录
+    }
+  }
+});
+
 </script>
 
 <style scoped>
