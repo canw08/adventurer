@@ -1,4 +1,5 @@
 <template>
+    <Toast />
   <div class="page">
     <div class="container" v-if="task">
       <!-- 顶部：标题/日期/等级 -->
@@ -63,7 +64,9 @@
 
       <!-- 底部 -->
       <footer class="bottom">
-        <button class="accept">Accept</button>
+        <button class="accept" @click="onAccept" :disabled="accepting">
+          {{ accepting ? 'Processing...' : 'Accept' }}
+        </button>
 
         <AssigneesStack
           v-if="task?.accepted_by?.length"
@@ -84,18 +87,22 @@
 
 <route lang="yaml">
 meta:
-  requiresAuth: true
+  requiresAuth: false
   allowMobile: true
 </route>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import axios from 'axios';
+import { useRoute,useRouter } from 'vue-router'
+import api from '../../api.js';
 import DOMPurify from 'dompurify'
 import ProgressBar from 'primevue/progressbar'              // ✅ 用 PrimeVue 的进度条
 import { levelRanges } from '../../components/levelRange.js' // ✅ 等级上下限
 import AssigneesStack from '../../components/AssigneesStack.vue'
+import { useToast } from 'primevue/usetoast'
+const toast = useToast()
+const router = useRouter()
+const route = useRoute()
 // ==== 依赖的导入 ====
 // 简单的日期格式化（台湾时区），支持 Date 或字符串
 const formatDate = (input: string | number | Date | null | undefined, withTime = false) => {
@@ -111,20 +118,39 @@ const formatDate = (input: string | number | Date | null | undefined, withTime =
   }
   return new Intl.DateTimeFormat('zh-TW', opts).format(d)
 }
-const api = axios.create({});
-
-const route = useRoute()
 const task = ref<any>(null)
 const showAssignees = ref(false)
 
+const isLoggedIn = computed(() => {
+  const access = localStorage.getItem("access_token");
+  const refresh = localStorage.getItem("refresh_token");
+
+  return access && refresh && isJwtValid(access)
+})
+
+function isJwtValid(token: string | null): boolean {
+  if (!token) return false;
+  try {
+    const base64 = token.split(".")[1];
+    if (!base64) return false;
+    const json = JSON.parse(decodeURIComponent(atob(base64).split("").map(c =>
+      "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)
+    ).join("")));
+    if (typeof json.exp !== "number") return true; // 无 exp 当作有效（由接口再兜底）
+    return json.exp * 1000 > Date.now();
+  } catch {
+    // 不是标准 JWT，交由服务端/接口兜底
+    return true;
+  }
+}
 // 头像地址统一封装（沿用你原来的 dicebear 规则）
 const avatarUrl = (u: any) =>
-  `https://api.dicebear.com/9.x/adventurer/svg?seed=${u?.avatar || u?.nickname || 'user'}`
+  `https://api.dicebear.com/9.x/adventurer/svg?seed=${u?.avatar || u?.nickname || 'user'}&skinColor=ecad80,f2d3b1`
 
 // 只展示前三个；用于底部右侧紧凑视图
 const visibleAssignees = computed(() => (task.value?.accepted_by || []).slice(0, 3))
 // 假头像占位
-const hostAvatar = 'https://api.dicebear.com/9.x/adventurer/svg?seed=bridgette'
+const hostAvatar = `https://api.dicebear.com/9.x/adventurer/svg?skinColor=ecad80,f2d3b1&seed=${task.publisher_avatar}` || `https://api.dicebear.com/9.x/adventurer/svg?seed=none`
 const assigneeAvatar = 'https://api.dicebear.com/9.x/adventurer/svg?seed=haoyang'
 
 /** ========== HTML 描述（安全渲染） ========== */
@@ -141,7 +167,52 @@ const safeDescription = computed(() => {
   })
   return div.innerHTML
 })
+const accepting = ref(false)
 
+/** 真正的“接受任务”的业务逻辑（已登录时跑这里） */
+const applyForTask = async (taskId: string | number) => {
+  if (!taskId) return
+  try {
+    await api.post(`/api/tasks/${taskId}/apply/`)
+    toast.add({
+      severity: 'success',
+      summary: '已接受任务',
+      detail: '任务申请成功，列表已更新。',
+      life: 3000
+    })
+    // 👉 如果你当前页面也需要刷新任务详情，可以加上：
+    await fetchTask(taskId)
+  } catch (err: any) {
+    console.error(err)
+    toast.add({
+      severity: 'error',
+      summary: '操作失败',
+      detail: err?.response?.data?.detail || '接受任务失败，请稍后再试。',
+      life: 4000
+    })
+  }
+}
+
+/** 点击 Accept 的统一入口 */
+const onAccept = async () => {
+  if (accepting.value) return
+  if (!isLoggedIn.value) {
+    // 带上回跳地址跳登录页（用 name 或 path 看你路由怎么配的）
+    router.push({
+      path: '/',              // 如果你的登录路由是 '/login'，也可以用 { path: '/login' }
+      query: { redirect: route.fullPath }
+    })
+    return
+  }
+
+  // 已登录：执行你的业务
+  try {
+    accepting.value = true
+    await applyForTask(route.params.id as string)
+  } finally {
+    accepting.value = false
+  }
+}
 /** ========== 进度条：按等级上下限计算 ========== */
 // 工具：把接口的三个字段映射到 exp/coin/hour
 const mapTaskToMetrics = (t: any) => ({

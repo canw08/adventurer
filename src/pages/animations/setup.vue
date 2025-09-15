@@ -22,7 +22,8 @@ const router = useRouter()              // ② 实例化 router
 
 const sentences = [
   '不愧是本美女看上的人（这么好骗的 ＜(￣▽￣)>）',
-  '唔……那先带你熟悉下这个世界吧。'
+  '剧本就写到这里了eew',
+  '下次再见吧!'
 ];
 
 

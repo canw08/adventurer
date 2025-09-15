@@ -25,7 +25,7 @@
     <input
       v-model="nickname"
       type="text"
-      :placeholder="$t('login.username')"
+      :placeholder="$t('setup.nickname')"
       class="input glass"
       inputmode="text"
       autocomplete="nickname"

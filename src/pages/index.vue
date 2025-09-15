@@ -14,6 +14,7 @@
       @keydown.enter="login"
       aria-label="User ID"
       autocomplete="username"
+      autocapitalize="off"
     />
     <p v-if="touched.id && errors.id" class="err">{{ errors.id }}</p>
 
@@ -53,10 +54,10 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref,onMounted  } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute} from "vue-router";
 import { useUserStore } from '../stores/user'
 const router = useRouter();
-
+const route = useRoute()
 // 表单状态
 const id = ref("");
 const password = ref("");
@@ -115,21 +116,15 @@ const btnTitle = computed(() =>
 // ======= 登录提交 =======
 async function login() {
   if (fading.value || submitting.value) return; // 防抖
-  // 首次点击时，标记为 touched 以显示错误
   touch("id");
   touch("password");
 
   serverError.value = "";
 
-  // 强制全表单校验
-  if (!validateAll()) {
-    return;
-  }
+  if (!validateAll()) return;
 
   submitting.value = true;
   try {
-    // 说明：
-    // 后端可能期望 username/password 或 id/password，这里两个字段都带上，便于兼容。
     const payload = {
       username: id.value,
       password: password.value,
@@ -137,15 +132,11 @@ async function login() {
 
     const resp = await fetch("/api/users/login/", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      // 如果你做了跨域，需要服务端允许，或在本地同源下使用 Mock.js
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
 
     if (!resp.ok) {
-      // 尝试解析后端返回的错误信息
       let msg = `登录失败（${resp.status}）`;
       try {
         const data = await resp.json();
@@ -153,10 +144,7 @@ async function login() {
         if (Array.isArray(data?.non_field_errors) && data.non_field_errors[0]) {
           msg = String(data.non_field_errors[0]);
         }
-
-      } catch {
-        // ignore JSON parse error
-      }
+      } catch {}
       throw new Error(msg);
     }
 
@@ -170,7 +158,7 @@ async function login() {
       throw new Error("登录返回数据不完整，缺少令牌");
     }
 
-    // 持久化（按需调整为 cookie / pinia / vuex）
+    // 持久化
     localStorage.setItem("access_token", data.access_token);
     localStorage.setItem("refresh_token", data.refresh_token);
     localStorage.setItem("username", data.username ?? id.value);
@@ -178,27 +166,29 @@ async function login() {
     const userStore = useUserStore();
     const user = await userStore.fetchUser();
 
-    // 更稳的判空：空串 / null / undefined / 只包含空白 都当作“没头像”
     const noAvatar = !user?.avatar || String(user.avatar).trim() === "none";
-    
-    if (noAvatar) {
-      // 成功：黑幕淡入 -> 路由跳转
+
+    // 🔑 这里是关键：读取 redirect 参数
+    const redirect = (route.query.redirect as string) || null;
+
+    if (redirect) {
+      // 有 redirect，就跳回去（替换掉历史，避免回退到登录页）
+      router.replace(redirect);
+    } else if (noAvatar) {
       fading.value = true;
       window.setTimeout(() => {
-        router.push("/animations/login"); // TODO: 改成你的目标路由
+        router.push("/animations/login");
       }, FADE_MS);
+    } else {
+      router.push("/student/home");
     }
-    else
-    {
-      router.push("/student/home")
-    }
-
   } catch (err: any) {
     serverError.value = err?.message || "登录失败，请稍后重试";
   } finally {
     submitting.value = false;
   }
 }
+
 // ======= Token 工具：检查本地 token 是否过期（JWT 常见做法）=======
 function isJwtValid(token: string | null): boolean {
   if (!token) return false;
@@ -219,15 +209,20 @@ onMounted(async () => {
   const access = localStorage.getItem("access_token");
   const refresh = localStorage.getItem("refresh_token");
 
-  // 有 token 且看起来没过期，则尝试拉取用户信息并按业务跳转
   if (access && refresh && isJwtValid(access)) {
     try {
       const userStore = useUserStore();
-      const user = await userStore.fetchUser(); // 若后端校验失败会抛错
+      const user = await userStore.fetchUser();
 
       const noAvatar = !user?.avatar || String(user.avatar).trim() === "none";
-      if (noAvatar) {
-        // 与登录成功后的逻辑保持一致（黑幕淡入后跳转）
+
+      // ✅ 新增：检查 redirect 参数
+      const redirect = (route.query.redirect as string) || null;
+
+      if (redirect) {
+        // 如果有 redirect，优先跳过去
+        router.replace(redirect);
+      } else if (noAvatar) {
         fading.value = true;
         window.setTimeout(() => {
           router.replace("/animations/login");
@@ -236,7 +231,7 @@ onMounted(async () => {
         router.replace("/student/home");
       }
     } catch {
-      // token 失效或网络错误：留在登录页即可，用户可以重新登录
+      // token 失效或网络错误，留在当前页
     }
   }
 });
