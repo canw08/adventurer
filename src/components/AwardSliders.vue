@@ -77,7 +77,7 @@
       <span class="max-val">{{ hoursMax }}</span>
     </div>
 
-    <!-- Num 步进器（在 HOURS 下方） -->
+    <!-- Num 步进器（在 HOURS 下方）
     <div class="award-item num-item">
       <label>NUM</label>
       <div class="num-wrap">
@@ -99,7 +99,7 @@
           aria-label="increase num"
         >+</button>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
