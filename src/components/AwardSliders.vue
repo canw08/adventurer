@@ -9,56 +9,55 @@
     </div>
 
     <!-- EXP -->
-<div class="award-item">
-  <label>EXP</label>
-  <span class="min-val">{{ expMin }}</span>
-  <input
-    class="range exp-range pixelated"
-    type="range"
-    :min="expMin"
-    :max="expMax"
-    :step="expStep"
-    :value="expLocal"
-    :disabled="disabled"
-    @input="onExp(($event.target as HTMLInputElement).value)"
-    aria-label="EXP range"
-    :style="progressStyle(expLocal, expMin, expMax)"
-  />
-    <small class="range-hint" :style="bubbleStyle(expLocal, expMin, expMax)">
-      {{ expLocal }} 
-      <span v-if="disabled">（请先选择等级）</span> 
-    </small>
-  <span class="max-val" >{{ expMax }}</span>
-</div>
+    <div class="award-item">
+      <label>EXP</label>
+      <span class="min-val">{{ expMin }}</span>
+      <input
+        class="range exp-range pixelated"
+        type="range"
+        :min="expMin"
+        :max="expMax"
+        :step="expStep"
+        :value="expLocal"
+        :disabled="disabled"
+        @input="onExp(($event.target as HTMLInputElement).value)"
+        aria-label="EXP range"
+        :style="progressStyle(expLocal, expMin, expMax)"
+      />
+      <small class="range-hint" :style="bubbleStyle(expLocal, expMin, expMax)">
+        {{ expLocal }} 
+        <span v-if="disabled">（请先选择等级）</span> 
+      </small>
+      <span class="max-val" >{{ expMax }}</span>
+    </div>
 
-<!-- coin -->
-<div class="award-item">
-  <label>COINS</label>
-  <span class="min-val">{{ coinMin }}</span>
-  <input
-    class="range coin-range pixelated"
-    type="range"
-    :min="coinMin"
-    :max="coinMax"
-    :step="coinStep"
-    :value="coinLocal"
-    :disabled="disabled"
-    @input="onCoin(($event.target as HTMLInputElement).value)"
-    aria-label="coin range"
-    :style="progressStyle(coinLocal, coinMin, coinMax)"
-  />
-    <small class="range-hint" :style="bubbleStyle(coinLocal, coinMin, coinMax)">
-      {{ coinLocal }}
-      <span v-if="disabled">（请先选择等级）</span>
-    </small>
-  <span class="max-val">{{ coinMax }}</span>
-</div>
+    <!-- coin -->
+    <div class="award-item">
+      <label>COINS</label>
+      <span class="min-val">{{ coinMin }}</span>
+      <input
+        class="range coin-range pixelated"
+        type="range"
+        :min="coinMin"
+        :max="coinMax"
+        :step="coinStep"
+        :value="coinLocal"
+        :disabled="disabled"
+        @input="onCoin(($event.target as HTMLInputElement).value)"
+        aria-label="coin range"
+        :style="progressStyle(coinLocal, coinMin, coinMax)"
+      />
+      <small class="range-hint" :style="bubbleStyle(coinLocal, coinMin, coinMax)">
+        {{ coinLocal }}
+        <span v-if="disabled">（请先选择等级）</span>
+      </small>
+      <span class="max-val">{{ coinMax }}</span>
+    </div>
 
-<!-- 志愿者时长 -->
-<div class="award-item">
-  <label>HOURS</label>
-    <span class="min-val">{{ hoursMin }}</span>
-
+    <!-- 志愿者时长 -->
+    <div class="award-item">
+      <label>HOURS</label>
+      <span class="min-val">{{ hoursMin }}</span>
       <input
         class="range hours-range pixelated"
         type="range"
@@ -75,18 +74,47 @@
         {{ hoursLocal }} 
         <span v-if="disabled">（请先选择等级）</span>
       </small>
-    <span class="max-val">{{ hoursMax }}</span>
+      <span class="max-val">{{ hoursMax }}</span>
+    </div>
+
+    <!-- Num 步进器（在 HOURS 下方） -->
+    <div class="award-item num-item">
+      <label>NUM</label>
+      <div class="num-wrap">
+        <button
+          type="button"
+          class="num-btn"
+          :disabled="numLocal <= numMin"
+          @click="decNum"
+          aria-label="decrease num"
+        >-</button>
+
+        <div class="num-value" :aria-live="'polite'">{{ numLocal }}</div>
+
+        <button
+          type="button"
+          class="num-btn"
+          :disabled="numLocal >= numMax"
+          @click="incNum"
+          aria-label="increase num"
+        >+</button>
+      </div>
+    </div>
   </div>
-</div>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, withDefaults, computed } from 'vue'
+
 const props = withDefaults(defineProps<{
-  level?: string                    // 父组件传入的等级；允许空字符串
+  level?: string
   exp: number
   coin: number
   hours?: number
+  /** 新增：Num 步进器的值与范围 */
+  num?: number
+  numMin?: number
+  numMax?: number
   // A 改法：boss 选 Design/定制 时，可传自定义区间覆盖
   customRanges?: {
     exp?: [number, number]
@@ -94,8 +122,12 @@ const props = withDefaults(defineProps<{
     hours?: [number, number]
   } | null
 }>(), {
-  level: '',                        // 默认未选择
+  level: '',
   hours: 0,
+  /** 下面三项是为 Num 提供默认值（示例图 - 10 +） */
+  num: 10,
+  numMin: 1,
+  numMax: 999,
   customRanges: null
 })
 
@@ -103,22 +135,32 @@ const emit = defineEmits<{
   (e:'update:exp', v:number): void
   (e:'update:coin', v:number): void
   (e:'update:hours', v:number): void
+  /** 新增：对外同步 Num 值 */
+  (e:'update:num', v:number): void
 }>()
 
 // 本地显示值（与父同步）
 const expLocal   = ref(props.exp ?? 0)
 const coinLocal  = ref(props.coin ?? 0)
 const hoursLocal = ref(props.hours ?? 0)
+/** 新增：Num 本地值 */
+const numLocal   = ref(props.num ?? 10)
+
 watch(() => props.exp,   v => expLocal.value   = v ?? 0)
 watch(() => props.coin,  v => coinLocal.value  = v ?? 0)
 watch(() => props.hours, v => hoursLocal.value = v ?? 0)
+/** 新增：外部变更时同步 Num */
+watch(() => props.num,   v => { 
+  const clamped = clampNumber(v ?? props.numMin, props.numMin, props.numMax)
+  numLocal.value = clamped
+})
 
-// 范围/步长
+/** 范围/步长 */
 const expMin=ref(0),  expMax=ref(0),  expStep=ref(1)
 const coinMin=ref(0), coinMax=ref(0), coinStep=ref(1)
 const hoursMin=ref(0),hoursMax=ref(0),hoursStep=ref(0.5)
 
-// 等级为空则禁用（父层可通过 v-if 决定“是否渲染”）
+/** 等级为空则禁用滑块（Num 不依赖等级，始终可用） */
 const disabled = computed(() => !normalizeLevel(props.level))
 
 // 等级映射
@@ -131,8 +173,6 @@ const levelRanges: Record<string, {exp:[number,number], coin:[number,number], ho
   'A级':     { exp:[1000,2000], coin:[800,1000], hours:[0,24] },
   'S级':     { exp:[3000,5000], coin:[2000,3000],hours:[0,24] },
   '定制':     { exp:[1,10000],  coin:[1,10000],  hours:[0,24] },
-
-  // 英文别名
   'Level F': { exp:[5,15],      coin:[10,20],    hours:[0,24] },
   'Level E': { exp:[30,50],     coin:[50,100],   hours:[0,24] },
   'Level D': { exp:[80,150],    coin:[100,150],  hours:[0,24] },
@@ -142,11 +182,10 @@ const levelRanges: Record<string, {exp:[number,number], coin:[number,number], ho
   'Level S': { exp:[3000,5000], coin:[2000,3000],hours:[0,24] }
 }
 
-// 传入等级 -> 标准 key；返回 '' 表示未选择
 function normalizeLevel(lvl?: string): string {
   if (!lvl) return ''
   const s = lvl.trim().toLowerCase()
-  if (s === 'design') return '定制'   // 兼容 boss 的 Design 选项
+  if (s === 'design') return '定制'
   if (s === 'level f' || s === 'f级' || s === 'f') return 'F级'
   if (s === 'level e' || s === 'e级' || s === 'e') return 'E级'
   if (s === 'level d' || s === 'd级' || s === 'd') return 'D级'
@@ -179,16 +218,9 @@ function setDisabledRanges() {
 
 function applyRange(levelRaw?: string) {
   const key = normalizeLevel(levelRaw)
+  if (!key) { setDisabledRanges(); return }
 
-  if (!key) { // 未选择
-    setDisabledRanges()
-    return
-  }
-
-  // ① 基础区间
   const base = levelRanges[key] || levelRanges['定制']
-
-  // ② 定制/Design 时，使用 customRanges 覆盖（若传入）
   const isDesign = key === '定制'
   const expPair   = (isDesign && props.customRanges?.exp)   ? props.customRanges!.exp   : base.exp
   const coinPair  = (isDesign && props.customRanges?.coin)  ? props.customRanges!.coin  : base.coin
@@ -202,7 +234,7 @@ function applyRange(levelRaw?: string) {
   coinMin.value = cmin; coinMax.value = cmax; coinStep.value = pickStep(cmin, cmax)
   hoursMin.value = hmin;hoursMax.value = hmax;hoursStep.value = pickStep(hmin, hmax)
 
-  // 统一设为“最左边”（最小值）
+  // 统一设为“最左边”
   expLocal.value   = emin
   coinLocal.value  = cmin
   hoursLocal.value = hmin
@@ -212,13 +244,25 @@ function applyRange(levelRaw?: string) {
   emit('update:hours', hoursLocal.value)
 }
 
-// 初次与每次 level 变化时应用
 watch(() => props.level, lvl => applyRange(lvl), { immediate: true })
 
 function onExp(v:string){   expLocal.value   = Math.min(expMax.value,   Math.max(expMin.value,   Number(v))); emit('update:exp',   expLocal.value) }
 function onCoin(v:string){  coinLocal.value  = Math.min(coinMax.value,  Math.max(coinMin.value,  Number(v))); emit('update:coin',  coinLocal.value) }
 function onHours(v:string){ hoursLocal.value = Math.min(hoursMax.value, Math.max(hoursMin.value, Number(v))); emit('update:hours', hoursLocal.value) }
 
+/** Num：工具函数与事件 */
+function clampNumber(v:number, min:number, max:number){ return Math.min(max, Math.max(min, v)) }
+const numMin = computed(() => props.numMin)
+const numMax = computed(() => props.numMax)
+
+function incNum(){
+  numLocal.value = clampNumber((numLocal.value ?? props.numMin) + 1, numMin.value, numMax.value)
+  emit('update:num', numLocal.value)
+}
+function decNum(){
+  numLocal.value = clampNumber((numLocal.value ?? props.numMin) - 1, numMin.value, numMax.value)
+  emit('update:num', numLocal.value)
+}
 
 function progressStyle(val: number, min: number, max: number) {
   const pct = max === min ? 0 : ((Number(val) - Number(min)) / (Number(max) - Number(min))) * 100
@@ -226,55 +270,41 @@ function progressStyle(val: number, min: number, max: number) {
 }
 
 function bubbleStyle(val: number, min: number, max: number) {
-//注意哥们，这里的奇怪的小数，我都不知道是干啥的，如果你读到了这里，且你是一个前端天才，那你帮我改一下吧，我这里的公式是在chat给我生成出来之后，一点一点实验出来的，这个傻逼56是这个世界上最傻逼的数字，希望后人能让这里变得更加漂亮么么么
+  // TODO: 后续我们把这里的“魔法数字”彻底拿掉，改为测量 thumb 实际宽度进行位移
   const pct = max === min ? 0 : ((val - min) / (max - min)) * 56
-  const sideOffset = 138 // 左边 min 值框固定宽度
-  return {
-    left: `calc(${pct}% + ${sideOffset}px)`
-  }
+  const sideOffset = 138
+  return { left: `calc(${pct}% + ${sideOffset}px)` }
 }
-
 </script>
 
 <style scoped>
 /* 基础布局 */
-.award-item { display:flex; align-items:center; gap:10px; width:500px; position: relative; margin-left: 2%; margin-top: 14px; /* 让气泡能绝对定位到轨道 */}
-.award-item label {
-  width: 50px;            /* 左边 label 固定宽度 */
-  text-align: left;
-}
+.award-item { display:flex; align-items:center; gap:10px; width:500px; position: relative; margin-left: 2%; margin-top: 14px; }
+.award-item label { width: 50px; text-align: left; }
 .min-val, .max-val {
-  width: 40px;            /* 数字列固定宽度 */
-  text-align: center;
-}
-.min-val,
-.max-val {
   width: 56px;
   flex: 0 0 56px;
   text-align: center;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum"; /* 数字等宽 */
-  background-color: #EAF2FF; /* 浅蓝背景 */
-  border: 1px solid #C6D8FF; /* 边框颜色可调整 */
-  border-radius: 6px;        /* 圆角 */
-  padding: 2px 6px;          /* 内边距让框大一点 */
-  box-sizing: border-box;    /* 保证宽度计算包含内边距 */
+  font-feature-settings: "tnum";
+  background-color: #EAF2FF;
+  border: 1px solid #C6D8FF;
+  border-radius: 6px;
+  padding: 2px 6px;
+  box-sizing: border-box;
 }
-
 .label { width:56px; color:#333; }
 .range { flex:1;}
 .val { width:80px; text-align:right; }
 .range-hint { 
   position: absolute;
-  top: 20px; /* 气泡距离轨道上方的高度 */
-  transform: translateX(-45%); /* 让气泡中心对齐 thumb 中心 */
+  top: 20px;
+  transform: translateX(-45%);
   color: #333;
   font-size: 12px;
 }
-/* 禁用态可见性 */
 .range:disabled { opacity: .5; cursor: not-allowed; }
-/* 自定义滑杆样式（兼容 WebKit + Firefox） */
 .range {
   appearance: none;
   -webkit-appearance: none;
@@ -282,111 +312,69 @@ function bubbleStyle(val: number, min: number, max: number) {
   border-radius: 10px;
   outline: none;
   cursor: pointer;
-  background: var(--base); /* 默认底色，progressStyle 会覆盖成渐变 */
+  background: var(--base);
 }
+.range::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; height: 16px; width: 16px; cursor: pointer; }
+.range::-moz-range-thumb { height: 16px; width: 16px; cursor: pointer; }
 
-.range::-webkit-slider-thumb {
-  appearance: none;
-  -webkit-appearance: none;
-  height: 16px; width: 16px;
-  cursor: pointer;
-}
-.range::-moz-range-thumb {
-  height: 16px; width: 16px;
-  cursor: pointer;
-}
+.exp-range::-webkit-slider-thumb { height: 24px; width: 24px; border: none; background: url('../assets/icon/exp.png') no-repeat center; background-size: contain; cursor: pointer; }
+.exp-range::-moz-range-thumb      { height: 24px; width: 24px; border: none; background: url('../assets/icon/exp.png') no-repeat center; background-size: contain; cursor: pointer; }
 
-.exp-range::-webkit-slider-thumb { 
-  appearance: none;
-  -webkit-appearance: none;
-  height: 24px;
-  width: 24px;
-  border: none;
-  background: url('../assets/icon/exp.png') no-repeat center;
-  background-size: contain;
-  cursor: pointer; }
-.exp-range::-moz-range-thumb      { 
-  height: 24px;
-  width: 24px;
-  border: none;
-  background: url('../assets/icon/exp.png') no-repeat center;
-  background-size: contain;
-  cursor: pointer; }
+.coin-range::-webkit-slider-thumb { height: 24px; width: 24px; border: none; background: url('../assets/icon/token.png') no-repeat center; background-size: contain; cursor: pointer; }
+.coin-range::-moz-range-thumb      { height: 24px; width: 24px; border: none; background: url('../assets/icon/token.png') no-repeat center; background-size: contain; cursor: pointer;}
 
-.coin-range::-webkit-slider-thumb {
-  appearance: none;
-  -webkit-appearance: none;
-  height: 24px;
-  width: 24px;
-  border: none;
-  background: url('../assets/icon/token.png') no-repeat center;
-  background-size: contain;
-  cursor: pointer; }
-.coin-range::-moz-range-thumb      { 
-  appearance: none;
-  -webkit-appearance: none;
-  height: 24px;
-  width: 24px;
-  border: none;
-  background: url('../assets/icon/token.png') no-repeat center;
-  background-size: contain;
-  cursor: pointer;}
-.hours-range::-webkit-slider-thumb { 
-  appearance: none;
-  -webkit-appearance: none;
-  height: 24px;
-  width: 24px;
-  border: none;
-  background: url('../assets/icon/time.png') no-repeat center;
-  background-size: contain;
-  cursor: pointer;}
-.hours-range::-moz-range-thumb { 
-  height: 24px;
-  width: 24px;
-  border: none;
-  background: url('../assets/icon/time.png') no-repeat center;
-  background-size: contain;
-  cursor: pointer; }
-.choose-size-label {
-  font-size: 20px;
-  font-weight: 300;
-}
-.min-val,
-.max-val,
-.range-hint {
-/*这里的font-weight的10bold好像不是一个在这个世界存在的代码，所以后人会改的会读的可以改一下*/ 
+.hours-range::-webkit-slider-thumb { height: 24px; width: 24px; border: none; background: url('../assets/icon/time.png') no-repeat center; background-size: contain; cursor: pointer;}
+.hours-range::-moz-range-thumb { height: 24px; width: 24px; border: none; background: url('../assets/icon/time.png') no-repeat center; background-size: contain; cursor: pointer; }
+
+.choose-size-label { font-size: 20px; font-weight: 300; }
+
+.min-val, .max-val, .range-hint {
   width: 50px;
   text-align: center;
-  font-weight: 10bold;
+  font-weight: 600; /* 修复原来的“10bold” */
   font-size: 14px;
 }
+
 .exp-range  { --fill: #11AF9B; --base: #D9D9D9; }
 .coin-range { --fill: #F2D84A; --base: #D9D9D9; }
 .hours-range{ --fill: #4ACDF2; --base: #D9D9D9; }
-.award-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;          /* 图标和文字的间距 */
-  width: 80px;       /* 给它一个固定宽度，避免错位 */
-}
-.award-icon {
-  width: 20px;       /* 图标大小，可以调 */
-  height: 20px;
-  object-fit: contain;
-}
-.choose-size-label-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 6px; /* 文字和问号间距 */
-}
-.help-icon {
-  font-size: 18px;
-  color: #2A2C55;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-.help-icon:hover {
-  color: #8949d1;
-}
 
+.award-label { display: flex; align-items: center; gap: 6px; width: 80px; }
+.award-icon { width: 20px; height: 20px; object-fit: contain; }
+.choose-size-label-wrapper { display: flex; align-items: center; gap: 6px; }
+.help-icon { font-size: 18px; color: #2A2C55; cursor: pointer; transition: color 0.2s; }
+.help-icon:hover { color: #8949d1; }
+
+/* ===== Num 步进器样式 ===== */
+.num-wrap {
+  display: inline-flex;
+  align-items: center;
+  background: #ECEEF5;          /* 接近示例图的浅灰底 */
+  border-radius: 12px;
+  padding: 2px 8px;
+  gap: 12px;
+  user-select: none;
+}
+.num-btn {
+  min-width: 28px;
+  height: 28px;
+  line-height: 28px;
+  border: none;
+  border-radius: 8px;
+  background: #E9F2FF;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.06) inset;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #1F3A8A;
+}
+.num-btn:disabled {
+  cursor: not-allowed;
+  opacity: .5;
+}
+.num-value {
+  min-width: 40px;
+  text-align: center;
+  font-weight: 700;
+}
 </style>
