@@ -16,9 +16,9 @@
             </span>
           </div>
         </div>
+        <div class="level">Level {{ task.required_level }}</div>
       </header>
 
-      <div class="level">Level {{ task.required_level }}</div>
       <!-- 作者信息 -->
       <section class="author">
         <img class="avatar" :src="hostAvatar" alt="host avatar" />
@@ -95,7 +95,6 @@ import axios from 'axios';
 import DOMPurify from 'dompurify'
 import ProgressBar from 'primevue/progressbar'              // ✅ 用 PrimeVue 的进度条
 import { levelRanges } from '../../components/levelRange.js' // ✅ 等级上下限
-import { formatDate } from '@/utils/date'  // 确保导出的名字一致
 import AssigneesStack from '../../components/AssigneesStack.vue'
 // ==== 依赖的导入 ====
 // 简单的日期格式化（台湾时区），支持 Date 或字符串
@@ -498,9 +497,9 @@ const metricsBound = computed(() => {
 .page{
   /* 灰色背景就是左右“空出来的空间” */
   background: #f3f4f6;              /* 你也可以换成 #eef1f5 */
-  height: 100dvh;
   /* 给两侧一个基础内边距，避免巨屏贴边难看 */
   padding: 0 clamp(12px, 4vw, 24px);
+
 }
 
 /* 调整：中间内容容器做成白色卡片并居中 */
@@ -511,7 +510,7 @@ const metricsBound = computed(() => {
   background: #fff;                 /* 白色卡片 */
   border-radius: 16px;              /* 圆角 */
   box-shadow: 0 8px 24px rgba(0,0,0,.06);
-  min-height: 120px;               /* 让卡片至少与视口等高 */
+  min-height: 100dvb;               /* 让卡片至少与视口等高 */
   padding: 32px 36px 28px;          /* 适当放大内边距以配合卡片感 */
 }
 
@@ -563,5 +562,6 @@ const metricsBound = computed(() => {
   margin: 0;                        /* ← 原本的 margin-left:5% 去掉 */
   align-items: flex-start;
 }
+
 
 </style>
