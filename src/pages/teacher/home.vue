@@ -361,7 +361,7 @@ meta:
   requiresAuth: true
   roles: ['teacher']
 </route>
-<script setup>
+<script setup lang="ts">
 /* ===== Imports ===== */
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -752,7 +752,17 @@ const onFormSubmit = async (e) => {
       }
     }
     showDialog.value = false
+    function toEndOfDayISOString(d) {
+      if (!d) return null
+      const raw = Array.isArray(d) ? d[0] : d
+      const date = raw instanceof Date ? raw : new Date(raw)
+      if (isNaN(date.getTime())) return null
 
+      // 设置为当天 23:59:59
+      date.setHours(23, 59, 59, 0)
+
+      return date.toISOString()  // 统一成 ISO 格式
+    }
     const levelLetter = selectedLevel.value?.split(' ').pop() || ''
     const payload = {
       title: bigTitle.value,
@@ -761,10 +771,11 @@ const onFormSubmit = async (e) => {
       experience_reward: exp.value,
       token_reward: coin.value,
       volunteerTime_reward: hours.value,
-      deadline: taskDate.value ? taskDate.value.toISOString() : null,
+      deadline: toLocalDateTime(taskDate.value, 'end', { withOffset: false }),
+      // 例: "2025-09-16T23:59:59"
       task_type: 'solo'
     }
-
+    console.log(payload)
     const resp = await api.post('/api/tasks/create/', payload)
     console.log('任务创建成功:', resp.data)
 
@@ -779,7 +790,16 @@ const onFormSubmit = async (e) => {
     console.error('提交任务失败:', err)
   }
 }
-
+function dateToYYYYMMDD(d: Date | null | undefined): string | null {
+  if (!d) return null
+  // 保险处理：Calendar 也可能在某些模式下返回数组
+  const date = Array.isArray(d) ? d[0] : d
+  if (!(date instanceof Date) || isNaN(date.getTime())) return null
+  const yyyy = date.getFullYear()
+  const mm = String(date.getMonth() + 1).padStart(2, '0')
+  const dd = String(date.getDate()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}`
+}
 /* ===== 工具函数（editThisTask 依赖） ===== */
 function parseDateLoose(s) {
   if (!s) return null
@@ -914,6 +934,59 @@ function lighten(hex, amount = 0.3) {
   b = Math.min(255, Math.floor(b + (255 - b) * amount))
   const toHex = (v) => v.toString(16).padStart(2, '0')
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`
+}
+type DayEdge = 'start' | 'end'
+
+function normalizeToDate(input: Date | Date[] | string | null | undefined): Date | null {
+  if (!input) return null
+  const raw = Array.isArray(input) ? input[0] : input
+  const d = raw instanceof Date ? new Date(raw) : new Date(raw)
+  return isNaN(d.getTime()) ? null : d
+}
+
+/**
+ * 返回本地时间的日期时间字符串
+ * - withOffset=false: "YYYY-MM-DDTHH:mm:ss"（无时区，俗称 naive local）
+ * - withOffset=true:  "YYYY-MM-DDTHH:mm:ss+08:00"（带本地时区偏移，RFC3339）
+ */
+function toLocalDateTime(
+  input: Date | Date[] | string | null | undefined,
+  edge: DayEdge = 'end',
+  opts: { withOffset?: boolean } = {}
+): string | null {
+  const d = normalizeToDate(input)
+  if (!d) return null
+  if (edge === 'start') d.setHours(0, 0, 0, 0)
+  else d.setHours(23, 59, 59, 0)
+
+  const yyyy = d.getFullYear()
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  const hh = String(d.getHours()).padStart(2, '0')
+  const mi = String(d.getMinutes()).padStart(2, '0')
+  const ss = String(d.getSeconds()).padStart(2, '0')
+  const base = `${yyyy}-${mm}-${dd}T${hh}:${mi}:${ss}`
+
+  if (opts.withOffset) {
+    const offset = -d.getTimezoneOffset() // 分钟；东八区 = +480
+    const sign = offset >= 0 ? '+' : '-'
+    const oh = String(Math.floor(Math.abs(offset) / 60)).padStart(2, '0')
+    const om = String(Math.abs(offset) % 60).padStart(2, '0')
+    return `${base}${sign}${oh}:${om}`
+  }
+  return base
+}
+
+/** 返回 UTC 的 ISO 字符串（结尾带 Z），后端要绝对时间就用它 */
+function toLocalEdgeISOString(
+  input: Date | Date[] | string | null | undefined,
+  edge: DayEdge = 'end'
+): string | null {
+  const d = normalizeToDate(input)
+  if (!d) return null
+  if (edge === 'start') d.setHours(0, 0, 0, 0)
+  else d.setHours(23, 59, 59, 0)
+  return d.toISOString() // e.g. "2025-09-16T15:59:59.000Z" (东八区)
 }
 </script>
 

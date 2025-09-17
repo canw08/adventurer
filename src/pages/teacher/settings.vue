@@ -93,6 +93,8 @@ const ackNames = [
 const onSignOut = () => {
   // TODO: 接入你的登出逻辑
   userStore.clearUser()
+  localStorage.setItem("access_token", "");
+  localStorage.setItem("refresh_token", "");
   router.push('/');
   console.log('Sign out clicked')
 }

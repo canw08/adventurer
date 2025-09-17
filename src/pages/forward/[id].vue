@@ -1,101 +1,108 @@
 <template>
-  <div class="container" v-if="task">
-    <!-- 顶部：标题/日期/等级 -->
-    <header class="top">
-      <div class="title-side">
-        <h1 class="title">{{ task.title }}</h1>
-        <div class="date">
-          <svg class="clock" viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/>
-            <path d="M12 7v5.2l3.6 1.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-          <span class="qdlg-date-inline">
-            <i class="pi pi-clock"></i>
-            {{ formatDate(selectedProject?.date, true) }}
-          </span>
+    <Toast />
+  <div class="page">
+    <div class="container" v-if="task">
+      <!-- 顶部：标题/日期/等级 -->
+      <header class="top">
+        <div class="title-side">
+          <h1 class="title">{{ task.title }}</h1>
+          <div class="date">
+            <svg class="clock" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/>
+              <path d="M12 7v5.2l3.6 1.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span class="qdlg-date-inline">
+              <i class="pi pi-clock"></i>
+              {{ formatDate(selectedProject?.date, true) }}
+            </span>
+          </div>
         </div>
-      </div>
-      <div class="level">Level {{ task.required_level }}</div>
-    </header>
+        <div class="level">Level {{ task.required_level }}</div>
+      </header>
 
-    <!-- 作者信息 -->
-    <section class="author">
-      <img class="avatar" :src="hostAvatar" alt="host avatar" />
-      <div class="meta">
-        <div class="name">{{ task.publisher }}</div>
+      <!-- 作者信息 -->
+      <section class="author">
+        <img class="avatar" :src="hostAvatar" alt="host avatar" />
+        <div class="meta">
+          <div class="name">{{ task.publisher }}</div>
 
-        <!-- ✅ 渲染富文本描述（已净化） -->
-        <div class="desc" v-html="safeDescription"></div>
-      </div>
-    </section>
-
-    <!-- 图片和指标 -->
-    <section class="content-row">
-      <section class="media">
-        <img v-if="task.image" :src="task.image" alt="task image" class="media-img" />
+          <!-- ✅ 渲染富文本描述（已净化） -->
+          <div class="desc" v-html="safeDescription"></div>
+        </div>
       </section>
 
-            <!-- 右栏指标区域（包含 ProgressBar） -->
-      <div class="qdlg-metrics">
-        <div v-for="m in metricsBound" :key="m.key" class="qdlg-metric-item">
-          <div class="qdlg-metric-row">
-            <img :src="m.icon" alt="" class="qdlg-metric-icon qdlg-pixelated click-wiggle" />
-            <div class="qdlg-metric-bar-wrapper" style="position:relative;">
-              <ProgressBar
-                :value="m.pct"
-                :showValue="false"
-                class="qdlg-metric-bar"
-                :style="{ height: '28px', '--bar-color': m.color }"
-              />
-              <span
-                class="qdlg-metric-text"
-                style="position:absolute;top:50%;left:93%;transform:translate(-50%,-50%);font-size:16px;font-weight:600;color:#2A2C55;pointer-events:none;"
-              >
-                {{ m.raw }}{{ m.unit }}
-              </span>
+      <!-- 图片和指标 -->
+      <section class="content-row">
+        <section class="media">
+          <img v-if="task.image" :src="task.image" alt="task image" class="media-img" />
+        </section>
+
+              <!-- 右栏指标区域（包含 ProgressBar） -->
+        <div class="qdlg-metrics">
+          <div v-for="m in metricsBound" :key="m.key" class="qdlg-metric-item">
+            <div class="qdlg-metric-row">
+              <img :src="m.icon" alt="" class="qdlg-metric-icon qdlg-pixelated click-wiggle" />
+              <div class="qdlg-metric-bar-wrapper" style="position:relative;">
+                <ProgressBar
+                  :value="m.pct"
+                  :showValue="false"
+                  class="qdlg-metric-bar"
+                  :style="{ height: '28px', '--bar-color': m.color }"
+                />
+                <span
+                  class="qdlg-metric-text"
+                >
+                  {{ m.raw }}{{ m.unit }}
+                </span>
+              </div>
             </div>
+            <div class="qdlg-metric-label">{{ m.label }}</div>
           </div>
-          <div class="qdlg-metric-label">{{ m.label }}</div>
         </div>
-      </div>
 
-    </section>
+      </section>
 
-    <!-- 底部 -->
-    <footer class="bottom">
-      <button class="accept">Accept</button>
+      <!-- 底部 -->
+      <footer class="bottom">
+        <button class="accept" @click="onAccept" :disabled="accepting">
+          {{ accepting ? 'Processing...' : 'Accept' }}
+        </button>
 
-      <AssigneesStack
-        v-if="task?.accepted_by?.length"
-        :users="task.accepted_by"
-        :max-visible="3"
-        :size="44"
-        :dialog-title="'Assigned'"
-        :dialog-width="'420px'"
-        :avatar-url-fn="avatarUrl"
-        @open="showAssignees = true"
-        @close="showAssignees = false"
-      />
-    </footer>
+        <AssigneesStack
+          v-if="task?.accepted_by?.length"
+          :users="task.accepted_by"
+          :max-visible="3"
+          :size="44"
+          :dialog-title="'Assigned'"
+          :dialog-width="'420px'"
+          :avatar-url-fn="avatarUrl"
+          @open="showAssignees = true"
+          @close="showAssignees = false"
+        />
+      </footer>
+    </div>
+    <div v-else class="loading">Loading...</div>
   </div>
-  <div v-else class="loading">Loading...</div>
 </template>
 
 <route lang="yaml">
 meta:
-  requiresAuth: true
+  requiresAuth: false
   allowMobile: true
 </route>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import axios from 'axios';
+import { useRoute,useRouter } from 'vue-router'
+import api from '../../api.js';
 import DOMPurify from 'dompurify'
 import ProgressBar from 'primevue/progressbar'              // ✅ 用 PrimeVue 的进度条
 import { levelRanges } from '../../components/levelRange.js' // ✅ 等级上下限
-import { formatDate } from '@/utils/date'  // 确保导出的名字一致
 import AssigneesStack from '../../components/AssigneesStack.vue'
+import { useToast } from 'primevue/usetoast'
+const toast = useToast()
+const router = useRouter()
+const route = useRoute()
 // ==== 依赖的导入 ====
 // 简单的日期格式化（台湾时区），支持 Date 或字符串
 const formatDate = (input: string | number | Date | null | undefined, withTime = false) => {
@@ -111,20 +118,39 @@ const formatDate = (input: string | number | Date | null | undefined, withTime =
   }
   return new Intl.DateTimeFormat('zh-TW', opts).format(d)
 }
-const api = axios.create({});
-
-const route = useRoute()
 const task = ref<any>(null)
 const showAssignees = ref(false)
 
+const isLoggedIn = computed(() => {
+  const access = localStorage.getItem("access_token");
+  const refresh = localStorage.getItem("refresh_token");
+
+  return access && refresh && isJwtValid(access)
+})
+
+function isJwtValid(token: string | null): boolean {
+  if (!token) return false;
+  try {
+    const base64 = token.split(".")[1];
+    if (!base64) return false;
+    const json = JSON.parse(decodeURIComponent(atob(base64).split("").map(c =>
+      "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)
+    ).join("")));
+    if (typeof json.exp !== "number") return true; // 无 exp 当作有效（由接口再兜底）
+    return json.exp * 1000 > Date.now();
+  } catch {
+    // 不是标准 JWT，交由服务端/接口兜底
+    return true;
+  }
+}
 // 头像地址统一封装（沿用你原来的 dicebear 规则）
 const avatarUrl = (u: any) =>
-  `https://api.dicebear.com/9.x/adventurer/svg?seed=${u?.avatar || u?.nickname || 'user'}`
+  `https://api.dicebear.com/9.x/adventurer/svg?seed=${u?.avatar || u?.nickname || 'user'}&skinColor=ecad80,f2d3b1`
 
 // 只展示前三个；用于底部右侧紧凑视图
 const visibleAssignees = computed(() => (task.value?.accepted_by || []).slice(0, 3))
 // 假头像占位
-const hostAvatar = 'https://api.dicebear.com/9.x/adventurer/svg?seed=bridgette'
+const hostAvatar = `https://api.dicebear.com/9.x/adventurer/svg?skinColor=ecad80,f2d3b1&seed=${task.publisher_avatar}` || `https://api.dicebear.com/9.x/adventurer/svg?seed=none`
 const assigneeAvatar = 'https://api.dicebear.com/9.x/adventurer/svg?seed=haoyang'
 
 /** ========== HTML 描述（安全渲染） ========== */
@@ -141,7 +167,52 @@ const safeDescription = computed(() => {
   })
   return div.innerHTML
 })
+const accepting = ref(false)
 
+/** 真正的“接受任务”的业务逻辑（已登录时跑这里） */
+const applyForTask = async (taskId: string | number) => {
+  if (!taskId) return
+  try {
+    await api.post(`/api/tasks/${taskId}/apply/`)
+    toast.add({
+      severity: 'success',
+      summary: '已接受任务',
+      detail: '任务申请成功，列表已更新。',
+      life: 3000
+    })
+    // 👉 如果你当前页面也需要刷新任务详情，可以加上：
+    await fetchTask(taskId)
+  } catch (err: any) {
+    console.error(err)
+    toast.add({
+      severity: 'error',
+      summary: '操作失败',
+      detail: err?.response?.data?.detail || '接受任务失败，请稍后再试。',
+      life: 4000
+    })
+  }
+}
+
+/** 点击 Accept 的统一入口 */
+const onAccept = async () => {
+  if (accepting.value) return
+  if (!isLoggedIn.value) {
+    // 带上回跳地址跳登录页（用 name 或 path 看你路由怎么配的）
+    router.push({
+      path: '/',              // 如果你的登录路由是 '/login'，也可以用 { path: '/login' }
+      query: { redirect: route.fullPath }
+    })
+    return
+  }
+
+  // 已登录：执行你的业务
+  try {
+    accepting.value = true
+    await applyForTask(route.params.id as string)
+  } finally {
+    accepting.value = false
+  }
+}
 /** ========== 进度条：按等级上下限计算 ========== */
 // 工具：把接口的三个字段映射到 exp/coin/hour
 const mapTaskToMetrics = (t: any) => ({
@@ -269,7 +340,7 @@ const metricsBound = computed(() => {
 
 .content-row { display:flex; flex-direction:column; gap:28px; margin:24px 0 16px; }
 /* 右栏容器与条目布局 */
-.qdlg-metrics { display: flex; flex-direction: column; gap: var(--metric-gap); width: clamp(220px, 80%, 320px); margin: 0; align-items: flex-start; margin-left: 5%;}
+.qdlg-metrics { display: flex; flex-direction: column; gap: var(--metric-gap); width: clamp(220px, 80%, 320px); margin: 0;}
 .qdlg-metric-item { display: flex; flex-direction: column; gap: 4px; }
 .qdlg-metric-row { display: flex; align-items: center; width: 100%; position: relative; }
 
@@ -282,9 +353,25 @@ const metricsBound = computed(() => {
   image-rendering: pixelated; image-rendering: crisp-edges; image-rendering: -moz-crisp-edges;
   -ms-interpolation-mode: nearest-neighbor;
 }
+.qdlg-metric-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;                /* ✅ 改成 50% */
+  transform: translate(-50%, -50%);
+  font-size: 16px;
+  font-weight: 600;
+  color: #2A2C55;
+  pointer-events: none;
+}
 
 /* ProgressBar 外层容器 */
-.qdlg-metric-bar { flex: 1; width: 100%; min-width: 180px; }
+.qdlg-metric-bar {
+  flex: 0 0 auto;
+  width: 100%; 
+  max-width: 280px;   /* ✅ 新增：限制条宽，数值可调 */
+  margin: 0 auto;     /* ✅ 新增：让条居中 */
+  min-width: 180px;
+}
 
 /* PrimeVue ProgressBar 的外观重置 */
 .qdlg-metric-bar :deep(.p-progressbar) {
@@ -307,9 +394,6 @@ const metricsBound = computed(() => {
 .qdlg-metric-bar :deep(.p-progressbar .p-progressbar-content) {
   display: flex; align-items: center; justify-content: center;
 }
-
-/* 覆盖条右端显示的原始值文本（非 PrimeVue 自带，是额外的 span） */
-.qdlg-metric-text { font-size: 12px; font-weight: 600; color: #fff; }
 
 .bottom{ margin-top:auto; display:flex; align-items:center; justify-content:space-between; padding-top:22px; }
 .accept{ background:var(--btn); color:#fff; border:none; padding:12px 58px; font-weight:900; border-radius:500px; font-size:18px; cursor:pointer; background-color: #2A2C55;}
@@ -480,7 +564,75 @@ const metricsBound = computed(() => {
 .assignee-id{
   font-size: 12px; color: #9aa0af;
 }
+/* 新增：整页背景与左右灰边 */
+.page{
+  /* 灰色背景就是左右“空出来的空间” */
+  background: #f3f4f6;              /* 你也可以换成 #eef1f5 */
+  /* 给两侧一个基础内边距，避免巨屏贴边难看 */
+  padding: 0 clamp(12px, 4vw, 24px);
 
-/* 卡片右下角完 */
+}
+
+/* 调整：中间内容容器做成白色卡片并居中 */
+.container{
+  /* 原有的属性保留，下面是关键新增/覆盖 */
+  max-width: 560px;                /* 控制内容最大宽度 */
+  margin: 0 auto;                   /* 居中，就会在大屏两侧露出灰色 */
+  background: #fff;                 /* 白色卡片 */
+  border-radius: 16px;              /* 圆角 */
+  box-shadow: 0 8px 24px rgba(0,0,0,.06);
+  min-height: 100dvb;               /* 让卡片至少与视口等高 */
+  padding: 32px 36px 28px;          /* 适当放大内边距以配合卡片感 */
+}
+
+/* —— 桌面 / 平板上的“内容-指标”两栏布局 —— */
+@media (min-width: 1024px){
+  .content-row{
+    display: flex;                  /* ✅ 新增：改为纵向容器 */
+    flex-direction: column;         /* ✅ 新增：上下堆叠 */
+    margin-left: 1%;
+    gap: 24px;
+  }
+  .qdlg-metrics{
+    width: 100%;
+    max-width: 340px;               /* ✅ 新增：区域本身定宽 */
+    margin-left: 1%;
+  }
+}
+
+
+/* —— 手机适配：全宽、去圆角阴影，收紧内边距 —— */
+@media (max-width: 768px){
+  .page{ padding: 0; }              /* 手机就不要左右 padding 了 */
+  .container{
+    border-radius: 0;
+    box-shadow: none;
+    padding: 20px 16px;             /* 更紧凑的手机内边距 */
+    min-height: auto;               /* 避免小屏溢出 */
+  }
+}
+
+/* —— 媒体区网格：去掉“向右偏移”的 margin —— */
+.media{
+  display: grid;
+  grid-template-columns: repeat(2, 300px);
+  gap: 20px;
+  max-width: 620px;
+  margin: 0;                        /* ← 原本的 margin-left:5% 去掉 */
+}
+@media (max-width: 700px){
+  .media{ grid-template-columns: 300px; max-width: 300px; }
+}
+
+/* —— 指标区本身保持列布局，去掉横向位移 —— */
+.qdlg-metrics{
+  display: flex;
+  flex-direction: column;
+  gap: var(--metric-gap);
+  width: clamp(220px, 80%, 320px);
+  margin: 0;                        /* ← 原本的 margin-left:5% 去掉 */
+  align-items: flex-start;
+}
+
 
 </style>

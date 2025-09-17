@@ -48,7 +48,7 @@ router.beforeEach(async (to) => {
     try {
       await userStore.fetchUser()
     } catch (e) {
-      return { path: '/login', query: { redirect: to.fullPath } }
+      return { path: '/', query: { redirect: to.fullPath } }
     }
   }
 
@@ -56,7 +56,7 @@ router.beforeEach(async (to) => {
 
   if (!hasRoleAccess(to, role)) {
     if (!role) {
-      return { path: '/login', query: { redirect: to.fullPath } }
+      return { path: '/', query: { redirect: to.fullPath } }
     }
     // 已登录但没权限：按角色分流或 403
     if (role === 'teacher') return { path: '/teacher/home' }

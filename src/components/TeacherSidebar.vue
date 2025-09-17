@@ -64,6 +64,15 @@
         <i class="pi pi-book icon"></i>
         <span class="label-text">{{ t('sidebar.home') }}</span>
       </div>
+            <div
+        class="menu-button"
+        :class="{ active: isActive('/teacher/task') }"
+        @click="goToBoard"
+        v-ripple
+      >
+        <i class="pi pi-user icon"></i>
+        <span class="label-text">{{ t('sidebar.board') }}</span>
+      </div>
       <div
         class="menu-button"
         :class="{ active: isActive('/teacher/settings') }"
