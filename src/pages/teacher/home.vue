@@ -162,6 +162,17 @@
               </span>
             </div>
             <div class="task-exp">{{ project.exp || $t('common.na') }}</div>
+          <div
+  v-if="project.slotsTotal > 1"
+  class="task-slotsline"
+  :title="`已占 ${project.slotsUsed} / 名额 ${project.slotsTotal}；剩余 ${Math.max(0, project.slotsTotal - project.slotsUsed)}`"
+  aria-label="available-slots"
+>
+  <i class="pi pi-users" aria-hidden="true"></i>
+  <span class="slots-count">
+    {{ project.slotsUsed }} / {{ project.slotsTotal }}
+  </span>
+</div>
             <div class="task-teamwork">
               <img :src="project.image" alt="Project Image" class="task-teamwork-image" />
             </div>
@@ -287,6 +298,18 @@
               </div>
               <div class="qdlg-metric-label">{{ m.label }}</div>
             </div>
+          <div v-if="(selectedProject?.slotsTotal ?? 1) > 1" class="metric-item">
+  <div
+    class="metric-row dialog-slotsline"
+    :title="`已占 ${selectedProject?.slotsUsed} / 名额 ${selectedProject?.slotsTotal}；剩余 ${Math.max(0, (selectedProject?.slotsLeft ?? 0))}`"
+    aria-label="available-slots-dialog"
+  >
+    <i class="pi pi-users" aria-hidden="true"></i>
+    <span class="slots-count">
+      {{ selectedProject?.slotsUsed }} / {{ selectedProject?.slotsTotal }}
+    </span>
+  </div>
+</div>
           </div>
         </div>
       </div>
@@ -496,6 +519,22 @@ const allProjects = ref([])
 
 /** 把后端 task 映射成前端用的 project 结构（字段名尽量贴合你原本的 UI） */
 function mapTaskToProject(task) {
+  // 工具：确保整数兜底
+  const toInt = (v, fallback = 0) => {
+    const n = Number(v)
+    return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : fallback
+  }
+
+  const slotsUsed = toInt(
+    Array.isArray(task.accepted_by)
+      ? task.accepted_by.length
+      : (task.current_participants ?? task.current_people ?? task.joined_count ?? task.current_count ?? 0)
+  )
+
+  const slotsTotal = toInt(
+    task.required_people ?? task.required_participants ?? task.capacity ?? task.team_size ?? task.max_participants ?? task.total_needed ?? 1
+  )
+
   return {
     id: task.id,
     title: task.title,
@@ -509,6 +548,9 @@ function mapTaskToProject(task) {
     avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${task.publisher_avatar || 'none'}&skinColor=ecad80,f2d3b1`,
     author: task.publisher_nickname,
     description: task.description,
+    slotsUsed : 1,
+    slotsTotal : 3,
+    slotsLeft: Math.max(0, slotsTotal - slotsUsed),
     accepted_by: Array.isArray(task.accepted_by)
       ? task.accepted_by.map(u => ({
           id: u.id,
@@ -1131,7 +1173,6 @@ function lighten(hex, amount = 0.3) {
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); 
   font-size: 16px; 
   font-weight: bold;
-  margin-bottom: 8px;
   text-align: left;
   width: 100%;
 }
@@ -1666,5 +1707,134 @@ function lighten(hex, amount = 0.3) {
   gap: 12px;
   text-align: center;      /* 文本水平居中 */
   user-select: none;
+}
+
+.task-slotsline,
+.dialog-slotsline {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  color: #A8A6A6;
+}
+.task-slotsline { margin-top: 6px; }
+.dialog-slotsline { margin-top: 8px; gap: 8px; }
+.task-slotsline .pi,
+.dialog-slotsline .pi { font-size: 20px; }
+.slots-count { font-weight: 700; }
+
+
+
+/* =========================
+   Filter Dialog
+   ========================= */
+:deep(.filter-dialog) .p-dialog-title {
+  font-size: 30px !important;
+  font-weight: 700;
+  color: #1e1e1e;
+}
+:deep(.filter-dialog) .p-dialog-content {
+  padding: 10px !important;
+  box-sizing: border-box;
+  overflow: hidden !important;
+  max-height: none !important;
+}
+
+.filter-section { margin-bottom: 20px !important; }
+.level-section { padding: 0 20px; }
+.level-label {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e1e1e;
+  margin: 10px -10px;
+}
+.level-row {
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 20px 10px;
+}
+.level-item { display: inline-flex; align-items: center; gap: 10px; }
+.level-item :deep(.p-checkbox-box) {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid #c8d3e6;
+  transition: all 0.2s ease;
+}
+.level-item :deep(.p-checkbox-box.p-highlight) {
+  background: #3f5aa8;
+  border-color: #3f5aa8;
+}
+.level-item :deep(.p-checkbox-icon) {
+  font-size: 12px;
+  line-height: 1;
+  color: #fff;
+}
+.level-text { font-size: 18px; color: #1e1e1e; }
+
+/* 状态切换 SelectButton */
+.status-toggle-wrap { margin: 0; }
+.status-toggle { margin: 0 10px; width: calc(100% - 20px); }
+:deep(.filter-dialog) .status-toggle { width: 100% !important; }
+:deep(.filter-dialog) .p-selectbutton .p-button { padding: 0 !important; min-width: auto !important; }
+:deep(.filter-dialog) .p-selectbutton .p-button .p-button-label {
+  display: inline-block;
+  padding: 6px 10px !important;
+  line-height: 1.2;
+}
+
+/* 确认按钮固定右下 */
+.absolute-apply-button {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  z-index: 999;
+}
+.apply-button {
+  background-color: #2A2C52;
+  color: #ffffff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(42, 44, 82, 0.2);
+  transition: background-color 0.3s, transform 0.2s;
+}
+.apply-button:hover { background-color: #2A2C52; transform: translateY(-1px); }
+.apply-button:active { background-color: #2A2C52 !important; color: #ffffff !important; box-shadow: 0 4px 12px rgba(42, 44, 82, 0.2); }
+
+/* 富文本图片限制 */
+.rich-text img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 8px 0;
+  border-radius: 6px;
+}
+.metric-row.dialog-slotsline {
+  height: 40px;             /* 行整体高度加大 */
+  border-radius: 999px;
+  background: #D1EDF2;      /* 底色保持一致，可去掉 */
+  padding: 0 16px;          /* 内边距增加，数字不贴边 */
+  gap: 25px;                /* 图标与数字的间距 */
+}
+
+.dialog-slotsline .pi {
+  font-size: 26px;          /* 用户图标更大 */
+  color: #334255;
+}
+
+.dialog-slotsline .slots-count {
+  font-size: 24px;          /* 数字放大 */
+  font-weight: 600;          /* 更粗显眼 */
+  color: #334255;
+}
+/* 修正你上一版的小笔误（这段原注释结尾写成了 * /) 导致 CSS 解析异常） */
+.dialog-slotsline {
+  font-size: 20px;       /* 文本整体变大 */
+  /* gap 已由 .metric-row.dialog-slotsline 控制 */
 }
 </style>
