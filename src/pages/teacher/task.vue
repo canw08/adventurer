@@ -358,7 +358,8 @@ function mapTaskToProject(task) {
       ? task.accepted_by.map(u => ({
           id: u.id,
           nickname: u.nickname || u.name || 'User',
-          avatar: u.avatar
+          avatar: u.avatar,
+          realname: u.realname
         }))
       : []
   }

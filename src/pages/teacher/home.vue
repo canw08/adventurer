@@ -78,6 +78,7 @@
             v-model:exp="exp"
             v-model:coin="coin"
             v-model:hours="hours"
+            v-model:num = "num"
             :customRanges="selectedLevel === 'Design' ? customRanges : null"
           />
       </div>
@@ -163,16 +164,16 @@
             </div>
             <div class="task-exp">{{ project.exp || $t('common.na') }}</div>
           <div
-  v-if="project.slotsTotal > 1"
-  class="task-slotsline"
-  :title="`已占 ${project.slotsUsed} / 名额 ${project.slotsTotal}；剩余 ${Math.max(0, project.slotsTotal - project.slotsUsed)}`"
-  aria-label="available-slots"
->
-  <i class="pi pi-users" aria-hidden="true"></i>
-  <span class="slots-count">
-    {{ project.slotsUsed }} / {{ project.slotsTotal }}
-  </span>
-</div>
+            v-if="project.slotsTotal >= 1"
+            class="task-slotsline"
+            :title="`已占 ${project.slotsUsed} / 名额 ${project.slotsTotal}；剩余 ${Math.max(0, project.slotsTotal - project.slotsUsed)}`"
+            aria-label="available-slots"
+          >
+            <i class="pi pi-users" aria-hidden="true"></i>
+            <span class="slots-count">
+              {{ project.slotsUsed }} / {{ project.slotsTotal }}
+            </span>
+          </div>
             <div class="task-teamwork">
               <img :src="project.image" alt="Project Image" class="task-teamwork-image" />
             </div>
@@ -298,18 +299,18 @@
               </div>
               <div class="qdlg-metric-label">{{ m.label }}</div>
             </div>
-          <div v-if="(selectedProject?.slotsTotal ?? 1) > 1" class="metric-item">
-  <div
-    class="metric-row dialog-slotsline"
-    :title="`已占 ${selectedProject?.slotsUsed} / 名额 ${selectedProject?.slotsTotal}；剩余 ${Math.max(0, (selectedProject?.slotsLeft ?? 0))}`"
-    aria-label="available-slots-dialog"
-  >
-    <i class="pi pi-users" aria-hidden="true"></i>
-    <span class="slots-count">
-      {{ selectedProject?.slotsUsed }} / {{ selectedProject?.slotsTotal }}
-    </span>
-  </div>
-</div>
+          <div v-if="(selectedProject?.slotsTotal ?? 1) >= 1" class="metric-item">
+            <div
+              class="metric-row dialog-slotsline"
+              :title="`已占 ${selectedProject?.slotsUsed} / 名额 ${selectedProject?.slotsTotal}；剩余 ${Math.max(0, (selectedProject?.slotsLeft ?? 0))}`"
+              aria-label="available-slots-dialog"
+            >
+              <i class="pi pi-users" aria-hidden="true"></i>
+              <span class="slots-count">
+                {{ selectedProject?.slotsUsed }} / {{ selectedProject?.slotsTotal }}
+              </span>
+            </div>
+          </div>
           </div>
         </div>
       </div>
@@ -532,7 +533,7 @@ function mapTaskToProject(task) {
   )
 
   const slotsTotal = toInt(
-    task.required_people ?? task.required_participants ?? task.capacity ?? task.team_size ?? task.max_participants ?? task.total_needed ?? 1
+    task.maximum_users
   )
 
   return {
@@ -548,14 +549,15 @@ function mapTaskToProject(task) {
     avatar: `https://api.dicebear.com/9.x/adventurer/svg?seed=${task.publisher_avatar || 'none'}&skinColor=ecad80,f2d3b1`,
     author: task.publisher_nickname,
     description: task.description,
-    slotsUsed : 1,
-    slotsTotal : 3,
+    slotsUsed,
+    slotsTotal,
     slotsLeft: Math.max(0, slotsTotal - slotsUsed),
     accepted_by: Array.isArray(task.accepted_by)
       ? task.accepted_by.map(u => ({
           id: u.id,
           nickname: u.nickname || u.name || 'User',
-          avatar: u.avatar
+          avatar: u.avatar,
+          realname: u.realname
         }))
       : []
   }
@@ -669,6 +671,7 @@ const selectedLevel = ref('')          // 或 'Level F'
 const exp   = ref(0)
 const coin  = ref(0)
 const hours = ref(0)
+const num = ref(0)
 const bigTitle = ref('')
 const editorContent = ref('')
 const taskDate = ref(null)
@@ -691,7 +694,7 @@ const isValidDateValue = (val) => {
 }
 
 const isFormValid = computed(() => {
-  const hasAwards = exp.value > 0 || coin.value > 0 || hours.value > 0
+  const hasAwards = exp.value > 0 || coin.value > 0 || hours.value > 0 || num > 0
   const hasTitle  = bigTitle.value.trim() !== ''
   const plainText = editorContent.value.replace(/<[^>]*>/g, '').trim()
   const hasContent = plainText !== ''
@@ -729,19 +732,16 @@ const onFormSubmit = async (e) => {
   try {
     let html = editorContent.value
 
-    // 匹配所有 base64 图片
+    // 处理 base64 图片上传（保持原逻辑）
     const imgRegex = /<img[^>]+src="data:image\/[^"]+"[^>]*>/g
     const matches = html.match(imgRegex) || []
-
     for (const tag of matches) {
       const base64 = tag.match(/src="([^"]+)"/)?.[1]
       if (base64?.startsWith('data:image')) {
         const res = await fetch(base64)
         const blob = await res.blob()
-
         const fd = new FormData()
         fd.append('file', blob, `image-${Date.now()}.png`)
-
         const uploadResp = await api.post('/api/upload', fd, {
           headers: { 'Content-Type': 'multipart/form-data' }
         })
@@ -751,18 +751,7 @@ const onFormSubmit = async (e) => {
         }
       }
     }
-    showDialog.value = false
-    function toEndOfDayISOString(d) {
-      if (!d) return null
-      const raw = Array.isArray(d) ? d[0] : d
-      const date = raw instanceof Date ? raw : new Date(raw)
-      if (isNaN(date.getTime())) return null
 
-      // 设置为当天 23:59:59
-      date.setHours(23, 59, 59, 0)
-
-      return date.toISOString()  // 统一成 ISO 格式
-    }
     const levelLetter = selectedLevel.value?.split(' ').pop() || ''
     const payload = {
       title: bigTitle.value,
@@ -771,25 +760,39 @@ const onFormSubmit = async (e) => {
       experience_reward: exp.value,
       token_reward: coin.value,
       volunteerTime_reward: hours.value,
+      maximum_users: num.value,
       deadline: toLocalDateTime(taskDate.value, 'end', { withOffset: false }),
-      // 例: "2025-09-16T23:59:59"
       task_type: 'solo'
     }
-    console.log(payload)
-    const resp = await api.post('/api/tasks/create/', payload)
-    console.log('任务创建成功:', resp.data)
+
+    const isEdit = !!isEditing.value
+    const taskId = selectedProject.value?.id
+
+    let resp
+    if (isEdit && taskId) {
+      // 🔹 编辑模式：PATCH
+      resp = await api.patch(`/api/tasks/${taskId}/edit/`, payload)
+      console.log('任务编辑成功:', resp.data)
+    } else {
+      // 🔹 新建模式：POST
+      resp = await api.post('/api/tasks/create/', payload)
+      console.log('任务创建成功:', resp.data)
+    }
 
     showDialog.value = false
 
     // 刷新任务列表
     const res = await api.get('/api/tasks/my-tasks/')
     allProjects.value = res.data.map(mapTaskToProject)
-    
-    resetPublishForm()   // ✅ 新增：提交成功后清空
+
+    // 重置表单和状态
+    isEditing.value = false
+    resetPublishForm()
   } catch (err) {
     console.error('提交任务失败:', err)
   }
 }
+
 function dateToYYYYMMDD(d: Date | null | undefined): string | null {
   if (!d) return null
   // 保险处理：Calendar 也可能在某些模式下返回数组
@@ -843,7 +846,8 @@ function editThisTask() {
   exp.value   = typeof toNumber === 'function' ? toNumber(p.exp)  : (parseFloat(p.exp)  || 0)
   coin.value  = typeof toNumber === 'function' ? toNumber(p.coin) : (parseFloat(p.coin) || 0)
   hours.value = typeof toNumber === 'function' ? toNumber(p.hour) : (parseFloat(p.hour) || 0)
-
+  num.value = typeof toNumber === 'function' ? toNumber(p.slotsTotal) : (parseFloat(p.slotsTotal) || 0)
+  
   // 日期（发布弹窗里的 Calendar 需要 Date 对象）
   taskDate.value = parseDateLoose(p.date)
 

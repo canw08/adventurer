@@ -44,17 +44,17 @@
             </div>
             <div class="task-exp">{{ project.exp || $t('common.na') }}</div>
             <!-- ✅ 卡片人数条 -->
-<div
-  v-if="project.slotsTotal > 1"
-  class="task-slotsline"
-  :title="`已占 ${project.slotsUsed} / 名额 ${project.slotsTotal}；剩余 ${Math.max(0, project.slotsTotal - project.slotsUsed)}`"
-  aria-label="available-slots"
->
-  <i class="pi pi-users" aria-hidden="true"></i>
-  <span class="slots-count">
-    {{ project.slotsUsed }} / {{ project.slotsTotal }}
-  </span>
-</div>
+            <div
+              v-if="project.slotsTotal >= 1"
+              class="task-slotsline"
+              :title="`已占 ${project.slotsUsed} / 名额 ${project.slotsTotal}；剩余 ${Math.max(0, project.slotsTotal - project.slotsUsed)}`"
+              aria-label="available-slots"
+            >
+              <i class="pi pi-users" aria-hidden="true"></i>
+              <span class="slots-count">
+                {{ project.slotsUsed }} / {{ project.slotsTotal }}
+              </span>
+            </div>
             <div class="task-teamwork">
               <img :src="project.image" alt="Project Image" class="task-teamwork-image" />
             </div>
@@ -172,18 +172,18 @@
             <!-- 下行：label -->
             <div class="metric-label">{{ m.label }}</div>
           </div>
-<div v-if="(selectedProject?.slotsTotal ?? 1) > 1" class="metric-item">
-  <div
-    class="metric-row dialog-slotsline"
-    :title="`已占 ${selectedProject?.slotsUsed} / 名额 ${selectedProject?.slotsTotal}；剩余 ${Math.max(0, (selectedProject?.slotsLeft ?? 0))}`"
-    aria-label="available-slots-dialog"
-  >
-    <i class="pi pi-users" aria-hidden="true"></i>
-    <span class="slots-count">
-      {{ selectedProject?.slotsUsed }} / {{ selectedProject?.slotsTotal }}
-    </span>
-  </div>
-</div>
+          <div v-if="(selectedProject?.slotsTotal ?? 1) >= 1" class="metric-item">
+            <div
+              class="metric-row dialog-slotsline"
+              :title="`已占 ${selectedProject?.slotsUsed} / 名额 ${selectedProject?.slotsTotal}；剩余 ${Math.max(0, (selectedProject?.slotsLeft ?? 0))}`"
+              aria-label="available-slots-dialog"
+            >
+              <i class="pi pi-users" aria-hidden="true"></i>
+              <span class="slots-count">
+                {{ selectedProject?.slotsUsed }} / {{ selectedProject?.slotsTotal }}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -327,7 +327,7 @@ function mapTaskToProject(task) {
   )
 
   const slotsTotal = toInt(
-    task.required_people ?? task.required_participants ?? task.capacity ?? task.team_size ?? task.max_participants ?? task.total_needed ?? 1
+    task.maximum_users
   )
 
   return {
@@ -344,13 +344,14 @@ function mapTaskToProject(task) {
     avatar: `https://api.dicebear.com/9.x/adventurer/svg?skinColor=ecad80,f2d3b1&seed=${task.publisher_avatar}` || `https://api.dicebear.com/9.x/adventurer/svg?seed=none`,
     author: task.publisher_nickname,
     description: task.description,
-    slotsUsed : 1,
-    slotsTotal : 3,
+    slotsUsed,
+    slotsTotal,
     slotsLeft: Math.max(0, slotsTotal - slotsUsed),
     accepted_by: Array.isArray(task.accepted_by) ? task.accepted_by.map(u => ({
       id: u.id,
       nickname: u.nickname,
-      avatar: u.avatar
+      avatar: u.avatar,
+      realname: u.realname
     })) : []
   }
 }

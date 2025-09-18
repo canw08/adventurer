@@ -27,7 +27,7 @@
           <img :src="avatarSrc(u)" class="avtr sm" alt="" @error="onImgError($event, u)" />
           <div class="assignee-info">
             <div class="assignee-name">{{ u.nickname ?? u.name ?? 'User' }}</div>
-            <div class="assignee-id">ID: {{ u.id ?? '-' }}</div>
+            <div class="assignee-id">{{ u.realname ?? '-' }}</div>
           </div>
         </li>
       </ul>
