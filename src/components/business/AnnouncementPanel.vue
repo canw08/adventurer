@@ -56,8 +56,8 @@
           </div>
 
           <!-- 简介 -->
-          <div class="event-desc line-clamp-2">
-            {{ a.content }}
+          <div class="event-desc" :title="a.content">
+            {{ a.previewContent }}
           </div>
 
           <!-- 提示 -->
@@ -111,6 +111,15 @@ const DialogCancel = defineAsyncComponent(() => import('./dialogs/AnnouncementDi
 // const DialogPR     = defineAsyncComponent(() => import('./dialogs/AnnouncementDialogPR.vue'))
 // …根据需要继续扩展
 
+// 放在 <script setup> 顶部其他函数旁
+function truncateText(input = '', limit = 25) {
+  // 按“字符”而不是 UTF-16 code unit 截断，兼容 emoji
+  const arr = Array.from(String(input))
+  if (arr.length <= limit) return input
+  return arr.slice(0, limit).join('') + '…'
+}
+
+
 // 映射表：typeKey -> 组件
 const dialogRegistry = {
   system: DialogSystem,
@@ -160,15 +169,17 @@ const items = computed(() => {
     typeLabel: t(`notifications.type.${a.typeKey || 'unknown'}`),
     dateLabel: a.dateISO || t('common.na'),
     clickHint: t('notifications.clickToView'),
+    // 关键：预览内容统一截到 30 个“字符”
+    previewContent: truncateText(a.content, 25),
   }))
 
-  // 默认只显示未读
   if (!showAllMode.value) {
     arr = arr.filter(a => !a.read)
   }
 
   return arr
 })
+
 
 function showAll() {
   showAllMode.value = true
