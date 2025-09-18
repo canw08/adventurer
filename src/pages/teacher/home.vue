@@ -332,25 +332,25 @@
             :dialog-width="'420px'"
           />
         </div>
+            <!-- 左下角按钮 -->
+            <div class="qdlg-footer-left">
+              <Button 
+                :label="$t('teacherHome.approve')" 
+                icon="pi pi-check" 
+                class="approve-btn"
+                :loading="loadingApprove"
+                :disabled="loadingApprove || (selectedProject?.accepted_by?.length ?? 0) === 0"
+                v-tooltip.top="(selectedProject?.accepted_by?.length ?? 0) === 0 ? '无人接取，无法完成' : ''"
+                @click="onApprove"
+              />
+              <Button 
+                icon="pi pi-share-alt" 
+                class="share-btn p-button-rounded p-button-text" 
+                v-tooltip.top="$t('teacherHome.shareTask')"
+                @click="onShare"
+              />
+            </div>
 
-
-              <!-- 左下角按钮 -->
-        <div class="qdlg-footer-left">
-          <Button 
-            :label="$t('teacherHome.approve')" 
-            icon="pi pi-check" 
-            class="approve-btn"
-            :loading="loadingApprove"
-            :disabled="loadingApprove"
-            @click="onApprove"
-          />
-          <Button 
-            icon="pi pi-share-alt" 
-            class="share-btn p-button-rounded p-button-text" 
-            v-tooltip.top="$t('teacherHome.shareTask')"
-            @click="onShare"
-          />
-        </div>
     </Dialog>
 
 </template>
@@ -397,6 +397,22 @@ const loadingApprove = ref(false)
 
 async function onApprove() {
   const id = selectedProject.value?.id
+
+  const assignedCount = selectedProject.value?.accepted_by?.length ?? 0
+
+  // ⛔ 无人接取 或 正在提交 时直接返回，并提示
+  if (!id || loadingApprove.value || assignedCount === 0) {
+    if (assignedCount === 0) {
+      toast.add({
+        severity: 'warn',
+        summary: '无法完成',
+        detail: '该任务尚无人接取，不能标记为完成',
+        life: 2500
+      })
+    }
+    return
+  }
+  
   if (!id || loadingApprove.value) return
   loadingApprove.value = true
   try {
