@@ -17,7 +17,6 @@ import { initI18n } from './i18n'
 import Tooltip from 'primevue/tooltip'
 
 
-
 async function bootstrap() {
   const pinia = createPinia()
   const app = createApp(App)
@@ -42,6 +41,8 @@ async function bootstrap() {
   // ⬇️ 等待 i18n 初始化
   const i18n = await initI18n()
   app.use(i18n)
+
+  app.config.globalProperties.$version = "0.2.2"
 
   app.mount('#app')
 

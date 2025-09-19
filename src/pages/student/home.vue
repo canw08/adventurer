@@ -1,4 +1,5 @@
 <template>
+  <UpdateNotice/>
   <!-- 右侧 -->
   <div class="main-content">
     <div class="main-header">
@@ -298,7 +299,7 @@ import solo2 from '../../assets/solo2.png'
 import { useToast } from 'primevue/usetoast'
 
 import AssigneesStack from '../../components/AssigneesStack.vue'
-
+import UpdateNotice from "../../components/UpdateNotice.vue"
 const toast = useToast()
 const router = useRouter()
 const { t } = useI18n()

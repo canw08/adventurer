@@ -14,8 +14,8 @@ const router = createRouter({
 function isMobileDevice() {
   const ua = navigator.userAgent
   const byUA = /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua)
-  const byViewport = (window.matchMedia && window.matchMedia('(max-width: 820px)').matches) || window.innerWidth <= 820
-  return byUA || byViewport
+  //const byViewport = (window.matchMedia && window.matchMedia('(max-width: 820px)').matches) || window.innerWidth <= 820
+  return byUA
 }
 const SEEN_FLAG = 'mobile_notice_seen'
 

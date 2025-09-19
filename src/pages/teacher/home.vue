@@ -1,4 +1,5 @@
 <template>
+  <UpdateNotice/>
   <!-- 右侧 -->
   <div class="main-content">
       <div class="main-header">
@@ -384,7 +385,7 @@ import teamwork from '../../assets/team.png'
 import solo1 from '../../assets/solo.png'
 import solo2 from '../../assets/solo2.png'
 import { useToast } from 'primevue/usetoast'
-
+import UpdateNotice from "../../components/UpdateNotice.vue"
 import AssigneesStack from '../../components/AssigneesStack.vue'
 
 
