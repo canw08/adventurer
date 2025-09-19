@@ -118,5 +118,13 @@
   "errors": {
     "missingTaskId": "Missing task ID; cannot proceed.",
     "unknown": "Operation failed, please try again later."
+  },
+  "updateNotice": {
+    "header": "Yep 😎 We updated again 🥳",
+    "title": "Update available",
+    "desc": "We just released version v{version} with some improvements and fixes.",
+    "descSmall": "Click the button below to view the changelog.",
+    "ctaView": "Show me!",
+    "ctaDismiss": "Got it"
   }
 }

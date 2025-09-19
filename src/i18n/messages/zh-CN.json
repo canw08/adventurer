@@ -118,5 +118,13 @@
   "errors": {
     "missingTaskId": "缺少任务ID,无法使用。",
     "unknown": "操作失败，请稍后重试。"
+  },
+  "updateNotice": {
+    "header": "没错😎 我们又更新啦🥳",
+    "title": "发现新版本",
+    "desc": "我们刚刚发布了 v{version} 版本，带来了一些改进和修复。",
+    "descSmall": "点击下方按钮查看更新日志。",
+    "ctaView": "让我看看!",
+    "ctaDismiss": "朕知道了"
   }
 }

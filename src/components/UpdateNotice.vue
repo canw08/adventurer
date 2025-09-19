@@ -5,22 +5,22 @@
     :draggable="false"
     :dismissableMask="false"
     :closable="true"
-    header="没错😎 我们又更新🥳"
+    :header="$t('updateNotice.header')"
     class="update-notice-dialog"
     :style="{ width: width }"
     @hide="onHide"
   >
     <div class="content">
-      <h3 class="title">{{ titleText }}</h3>
+      <h3 class="title">{{ $t('updateNotice.title') }}</h3>
       <p class="desc">
-        我们刚刚发布了 <b>v{{ resolvedVersion }}</b> 版本，带来了一些改进和修复。
+        {{ $t('updateNotice.desc', { version: resolvedVersion }) }}
       </p>
-      <p class="desc small">点击下方按钮查看更新日志。</p>
+      <p class="desc small">{{ $t('updateNotice.descSmall') }}</p>
 
       <div class="actions">
         <!-- 文本按钮 -->
         <Button
-          label="让我看看!"
+          :label="$t('updateNotice.ctaView')"
           class="p-button-text brand-text"
           icon="pi pi-external-link"
           :style="{ '--brand-color': buttonColor }"
@@ -28,30 +28,22 @@
           @click="goChangelog"
         />
         <Button
-          label="朕知道了"
+          :label="$t('updateNotice.ctaDismiss')"
           class="brand-solid"
           :style="{ '--brand-color': buttonColor }"
           severity="secondary"
           @click="dismiss"
         />
-
-
       </div>
     </div>
   </Dialog>
 </template>
 
+
 <script setup lang="ts">
 import { onMounted, ref, watch, computed, getCurrentInstance } from 'vue'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
-
-const globalVersion =
-  (getCurrentInstance()?.appContext.app as any)?.config?.globalProperties?.$version
-  ?? import.meta.env.VITE_APP_VERSION
-  ?? 'dev'
-
-const resolvedVersion = computed(() => props.version ?? globalVersion)
 
 /**
  * Props
@@ -83,6 +75,15 @@ const props = withDefaults(defineProps<{
   buttonColor: '#2B2C57'
 })
 
+/** 解析全局版本号（未传入时fallback到全局/环境变量/默认值） */
+const globalVersion =
+  (getCurrentInstance()?.appContext.app as any)?.config?.globalProperties?.$version
+  ?? import.meta.env.VITE_APP_VERSION
+  ?? 'dev'
+
+/** 最终使用的版本号 */
+const resolvedVersion = computed(() => props.version ?? globalVersion)
+
 /**
  * Emits
  */
@@ -93,7 +94,8 @@ const emit = defineEmits<{
 }>()
 
 const visible = ref(false)
-const storageKey = computed(() => `${props.storagePrefix}${resolvedVersion.value}`)
+/** 单一键：记录“最新已读版本号” */
+const SINGLE_KEY = computed(() => `${props.storagePrefix}latest_seen`)
 const titleText = computed(() => props.title || '有新版本可用')
 
 function getPathname(): string {
@@ -107,16 +109,18 @@ function getPathname(): string {
 }
 
 function isAllowedPath(): boolean {
+  // 按你的要求，此处逻辑保持不变（仍保留 return true;）
   return true;
   const path = getPathname()
   console.log(path);
-  
   return props.allowedPaths?.includes(path) ?? false
 }
 
+/** ✅ 仅使用一个键，内容为“已读的版本号” */
 function hasSeen(): boolean {
   try {
-    return localStorage.getItem(storageKey.value) === '1'
+    const saved = localStorage.getItem(SINGLE_KEY.value)
+    return saved === String(resolvedVersion.value)
   } catch {
     return false
   }
@@ -124,7 +128,7 @@ function hasSeen(): boolean {
 
 function markSeen() {
   try {
-    localStorage.setItem(storageKey.value, '1')
+    localStorage.setItem(SINGLE_KEY.value, String(resolvedVersion.value))
   } catch {
     // 忽略隐私模式/满额错误
   }
@@ -169,11 +173,12 @@ onMounted(() => {
   }
 })
 
-// 如果版本或路径变化，自动重新判断
+// 如果版本或路径变化，自动重新判断（此处保持你原本只监听 version 的策略）
 watch(() => props.version, () => {
   openIfNeeded()
 })
 </script>
+
 
 <style scoped>
 .update-notice-dialog :deep(.p-dialog-header) {
