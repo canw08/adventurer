@@ -1,4 +1,5 @@
 <template>
+  
   <div class="container">
     <div class="typewriter">
       {{ displayedText }}<span class="cursor">|</span>
@@ -6,6 +7,13 @@
     <div class="terminal-log" v-if="showTerminalLog">
       <div v-for="(log, index) in terminalLogs" :key="index">{{ log }}</div>
     </div>
+    <button
+      v-if="showSkipButton"
+      class="skip-btn"
+      @click="skip"
+    >
+      Skip
+    </button>
   </div>
 </template>
 
@@ -20,6 +28,58 @@ import { useRouter } from 'vue-router'   // ① 引入 router
 import { useUserStore } from '../../stores/user'   // ⬅️ 从 Pinia 取用户角色
 
 const router = useRouter()              // ② 实例化 router
+// ★新增：控制按钮显示与跳过状态
+const showSkipButton = ref(false)
+const skipped = ref(false)
+const currentTarget = ref(null)  // 记录将要跳转的路由
+
+
+const skip = async () => {
+  if (skipped.value) return
+  skipped.value = true
+  if (typeof showSkipButton !== 'undefined') showSkipButton.value = false // 可选：隐藏按钮
+
+  const role = (useUserStore().userInfo && useUserStore().userInfo.role) || 'student'
+  const sentences = scriptsByRole[role] || scriptsByRole.student
+  const target = redirectByRole[role] || redirectByRole.default
+
+  // 小工具：在 skip 内部使用的打字与删除（不受 skipped 判断影响）
+  const typeOut = async (text) => {
+    displayedText.value = ''
+    for (let i = 0; i < text.length; i++) {
+      displayedText.value += text[i]
+      await new Promise(r => setTimeout(r, typingSpeed))
+    }
+  }
+  const deleteOut = async () => {
+    while (displayedText.value.length > 0) {
+      displayedText.value = displayedText.value.slice(0, -1)
+      await new Promise(r => setTimeout(r, deleteSpeed))
+    }
+  }
+
+  if (sentences.length >= 2) {
+    const penultimate = sentences[sentences.length - 2]
+    const last = sentences[sentences.length - 1]
+
+    // 1) 打出倒数第二句
+    await typeOut(penultimate)
+    await new Promise(r => setTimeout(r, sentencePause))
+    // 2) 删除
+    await deleteOut()
+    // 3) 打出最后一句
+    await typeOut(last)
+  } else {
+    // 只有一句时，直接打出最后一句
+    const only = sentences[sentences.length - 1]
+    await typeOut(only)
+  }
+
+  // 4) 最后一句完成后，统一等待一会儿再跳转
+  await new Promise(r => setTimeout(r, sentencePause))
+  router.push(target)
+}
+
 
 /** —— 各角色的脚本（可按需增减角色或替换文案） —— */
 const scriptsByRole = {
@@ -95,17 +155,22 @@ const fakeTerminalCommands = [
 ]
 
 const typeSentence = async (sentence) => {
-  
   displayedText.value = ''
   for (let i = 0; i < sentence.length; i++) {
+    if (skipped.value) return                   // ★新增：被跳过时立刻退出
     displayedText.value += sentence[i]
     await new Promise(resolve => setTimeout(resolve, typingSpeed))
   }
   await new Promise(resolve => setTimeout(resolve, sentencePause))
+  // ★新增：首句播放完后显示“跳过动画”按钮
+  if (currentSentenceIndex.value === 0) {
+    showSkipButton.value = true
+  }
 }
 
 const deleteSentence = async () => {
   while (displayedText.value.length > 0) {
+    if (skipped.value) return                   // ★新增：被跳过时立刻退出
     displayedText.value = displayedText.value.slice(0, -1)
     await new Promise(resolve => setTimeout(resolve, deleteSpeed))
   }
@@ -114,14 +179,18 @@ const deleteSentence = async () => {
 const runTypewriter = async (role) => {
   await new Promise(resolve => setTimeout(resolve, 2500))
   const sentences = scriptsByRole[role] || scriptsByRole.student
-  for (let i = 0; i < sentences.length; i++) {
-    await typeSentence(sentences[i])
-    await deleteSentence()   // ✅ 每一句都删掉，包括最后一句
-  }
-
   const target = redirectByRole[role] || redirectByRole.default
+  currentTarget.value = target                 // ★新增：记录跳转目标
+
+  for (let i = 0; i < sentences.length; i++) {
+    currentSentenceIndex.value = i             // ★新增：用于判定首句结束
+    await typeSentence(sentences[i])
+    if (skipped.value) return                  // ★新增：被跳过就不再删/播后续
+    await deleteSentence()
+  }
   router.push(target)
 }
+
 
 
 onMounted(async () => {
@@ -197,4 +266,27 @@ onMounted(async () => {
   z-index: 10;
   user-select: none;
 }
+/* ★新增：跳过按钮样式（右下角固定） */
+.skip-btn {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  padding: 10px 14px;
+  border: 1px solid #00ff88;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #00ff88;
+  font-family: 'Inter', 'Roboto', 'Arial', sans-serif;
+  cursor: pointer;
+  z-index: 20;
+  transition: transform .15s ease, background .15s ease;
+}
+.skip-btn:hover {
+  transform: translateY(-1px);
+  background: rgba(0, 0, 0, 0.75);
+}
+.skip-btn:active {
+  transform: translateY(0);
+}
+
 </style>
