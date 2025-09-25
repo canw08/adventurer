@@ -58,7 +58,23 @@ export default [
         {
           id: 14,
           title: '打扫图书馆',
+          maximum_users: 10,
           accepted_by: [
+            {
+              "id": 1,
+              "nickname": "扣1复活科比",
+              "avatar": "T4Nh4vKllH5NrXygw5JtXfHzM0ULmTcla9kZlEJQfnIZ3pxD51"
+            },
+            {
+              "id": 1,
+              "nickname": "扣1复活科比",
+              "avatar": "T4Nh4vKllH5NrXygw5JtXfHzM0ULmTcla9kZlEJQfnIZ3pxD51"
+            },
+            {
+              "id": 1,
+              "nickname": "扣1复活科比",
+              "avatar": "T4Nh4vKllH5NrXygw5JtXfHzM0ULmTcla9kZlEJQfnIZ3pxD51"
+            },
             {
               "id": 1,
               "nickname": "扣1复活科比",
@@ -73,13 +89,20 @@ export default [
           volunteerTime_reward: 0.0,
           publisher_nickname: 'silverteacher',
           publisher_avatar: '',
-          is_accepted: true,
+          is_accepted: false,
           required_level: 'F',
         },
         {
           id: 13,
           title: '打扫图书馆',
           description: '整理图书馆的书籍并清扫地面',
+          accepted_by: [
+            {
+              "id": 1,
+              "nickname": "扣1复活科比",
+              "avatar": "T4Nh4vKllH5NrXygw5JtXfHzM0ULmTcla9kZlEJQfnIZ3pxD51"
+            },
+          ],
           task_type: 'solo',
           deadline: '2025-08-29 18:00',
           experience_reward: 100,
@@ -87,7 +110,7 @@ export default [
           volunteerTime_reward: 0.0,
           publisher_nickname: 'silverteacher',
           publisher_avatar: '',
-          is_accepted: false,
+          is_accepted: true,
           required_level: 'F',
         },
         {

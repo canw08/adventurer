@@ -231,17 +231,15 @@
         </div>
       </div>
 
-      <!-- 接任务按钮（固定右下角） -->
-      <!-- 未接取：显示 Accept 按钮 -->
-      <div v-if="selectedProject?.status !== 'assigned'" class="absolute-accept-button">
-        <Button label="Accept" class="custom-btn" @click="applyForTask(selectedProject?.id)" />
-      </div>
-
-      <!-- 已接取：显示接取者头像叠加 -->
-      <div v-else class="absolute-accept-button assigned-stack">
-        <span class="assigned-label">Assigned</span>
+      <!-- 接任务按钮 + (可选) 已接取者头像叠加（固定右下角） -->
+      <div
+        class="absolute-accept-button"
+        :class="{ 'assigned-stack': selectedProject?.status === 'assigned' }"
+      >
+        <!-- ✅ 无论是否 assigned：只要 accepted_by 有人，就并排显示头像叠加 -->
         <AssigneesStack
-          :users="selectedProject?.accepted_by || []"
+          v-if="(selectedProject?.accepted_by?.length ?? 0) > 0"
+          :users="selectedProject?.accepted_by"
           :max-visible="3"
           :size="44"
           :overlap-offset="18"
@@ -249,6 +247,20 @@
           :dialog-title="'Assigned'"
           :dialog-width="'420px'"
         />
+
+        <!-- 未接取：显示 Accept 按钮 -->
+        <template v-if="selectedProject?.status !== 'assigned'">
+          <Button
+            label="Accept"
+            class="custom-btn"
+            @click="applyForTask(selectedProject?.id)"
+          />
+        </template>
+
+        <!-- 已接取：显示“Assigned”标签 -->
+        <template v-else>
+          <span class="assigned-label">Assigned</span>
+        </template>
       </div>
     </Dialog>
 
@@ -1351,4 +1363,29 @@ function getLevelStyle(level) {
   font-size: 20px;       /* 文本整体变大 */
   /* gap 已由 .metric-row.dialog-slotsline 控制 */
 }
+
+/* 固定右下角容器：统一用 flex 横向排列，按钮与头像叠加并排显示 */
+.absolute-accept-button {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  z-index: 1000;
+  display: inline-flex;     /* 关键：让子元素横向排列 */
+  align-items: center;
+  gap: 12px;                /* 按钮与头像叠加之间的间距 */
+}
+
+/* 已接取时仍然横排；保留你原先的“Assigned”文案样式 */
+.absolute-accept-button.assigned-stack {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.assigned-label {
+  font-size: 18px;
+  color: #b8b8b8;
+  font-weight: 600;
+}
+
 </style>
