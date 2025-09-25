@@ -95,6 +95,10 @@ meta:
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute,useRouter } from 'vue-router'
 import api from '../../api.js';
+import axios from 'axios';
+const apiNone = axios.create({
+  baseURL: '/', // 建议直接写成 /api，避免路径歧义
+});
 import DOMPurify from 'dompurify'
 import ProgressBar from 'primevue/progressbar'              // ✅ 用 PrimeVue 的进度条
 import { levelRanges } from '../../components/levelRange.js' // ✅ 等级上下限
@@ -236,7 +240,7 @@ const METRIC_DEFS = [
 
 const fetchTask = async (id: string | number) => {
   try {
-    const resp = await api.get(`/api/tasks/${id}/`)
+    const resp = await apiNone.get(`/api/tasks/${id}/`)
     task.value = resp.data
 
     // 关键：把接口字段映射成进度条期望的键名
