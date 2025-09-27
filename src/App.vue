@@ -25,4 +25,5 @@ html, body {
 body, button, input, textarea, select {
   font-family: 'Inria Sans', sans-serif !important;
 }
+
 </style>

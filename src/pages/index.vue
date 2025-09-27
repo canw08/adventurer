@@ -32,17 +32,30 @@
     />
     <p v-if="touched.password && errors.password" class="err">{{ errors.password }}</p>
 
-    <!-- 行为按钮 -->
-    <button
-      class="btn glass"
-      @click="login"
-      :disabled="submitting || !canSubmit"
-      :aria-busy="submitting ? 'true' : 'false'"
-      :title="btnTitle"
-    >
-      <span v-if="!submitting" class="arrow">➜</span>
-      <span v-else class="loading">Loading…</span>
-    </button>
+    <!-- 行为区域：左侧小字 + 右侧按钮 -->
+    <div class="actions-row">
+      <button
+        class="tiny-link"
+        type="button"
+        @click="goAccountHelp"
+        aria-label="我的账号是啥？"
+        title="我的账号是啥？"
+      >
+        我的账号是啥?
+      </button>
+
+      <button
+        class="btn glass"
+        @click="login"
+        :disabled="submitting || !canSubmit"
+        :aria-busy="submitting ? 'true' : 'false'"
+        :title="btnTitle"
+      >
+        <span v-if="!submitting" class="arrow">➜</span>
+        <span v-else class="loading">Loading…</span>
+      </button>
+    </div>
+
 
     <!-- 统一错误提示（接口错误等） -->
     <p v-if="serverError" class="err global">{{ serverError }}</p>
@@ -205,6 +218,11 @@ function isJwtValid(token: string | null): boolean {
     return true;
   }
 }
+
+function goAccountHelp() {
+  router.push('/help/accounts'); // 按你的实际路由修改
+}
+
 onMounted(async () => {
   const access = localStorage.getItem("access_token");
   const refresh = localStorage.getItem("refresh_token");
@@ -409,6 +427,42 @@ html, body {
 /* ====== 降级方案 ====== */
 @supports not ((backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px))) {
   .glass { background: rgba(255, 255, 255, 0.75); }
+}
+/* 行容器：小字在左，按钮在右 */
+.actions-row {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  justify-content: flex-end; /* 靠右对齐 */
+  align-items: center;
+  gap: 12px; /* 两个元素的间距 */
+  z-index: 1;
+  margin-top: 6px;
+}
+
+/* 覆盖行内按钮的左边距，让它靠右对齐 */
+.actions-row .btn {
+  margin-left: auto; /* 覆盖全局的 260px */
+}
+
+/* 小字链接样式 */
+.tiny-link {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: #ffffffd0;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 160ms ease, text-decoration-color 160ms ease;
+}
+.tiny-link:hover {
+  opacity: 0.9;
+  text-decoration: underline;
+}
+.tiny-link:focus {
+  outline: 2px solid rgba(180, 220, 255, 0.65);
+  outline-offset: 2px;
 }
 
 
