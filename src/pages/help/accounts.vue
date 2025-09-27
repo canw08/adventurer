@@ -83,7 +83,7 @@ const roleOptions = [
 
 // public 下的绝对路径
 const studentDocs = ref<Doc[]>([
-  { label: '学生账号指南', path: '/pdf/account.pdf' },
+  { label: '学生账号指南', path: '/pdf/accounts.pdf' },
   { label: '爱迪邮箱教程', path: '/pdf/email.pdf' },
 ])
 const teacherDocs = ref<Doc[]>([
