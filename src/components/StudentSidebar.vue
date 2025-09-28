@@ -75,7 +75,7 @@
     <div class="menu-list">
       <div
         class="menu-button"
-        :class="{ active: isActive('/student/home') }"
+        :class="{ active: isActive(['/student/home', '/student/home-sender']) }"
         @click="goToLog"
         v-ripple
       >
@@ -164,8 +164,13 @@ const expDisplay = computed(() => `${currentExp.value}/${nextExp.value}`)
 const goToLog = () => router.push('/student/home');
 const goToBoard = () => router.push('/student/task');
 const goToTeam = () => router.push('/student/settings');
-const isActive = (path) => route.path === path;
-
+const isActive = (paths) => {
+  const current = route.path
+  if (Array.isArray(paths)) {
+    return paths.includes(current)
+  }
+  return current === paths
+}
 // 等级字母（来自 userStore）——没有就用 'D' 兜底
 const levelLetter = computed(() => {
   const raw = userStore?.userInfo?.level ?? 'D'

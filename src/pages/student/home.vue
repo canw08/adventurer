@@ -10,6 +10,20 @@
           <span class="running-count">{{ runningProjects.length }}</span>
           <span class="running-label"> {{ $t('questLog.runningQuest') }}</span>
         </span>
+
+        <!-- 切换模式 -->
+        <div class="header-action-toggle small-toggle">
+          <SelectButton
+            v-model="actionTab"
+            :options="actionOptions"
+            optionLabel="label"
+            optionValue="value"
+            class="tab-toggle"
+            aria-label="action-switch"
+            :allowEmpty="false"
+          />
+        </div>
+
       </div>
       <AnnouncementPanel />
     </div>
@@ -23,6 +37,7 @@
           optionLabel="label"
           optionValue="value"
           class="tab-toggle"
+          :allowEmpty="false"
         />
       </div>
     </div>
@@ -275,241 +290,77 @@ meta:
   requiresAuth: true
   roles: ['student']
 </route>
-
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+/* ================================
+ *  Imports
+ * ================================ */
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import api from '../../api.js';
+import { useI18n } from 'vue-i18n'
 import DOMPurify from 'dompurify'
+import { useToast } from 'primevue/usetoast'
+
+import api from '../../api.js'
+import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue'
+import AssigneesStack from '../../components/AssigneesStack.vue'
+import UpdateNotice from '../../components/UpdateNotice.vue'
+
 import Avatar from 'primevue/avatar'
 import SelectButton from 'primevue/selectbutton'
-import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue'
 import Dialog from 'primevue/dialog'
 import OverlayPanel from 'primevue/overlaypanel'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import ProgressBar from 'primevue/progressbar'
-import { useI18n } from 'vue-i18n'
 
 import { levelRanges } from '../../components/levelRange.js'
-
 import teamwork from '../../assets/team.png'
 import solo1 from '../../assets/solo.png'
 import solo2 from '../../assets/solo2.png'
-import { useToast } from 'primevue/usetoast'
 
-import AssigneesStack from '../../components/AssigneesStack.vue'
-import UpdateNotice from "../../components/UpdateNotice.vue"
-const toast = useToast()
+import { useRadialTransition } from '../../components/transations/useRadialTransition.js'
+
+const { radialTo, radialEffect } = useRadialTransition()
+
+/* ================================
+ *  Setup basics
+ * ================================ */
 const router = useRouter()
+const toast = useToast()
 const { t } = useI18n()
 
-// ====== Tabs ======
-const activeTab = ref('ongoing')
-const tabOptions = ref([
-  { label: t('tabs.ongoing'), value: 'ongoing' },
-  { label: t('tabs.completed'), value: 'completed' }
+/* ================================
+ *  Constants & Maps
+ * ================================ */
+const ACTION_ROUTES = Object.freeze({
+  release: '/student/home-sender',
+  accept:  '/student/home',
+})
+
+const levelColors = Object.freeze({
+  S: '#C4A010',
+  A: '#DD4546',
+  B: '#DD7C1B',
+  C: '#E6D624',
+  D: '#8FD833',
+  E: '#2590D2',
+  F: '#911EC7',
+})
+
+const METRIC_DEFS = Object.freeze([
+  { key: 'exp',  label: 'EXP',  unit: '',  icon: new URL('../../assets/icon/exp.png',   import.meta.url).href, color: '#11AF9B' },
+  { key: 'coin', label: 'Coin', unit: '',  icon: new URL('../../assets/icon/token.png', import.meta.url).href, color: '#FBE838' },
+  { key: 'hour', label: 'Hour', unit: 'h', icon: new URL('../../assets/icon/time.png',  import.meta.url).href, color: '#4ACDF2' },
 ])
 
-// ====== 项目数据（从mock获取） ======
-const allProjects = ref([])
-
-function mapTaskToProject(task) {
-  // 工具：确保整数兜底
-  const toInt = (v, fallback = 0) => {
-    const n = Number(v)
-    return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : fallback
-  }
-
-  const slotsUsed = toInt(
-    Array.isArray(task.accepted_by)
-      ? task.accepted_by.length
-      : (task.current_participants ?? task.current_people ?? task.joined_count ?? task.current_count ?? 0)
-  )
-
-  const slotsTotal = toInt(
-    task.maximum_users
-  )
-
-  return {
-    id: task.id,
-    title: task.title,
-    date: task.deadline,   
-    status: task.is_completed ? 'completed' : 'ongoing', 
-    // 根据任务类型选择图片
-    image: pickTaskImage(task),
-    exp: task.experience_reward + ' EXP', // 加 EXP 后缀
-    coin: task.token_reward,
-    hour: task.volunteerTime_reward,
-    level: task.required_level,
-    avatar: `https://api.dicebear.com/9.x/adventurer/svg?skinColor=ecad80,f2d3b1&seed=${task.publisher_avatar}` || `https://api.dicebear.com/9.x/adventurer/svg?seed=none`,
-    author: task.publisher_nickname,
-    description: task.description,
-    slotsUsed,
-    slotsTotal,
-    slotsLeft: Math.max(0, slotsTotal - slotsUsed),
-    accepted_by: Array.isArray(task.accepted_by) ? task.accepted_by.map(u => ({
-      id: u.id,
-      nickname: u.nickname,
-      avatar: u.avatar,
-      realname: u.realname
-    })) : []
-  }
+/* ================================
+ *  Utils
+ * ================================ */
+const toInt = (v, fallback = 0) => {
+  const n = Number(v)
+  return Number.isFinite(n) ? Math.max(0, Math.floor(n)) : fallback
 }
 
-function pickTaskImage(task) {
-  // 团队任务固定用 teamwork
-  if (task.task_type === 'team') return teamwork;
-
-  // 用发布时间（deadline）作为种子
-  const seedStr = task.deadline || String(task.id) || '';
-  let hash = 0;
-  for (let i = 0; i < seedStr.length; i++) {
-    hash = (hash << 5) - hash + seedStr.charCodeAt(i);
-    hash |= 0; // 转成 32 位整数
-  }
-
-  // 根据 hash 奇偶数来决定用哪张
-  return Math.abs(hash) % 2 === 0 ? solo1 : solo2;
-}
-const safeDescription = computed(() => {
-  const html = selectedProject.value?.description || '无任务说明'
-  const clean = DOMPurify.sanitize(html)
-  const div = document.createElement('div')
-  div.innerHTML = clean
-  div.querySelectorAll('img').forEach(img => {
-    img.style.maxWidth = '100%'
-    img.style.height = 'auto'
-    img.style.display = 'block'
-  })
-  return div.innerHTML
-})
-
-onMounted(async () => {
-  try {
-    const res = await api.get('/api/tasks/my-tasks/')
-    allProjects.value = res.data.map(mapTaskToProject)
-  } catch (err) {
-    console.error('加载任务失败:', err)
-  }
-})
-
-// ====== 过滤 ======
-const filteredProjects = computed(() => {
-  if (!activeTab.value) {
-    return allProjects.value
-  }
-
-  return allProjects.value.filter((p) => p.status === activeTab.value)
-})
-const runningProjects = computed(() =>
-  allProjects.value.filter((p) => p.status === 'ongoing')
-)
-
-// ====== Dialog逻辑 ======
-const showDialog = ref(false)
-const selectedProject = ref(null)
-const openProjectDialog = (project) => {
-  selectedProject.value = project
-  showDialog.value = true
-}
-
-// ====== 请假 OverlayPanel ======
-const leavePanel = ref(null)
-const leaveTitle = ref('')
-const leaveDetail = ref('')
-
-const toggleLeavePanel = (event) => {
-  leavePanel.value?.toggle(event)
-}
-const confirmLeave = async () => {
-  try {
-    const url = `/api/tasks/${selectedProject.value?.id}/urge-approval/`
-    const res = await api.post(url)
-
-    toast.add({
-      severity: 'success',
-      summary: t('toasts.urge.successSummary'),
-      detail: t('toasts.urge.successDetail'),
-      life: 2000
-    })
-
-    console.log('Submit leave (server response):', res.data)
-
-    // 清空并关闭
-    leaveTitle.value = ''
-    leaveDetail.value = ''
-    leavePanel.value?.hide()
-  } catch (err) {
-    const msg =
-      err?.response?.data?.message ||
-      err?.response?.data?.detail ||
-      err?.message ||
-      t('toasts.common.errorDetailFallback')
-
-    toast.add({
-      severity: 'error',
-      summary: t('toasts.common.errorSummary'),
-      detail: msg,
-      life: 2500
-    })
-    console.error('Submit leave error:', err)
-  }
-}
-
-const submitLeave = async () => {
-  // 基础校验
-  if (!leaveTitle.value.trim()) {
-    toast.add({
-      severity: 'error',
-      summary: t('toasts.validation.errorSummary'),
-      detail: t('toasts.validation.leaveReasonRequired'),
-      life: 2000
-    })
-    return
-  }
-
-  try {
-    const url = `/api/tasks/${selectedProject.value?.id}/cancel/`
-    const payload = {
-      summary: leaveTitle.value.trim(),
-      detail: leaveDetail.value?.trim() || ''
-    }
-
-    const res = await api.post(url, payload)
-
-    toast.add({
-      severity: 'success',
-      summary: t('toasts.cancel.successSummary'),
-      detail: t('toasts.cancel.successDetail'),
-      life: 2000
-    })
-
-    console.log('Submit leave (server response):', res.data)
-
-    // 清空并关闭
-    leaveTitle.value = ''
-    leaveDetail.value = ''
-    leavePanel.value?.hide()
-  } catch (err) {
-    const msg =
-      err?.response?.data?.message ||
-      err?.response?.data?.detail ||
-      err?.message ||
-      t('toasts.common.errorDetailFallback')
-
-    toast.add({
-      severity: 'error',
-      summary: t('toasts.common.errorSummary'),
-      detail: msg,
-      life: 2500
-    })
-    console.error('Submit leave error:', err)
-  }
-}
-
-
-// ====== Metrics绑定 ======
 const toNumber = (v) => {
   if (typeof v === 'number') return v
   if (typeof v === 'string') {
@@ -519,84 +370,8 @@ const toNumber = (v) => {
   return 0
 }
 
-// ② 工具：根据 level 拿到该等级的各项上下限
-const getBoundsByLevel = (level) => {
-  // 允许传中文 'A级' 或英文 'Level A'，我们字典里都放了
-  return levelRanges?.[level] || null
-}
-
-// ③ 计算选中任务对应的上下限（exp/coin/hours）
-const selectedBounds = computed(() => {
-  const lvl = selectedProject.value?.level
-  const bounds = getBoundsByLevel(lvl)
-  // 兜底：如果没匹配到等级，给个通用范围（你也可以自定义）
-  return bounds || { exp:[0,100], coin:[0,100], hours:[0,24] }
-})
-
-// 原先有 max 的地方删掉它；保留 unit/icon/color
-const METRIC_DEFS = [
-  { key: 'exp',  label: 'EXP',  unit: '',  icon: new URL('../../assets/icon/exp.png', import.meta.url).href,  color: '#11AF9B' },
-  { key: 'coin', label: 'Coin', unit: '',  icon: new URL('../../assets/icon/token.png', import.meta.url).href, color: '#FBE838' },
-  { key: 'hour', label: 'Hour', unit: 'h', icon: new URL('../../assets/icon/time.png', import.meta.url).href,  color: '#4ACDF2' },
-]
-
-// 百分比 = (raw - min) / (max - min)
-// 同时把 raw clamp 到 [min, max]，避免条溢出或负数
-const metricsBound = computed(() => {
-  const p = selectedProject.value || {}
-  const b = selectedBounds.value || {}
-
-  return METRIC_DEFS.map(def => {
-    const raw = toNumber(p?.[def.key] ?? 0)
-
-    // ⭐ bounds 用 'hours'（复数），而 metric key 是 'hour'（单数）
-    const ranges = def.key === 'hour' ? b?.hours : b?.[def.key]
-    const [min, max] = Array.isArray(ranges) && ranges.length === 2 ? ranges : [0, 0]
-
-    // 夹取 + 百分比
-    const clamped = max > min ? Math.min(Math.max(raw, min), max) : raw
-    const pct = max > min ? Math.round(((clamped - min) / (max - min)) * 100)
-                          : (raw > 0 ? 100 : 0) // ⭐ 没拿到范围时的兜底
-
-    return { ...def, raw, pct }
-  })
-})
-
-
-// ====== 其他 ======
-const period = computed(() => {
-  const h = new Date().getHours()
-  return h < 4 ? 'night' : h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening'
-})
-const greetingKey = computed(() => `greetings-student.${period.value}`)
-
-const goToQuestStore = () => {
-  router.push('/student/task')
-}
-
-// 透明底头像（SVG）
-const avatarUrl = (u) =>
-  `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(u?.avatar || u?.nickname || u?.name || 'user')}&skinColor=ecad80,f2d3b1`
-
-// 等级颜色映射
-const levelColors = {
-  S: '#C4A010',
-  A: '#DD4546',
-  B: '#DD7C1B',
-  C: '#E6D624',
-  D: '#8FD833',
-  E: '#2590D2',
-  F: '#911EC7'
-}
-
-// 工具函数：返回等级对应的颜色
-const getLevelColor = (level) => {
-  return levelColors[level] || '#333' // 找不到就用默认色
-}
-
-// 提亮颜色：amount 取 0~1，建议 0.3 左右
-function lighten(hex, amount = 0.3) {
-  const nhex = hex.replace('#', '')
+const lighten = (hex, amount = 0.3) => {
+  const nhex = (hex || '').replace('#', '') || '333333'
   const bigint = parseInt(nhex, 16)
   let r = (bigint >> 16) & 255
   let g = (bigint >> 8) & 255
@@ -608,27 +383,266 @@ function lighten(hex, amount = 0.3) {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`
 }
 
-function getLevelStyle(level) {
-  const stroke = levelColors[level] || '#333333'      // 描边用原始颜色
-  const base = lighten(stroke, 0.3)                   // 字体颜色 = 提亮版
+const getLevelColor = (level) => levelColors[level] || '#333333'
+
+const getLevelStyle = (level) => {
+  const stroke = getLevelColor(level)
+  const base = lighten(stroke, 0.3)
   return {
     color: base,
     fontStyle: 'italic',
     WebkitTextStrokeWidth: '0.5px',
     WebkitTextStrokeColor: stroke,
     textShadow: [
-      `0  1px 0 ${stroke}`,
-      `0 -1px 0 ${stroke}`,
-      `1px 0  0 ${stroke}`,
-      `-1px 0  0 ${stroke}`,
-      `1px  1px 0 ${stroke}`,
-      `-1px 1px 0 ${stroke}`,
-      `1px -1px 0 ${stroke}`,
-      `-1px -1px 0 ${stroke}`
+      `0  1px 0 ${stroke}`, `0 -1px 0 ${stroke}`,
+      `1px 0  0 ${stroke}`, `-1px 0  0 ${stroke}`,
+      `1px  1px 0 ${stroke}`, `-1px 1px 0 ${stroke}`,
+      `1px -1px 0 ${stroke}`, `-1px -1px 0 ${stroke}`
     ].join(', ')
   }
 }
 
+const avatarUrl = (u) =>
+  `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(u?.avatar || u?.nickname || u?.name || 'user')}&skinColor=ecad80,f2d3b1`
+
+const pickTaskImage = (task) => {
+  if (task.task_type === 'team') return teamwork
+  const seedStr = task.deadline || String(task.id) || ''
+  let hash = 0
+  for (let i = 0; i < seedStr.length; i++) {
+    hash = (hash << 5) - hash + seedStr.charCodeAt(i)
+    hash |= 0
+  }
+  return Math.abs(hash) % 2 === 0 ? solo1 : solo2
+}
+
+const toastSuccess = (summary, detail, life = 2000) => {
+  toast.add({ severity: 'success', summary, detail, life })
+}
+const toastError = (summary, detail, life = 2500) => {
+  toast.add({ severity: 'error', summary, detail, life })
+}
+
+const postJson = async (url, payload) => {
+  try {
+    const { data } = await api.post(url, payload)
+    return { ok: true, data }
+  } catch (err) {
+    const msg =
+      err?.response?.data?.message ||
+      err?.response?.data?.detail ||
+      err?.message ||
+      t('toasts.common.errorDetailFallback')
+    return { ok: false, error: msg, raw: err }
+  }
+}
+
+/* ================================
+ *  Data mapping
+ * ================================ */
+const mapTaskToProject = (task) => {
+  const slotsUsed = toInt(
+    Array.isArray(task.accepted_by)
+      ? task.accepted_by.length
+      : (task.current_participants ?? task.current_people ?? task.joined_count ?? task.current_count ?? 0)
+  )
+  const slotsTotal = toInt(task.maximum_users)
+
+  return {
+    id: task.id,
+    title: task.title,
+    date: task.deadline,
+    status: task.is_completed ? 'completed' : 'ongoing',
+    image: pickTaskImage(task),
+    exp: `${task.experience_reward} EXP`,
+    coin: task.token_reward,
+    hour: task.volunteerTime_reward,
+    level: task.required_level,
+    avatar:
+      `https://api.dicebear.com/9.x/adventurer/svg?skinColor=ecad80,f2d3b1&seed=${task.publisher_avatar}` ||
+      `https://api.dicebear.com/9.x/adventurer/svg?seed=none`,
+    author: task.publisher_nickname,
+    description: task.description,
+    slotsUsed,
+    slotsTotal,
+    slotsLeft: Math.max(0, slotsTotal - slotsUsed),
+    accepted_by: Array.isArray(task.accepted_by)
+      ? task.accepted_by.map(u => ({
+          id: u.id, nickname: u.nickname, avatar: u.avatar, realname: u.realname
+        }))
+      : []
+  }
+}
+
+/* ================================
+ *  State
+ * ================================ */
+// 顶部 “进行中/已完成” Tabs
+const activeTab = ref('ongoing')
+const tabOptions = computed(() => ([
+  { label: t('tabs.ongoing'),  value: 'ongoing' },
+  { label: t('tabs.completed'), value: 'completed' }
+]))
+
+// Header 动作切换（Release / Accept）
+const actionTab = ref('accept')
+const actionOptions = ref([
+  { label: 'Accept Task',  value: 'accept'  },
+  { label: 'Release Task', value: 'release' },
+])
+
+// 项目数据
+const allProjects = ref([])
+
+// Dialog & 当前选中项目
+const showDialog = ref(false)
+const selectedProject = ref(null)
+
+// 请假面板
+const leavePanel = ref(null)
+const leaveTitle = ref('')
+const leaveDetail = ref('')
+
+/* ================================
+ *  Computed
+ * ================================ */
+const filteredProjects = computed(() => {
+  if (!activeTab.value) return allProjects.value
+  return allProjects.value.filter(p => p.status === activeTab.value)
+})
+
+const runningProjects = computed(() =>
+  allProjects.value.filter(p => p.status === 'ongoing')
+)
+
+const period = computed(() => {
+  const h = new Date().getHours()
+  return h < 4 ? 'night' : h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening'
+})
+const greetingKey = computed(() => `greetings-student.${period.value}`)
+
+// 选中任务的上下限
+const getBoundsByLevel = (level) => levelRanges?.[level] || null
+const selectedBounds = computed(() => {
+  const bounds = getBoundsByLevel(selectedProject.value?.level)
+  return bounds || { exp: [0, 100], coin: [0, 100], hours: [0, 24] }
+})
+
+// 进度条绑定（百分比）
+const metricsBound = computed(() => {
+  const p = selectedProject.value || {}
+  const b = selectedBounds.value || {}
+
+  return METRIC_DEFS.map(def => {
+    const raw = toNumber(p?.[def.key] ?? 0)
+    const ranges = def.key === 'hour' ? b?.hours : b?.[def.key]
+    const [min, max] = Array.isArray(ranges) && ranges.length === 2 ? ranges : [0, 0]
+    const clamped = max > min ? Math.min(Math.max(raw, min), max) : raw
+    const pct = max > min
+      ? Math.round(((clamped - min) / (max - min)) * 100)
+      : (raw > 0 ? 100 : 0)
+    return { ...def, raw, pct }
+  })
+})
+
+// 任务说明（XSS 清洗 + 图片宽度处理）
+const safeDescription = computed(() => {
+  const html = selectedProject.value?.description || t('common.noDescription') || '无任务说明'
+  const clean = DOMPurify.sanitize(html)
+  // 避免 SSR 报错：仅在浏览器环境处理 DOM
+  if (typeof window === 'undefined' || typeof document === 'undefined') return clean
+  const div = document.createElement('div')
+  div.innerHTML = clean
+  div.querySelectorAll('img').forEach(img => {
+    img.style.maxWidth = '100%'
+    img.style.height = 'auto'
+    img.style.display = 'block'
+  })
+  return div.innerHTML
+})
+
+/* ================================
+ *  Watchers
+ * ================================ */
+watch(actionTab, (val) => {
+  const to = ACTION_ROUTES[val]
+  if (to)   radialTo('/student/home-sender', {
+    color: '#FEF1F5',
+    appearDuration: 260,
+    hold: 180,
+    coverDuration: 220,
+    shrinkDuration: 380,
+  })
+})
+
+/* ================================
+ *  Lifecycle
+ * ================================ */
+onMounted(async () => {
+  try {
+    const res = await api.get('/api/tasks/my-tasks/')
+    const list = Array.isArray(res?.data) ? res.data : []
+    allProjects.value = list.map(mapTaskToProject)
+  } catch (err) {
+    console.error('加载任务失败:', err)
+    toastError(t('toasts.common.errorSummary'), t('toasts.common.errorDetailFallback'))
+    allProjects.value = []
+  }
+})
+
+/* ================================
+ *  Actions
+ * ================================ */
+const openProjectDialog = (project) => {
+  selectedProject.value = project
+  showDialog.value = true
+}
+
+const toggleLeavePanel = (event) => {
+  leavePanel.value?.toggle(event)
+}
+
+const confirmLeave = async () => {
+  const url = `/api/tasks/${selectedProject.value?.id}/urge-approval/`
+  const { ok, error } = await postJson(url)
+  if (ok) {
+    toastSuccess(t('toasts.urge.successSummary'), t('toasts.urge.successDetail'))
+    leaveTitle.value = ''
+    leaveDetail.value = ''
+    leavePanel.value?.hide()
+  } else {
+    toastError(t('toasts.common.errorSummary'), error)
+  }
+}
+
+const submitLeave = async () => {
+  if (!leaveTitle.value.trim()) {
+    toastError(t('toasts.validation.errorSummary'), t('toasts.validation.leaveReasonRequired'), 2000)
+    return
+  }
+  const url = `/api/tasks/${selectedProject.value?.id}/cancel/`
+  const payload = { summary: leaveTitle.value.trim(), detail: leaveDetail.value?.trim() || '' }
+  const { ok, error } = await postJson(url, payload)
+  if (ok) {
+    toastSuccess(t('toasts.cancel.successSummary'), t('toasts.cancel.successDetail'))
+    leaveTitle.value = ''
+    leaveDetail.value = ''
+    leavePanel.value?.hide()
+  } else {
+    toastError(t('toasts.common.errorSummary'), error)
+  }
+}
+
+const goToQuestStore = () => router.push('/student/task')
+
+/* ================================
+ *  Expose helpers for template (可选)
+ * ================================ */
+defineExpose({
+  getLevelColor,
+  getLevelStyle,
+  avatarUrl
+})
 </script>
 
 
@@ -1492,5 +1506,15 @@ function getLevelStyle(level) {
 .dialog-slotsline {
   font-size: 20px;       /* 文本整体变大 */
   /* gap 已由 .metric-row.dialog-slotsline 控制 */
+}
+
+/* 放到本页 <style scoped> 或全局样式里 */
+.header-action-toggle {
+  margin-left: -10px;
+  display: flex;
+  align-items: center;
+}
+.header-action-toggle .tab-toggle :deep(.p-selectbutton .p-button) {
+  padding: 0.35rem 0.8rem;
 }
 </style>

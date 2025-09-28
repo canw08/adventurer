@@ -20,6 +20,7 @@
           <SelectButton
             v-model="activeTab"
             :options="tabOptions"
+            :allowEmpty="false"
             optionLabel="label"
             optionValue="value"
             class="tab-toggle"
