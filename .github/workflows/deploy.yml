@@ -1,7 +1,9 @@
 name: Deploy to BT via IP
 on:
   push:
-    branches: [ main ]
+    tags:
+      - 'v*'           # 只有推送以 v 开头的 tag（如 v1.2.3）才触发部署
+  workflow_dispatch: {} # （可选）也允许在 Actions 页面手动触发
 
 jobs:
   build-and-deploy:
