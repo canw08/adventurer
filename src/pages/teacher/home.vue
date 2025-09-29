@@ -349,6 +349,8 @@
                 icon="pi pi-share-alt" 
                 class="share-btn p-button-rounded p-button-text" 
                 v-tooltip.top="$t('teacherHome.shareTask')"
+                :loading="isDownloading"
+                :disabled="isDownloading"
                 @click="onShare"
               />
             </div>
@@ -454,62 +456,45 @@ async function onApprove() {
 }
 
 /** 分享：复制当前任务 id 到剪贴板（带兜底） */
-/** 分享：生成二维码图片并下载给用户 */
+const isDownloading = ref(false)
+
 async function onShare() {
+  if (isDownloading.value) return
   const proj = selectedProject.value
   const id = proj?.id
   if (!id) {
-    toast.add({
-      severity: 'warn',
-      summary: '无法分享',
-      detail: '当前没有选中的任务',
-      life: 2500
-    })
+    toast.add({ severity: 'warn', summary: '无法分享', detail: '当前没有选中的任务', life: 2500 })
     return
   }
-
-  // 你原先用于跳转的分享链接
   const shareUrl = `http://117.72.148.123/forward/${id}`
+  isDownloading.value = true
+  // 可选：提示正在生成
+  toast.add({ severity: 'info', summary: '处理中', detail: '正在生成二维码，请稍等…', life: 1500 })
 
   try {
-    // 请求二维码图片（后端返回图片字节流）
     const res = await api.get('api/qr/compose/', {
-      // 如果后端是完整域名：直接写全路径也行：'http://127.0.0.1:8000/qr/compose/'
-      params: {
-        data: shareUrl,
-        label: proj?.title || `任务 ${id}`
-      },
-      responseType: 'blob' // 关键：拿到二进制
+      params: { data: shareUrl, label: proj?.title || `任务 ${id}` },
+      responseType: 'blob'
     })
 
-    // 组装 Blob 并下载
     const contentType = res.headers?.['content-type'] || 'image/png'
     const blob = new Blob([res.data], { type: contentType })
     const url = URL.createObjectURL(blob)
 
     const a = document.createElement('a')
     a.href = url
-    a.download = `任务-${id}.png` // 下载文件名
+    a.download = `任务-${id}.png`
     document.body.appendChild(a)
     a.click()
     a.remove()
     URL.revokeObjectURL(url)
 
-    toast.add({
-      severity: 'success',
-      summary: '已生成并下载',
-      detail: '二维码图片已保存到你的设备',
-      life: 2000
-    })
+    toast.add({ severity: 'success', summary: '已下载', detail: '二维码图片已保存到你的设备', life: 2000 })
   } catch (err) {
     console.error('二维码下载失败:', err)
-    // 兜底：给出可手动访问的链接（至少还能复制/打开）
-    toast.add({
-      severity: 'warn',
-      summary: '下载失败',
-      detail: `请稍后重试`,
-      life: 4000
-    })
+    toast.add({ severity: 'warn', summary: '下载失败', detail: `请稍后重试`, life: 4000 })
+  } finally {
+    isDownloading.value = false
   }
 }
 
