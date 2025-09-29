@@ -252,7 +252,6 @@ const fetchTask = async (id: string | number) => {
       level: resp.data?.required_level || '', // 供范围计算
       date:  resp.data?.deadline || ''        // 若别处还在用
     }
-    console.log(task.value)
   } catch (e) {
     console.error('加载任务失败', e)
   }
