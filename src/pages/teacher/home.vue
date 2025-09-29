@@ -454,8 +454,10 @@ async function onApprove() {
 }
 
 /** 分享：复制当前任务 id 到剪贴板（带兜底） */
+/** 分享：生成二维码图片并下载给用户 */
 async function onShare() {
-  const id = "http://117.72.148.123/forward/" + selectedProject.value?.id
+  const proj = selectedProject.value
+  const id = proj?.id
   if (!id) {
     toast.add({
       severity: 'warn',
@@ -466,55 +468,51 @@ async function onShare() {
     return
   }
 
-  const text = String(id)
+  // 你原先用于跳转的分享链接
+  const shareUrl = `http://117.72.148.123/forward/${id}`
 
-  // 先尝试现代 API
   try {
-    await navigator.clipboard.writeText(text)
+    // 请求二维码图片（后端返回图片字节流）
+    const res = await api.get('api/qr/compose/', {
+      // 如果后端是完整域名：直接写全路径也行：'http://127.0.0.1:8000/qr/compose/'
+      params: {
+        data: shareUrl,
+        label: proj?.title || `任务 ${id}`
+      },
+      responseType: 'blob' // 关键：拿到二进制
+    })
+
+    // 组装 Blob 并下载
+    const contentType = res.headers?.['content-type'] || 'image/png'
+    const blob = new Blob([res.data], { type: contentType })
+    const url = URL.createObjectURL(blob)
+
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `任务-${id}.png` // 下载文件名
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+
     toast.add({
       severity: 'success',
-      summary: '已复制',
-      detail: `任务 ID ${text} 已复制到剪贴板`,
+      summary: '已生成并下载',
+      detail: '二维码图片已保存到你的设备',
       life: 2000
     })
-    return
-  } catch (_) {
-    // 忽略，走兜底
-  }
-
-  // 兜底（HTTP/不安全上下文或老浏览器）
-  try {
-    const ta = document.createElement('textarea')
-    ta.value = text
-    ta.style.position = 'fixed'
-    ta.style.opacity = '0'
-    ta.style.pointerEvents = 'none'
-    document.body.appendChild(ta)
-    ta.focus()
-    ta.select()
-    const ok = document.execCommand('copy')
-    document.body.removeChild(ta)
-
-    if (ok) {
-      toast.add({
-        severity: 'success',
-        summary: '已复制',
-        detail: `任务 ID ${text} 已复制到剪贴板`,
-        life: 2000
-      })
-    } else {
-      throw new Error('execCommand 复制失败')
-    }
   } catch (err) {
-    console.error('复制失败:', err)
+    console.error('二维码下载失败:', err)
+    // 兜底：给出可手动访问的链接（至少还能复制/打开）
     toast.add({
       severity: 'warn',
-      summary: '复制失败',
-      detail: `请手动复制：${text}`,
+      summary: '下载失败',
+      detail: `请稍后重试`,
       life: 4000
     })
   }
 }
+
 
 /* ===== Icons ===== */
 const ICON_EXP  = new URL('../../assets/icon/exp.png', import.meta.url).href

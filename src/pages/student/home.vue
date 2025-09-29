@@ -12,7 +12,7 @@
         </span>
 
         <!-- 切换模式 -->
-        <div class="header-action-toggle small-toggle">
+        <!-- <div class="header-action-toggle small-toggle">
           <SelectButton
             v-model="actionTab"
             :options="actionOptions"
@@ -22,7 +22,7 @@
             aria-label="action-switch"
             :allowEmpty="false"
           />
-        </div>
+        </div> -->
 
       </div>
       <AnnouncementPanel />
