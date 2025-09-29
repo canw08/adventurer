@@ -154,8 +154,11 @@ const avatarUrl = (u: any) =>
 // 只展示前三个；用于底部右侧紧凑视图
 const visibleAssignees = computed(() => (task.value?.accepted_by || []).slice(0, 3))
 // 假头像占位
-const hostAvatar = `https://api.dicebear.com/9.x/adventurer/svg?skinColor=ecad80,f2d3b1&seed=${task.publisher_avatar}` || `https://api.dicebear.com/9.x/adventurer/svg?seed=none`
-const assigneeAvatar = 'https://api.dicebear.com/9.x/adventurer/svg?seed=haoyang'
+const hostAvatar = computed(() => {
+  const seed = task.value?.publisher_avatar || task.value?.publisher || 'none'
+  return `https://api.dicebear.com/9.x/adventurer/svg?skinColor=ecad80,f2d3b1&seed=${encodeURIComponent(seed)}`
+})
+
 
 /** ========== HTML 描述（安全渲染） ========== */
 const safeDescription = computed(() => {
@@ -249,6 +252,7 @@ const fetchTask = async (id: string | number) => {
       level: resp.data?.required_level || '', // 供范围计算
       date:  resp.data?.deadline || ''        // 若别处还在用
     }
+    console.log(task.value)
   } catch (e) {
     console.error('加载任务失败', e)
   }
