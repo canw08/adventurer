@@ -332,6 +332,8 @@
             :avatar-url-fn="avatarUrl"
             :dialog-title="'Assigned'"
             :dialog-width="'420px'"
+            :showRemove="true"
+            :onRemove="handleRemove"
           />
         </div>
             <!-- 左下角按钮 -->
@@ -454,6 +456,77 @@ async function onApprove() {
     loadingApprove.value = false
   }
 }
+const handleRemove = async (user) => {
+  if (!selectedProject.value?.id) {
+    toast.add({
+      severity: 'warn',
+      summary: '无法操作',
+      detail: '当前没有选中的任务',
+      life: 2500
+    })
+    return
+  }
+
+  const taskId = selectedProject.value.id
+  const participantId = user?.id
+
+  if (!participantId) {
+    toast.add({
+      severity: 'error',
+      summary: '操作失败',
+      detail: '缺少参与者 ID，无法踢出',
+      life: 3000
+    })
+    return
+  }
+
+  loadingApprove.value = true
+  try {
+    await api.post(`/api/tasks/${taskId}/remove-student/`, {
+      participant_id: participantId
+    })
+
+    // 更新本地 accepted_by
+    if (selectedProject.value?.accepted_by) {
+      selectedProject.value.accepted_by = selectedProject.value.accepted_by.filter(
+        u => u.id !== participantId
+      )
+    }
+
+    // 全局列表同步更新
+    const idx = allProjects.value.findIndex(p => p.id === taskId)
+    if (idx !== -1) {
+      allProjects.value[idx].accepted_by = allProjects.value[idx].accepted_by.filter(
+        u => u.id !== participantId
+      )
+    }
+
+    toast.add({
+      severity: 'success',
+      summary: '操作成功',
+      detail: `已将 ${user.nickname || user.name || '该用户'} 踢出`,
+      life: 2000
+    })
+
+    // ⭐ 判断是否已经没有参与者，刷新页面
+    const remaining = selectedProject.value?.accepted_by?.length ?? 0
+    if (remaining === 0) {
+      window.location.reload()
+    }
+
+  } catch (err) {
+    console.error('踢出失败:', err)
+    toast.add({
+      severity: 'error',
+      summary: '操作失败',
+      detail: err?.response?.data?.detail || err?.message || '操作失败，请稍后重试',
+      life: 3500
+    })
+  } finally {
+    loadingApprove.value = false
+  }
+}
+
 
 /** 分享：复制当前任务 id 到剪贴板（带兜底） */
 const isDownloading = ref(false)

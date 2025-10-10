@@ -707,7 +707,7 @@ const period = computed(() => {
   const h = new Date().getHours()
   return h < 4 ? 'night' : h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening'
 })
-const greetingKey = computed(() => `greetings-teacher.${period.value}`)
+const greetingKey = computed(() => `greetings-student.${period.value}`)
 
 /* ===== 过滤视图数据 ===== */
 const filteredProjects = computed(() =>
@@ -839,7 +839,7 @@ const onFormSubmit = async (e) => {
     showDialog.value = false
 
     // 刷新任务列表
-    const res = await api.get('/api/tasks/my-tasks/')
+    const res = await api.get('/api/tasks/my-tasks/',{mine : "published"})
     allProjects.value = res.data.map(mapTaskToProject)
 
     // 重置表单和状态
@@ -874,7 +874,7 @@ function parseDateLoose(s) {
 onMounted(async () => {
   try { await userStore.fetchUser() } catch {}
   try {
-    const res = await api.get('/api/tasks/my-tasks/')
+    const res = await api.get('/api/tasks/my-tasks/?mine=published')
     allProjects.value = res.data.map(mapTaskToProject)
   } catch (err) {
     console.error('加载任务失败:', err)

@@ -29,7 +29,15 @@
             <div class="assignee-name">{{ u.nickname ?? u.name ?? 'User' }}</div>
             <div class="assignee-id">{{ u.realname ?? '-' }}</div>
           </div>
+          <!-- 踢出按钮 -->
+          <button
+            v-if="props.showRemove"
+            class="remove-btn"
+            @click.stop="props.onRemove?.(u)">
+            <i class="pi pi-minus-circle"></i>
+          </button>
         </li>
+
       </ul>
     </Dialog>
   </div>
@@ -50,12 +58,15 @@ const props = withDefaults(defineProps<{
   users: UserLike[] | null | undefined
   maxVisible?: number
   size?: number
-  /** 第二个头像压在第一个上的重叠偏移（px，正数即可） */
   overlapOffset?: number
   dialogTitle?: string
   dialogWidth?: string
   tooltip?: string
   avatarUrlFn?: (u: UserLike) => string
+  /** 是否显示踢出按钮 */
+  showRemove?: boolean
+  /** 点击踢出回调 */
+  onRemove?: (user: UserLike) => void
 }>(), {
   users: () => [],
   maxVisible: 3,
@@ -64,7 +75,9 @@ const props = withDefaults(defineProps<{
   dialogTitle: 'Assigned',
   dialogWidth: '420px',
   tooltip: '查看参与者',
+  showRemove: false,
 })
+
 
 const emit = defineEmits<{ (e: 'open'): void; (e: 'close'): void }>()
 const internalVisible = ref(false)
@@ -138,4 +151,20 @@ const onImgError = (e: Event, u: UserLike) => {
 .assignee-name{ font-weight: 700; color: #111; }
 .assignee-id{ font-size: 12px; color: #9aa0af; }
 .avtr.sm{ width: 36px; height: 36px; border-width: 1.5px; }
+
+.remove-btn {
+  margin-left: auto; /* 挤到最右边 */
+  background: transparent;
+  border: none;
+  color: #ff4d4f;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.remove-btn:hover {
+  color: #d9363e;
+}
+
 </style>
