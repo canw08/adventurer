@@ -42,6 +42,7 @@ export default [
           publisher_nickname: 'silverteacher',
           publisher_avatar: '',
           is_accepted: false,
+          is_completed: true,
           required_level: 'F',
         },
       ]);

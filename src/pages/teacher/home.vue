@@ -347,6 +347,13 @@
                 v-tooltip.top="(selectedProject?.accepted_by?.length ?? 0) === 0 ? '无人接取，无法完成' : ''"
                 @click="onApprove"
               />
+              <Button
+                v-if="!selectedProject?.is_completed"
+                label="Cancel"
+                icon="pi pi-times"
+                class="approve-btn"
+                @click="onCancel"
+              />
               <Button 
                 icon="pi pi-share-alt" 
                 class="share-btn p-button-rounded p-button-text" 
@@ -500,6 +507,9 @@ const handleRemove = async (user) => {
         u => u.id !== participantId
       )
     }
+    if (selectedProject.value) {
+      selectedProject.value = { ...selectedProject.value, status: 'completed', is_completed: true }   // ✅
+    }
 
     toast.add({
       severity: 'success',
@@ -615,6 +625,7 @@ function mapTaskToProject(task) {
     title: task.title,
     date: task.deadline, // 可是 ISO 或字符串，后续 parseDateLoose 兜底
     status: task.is_completed ? 'completed' : 'ongoing',
+    is_completed: !!task.is_completed,
     image: pickTaskImage(task),
     exp: `${task.experience_reward} exp`,
     coin: task.token_reward,
@@ -672,6 +683,10 @@ const safeDescription = computed(() => {
   return div.innerHTML
 })
 
+async function onCancel() {
+  // TODO: 取消任务逻辑
+  console.log('Cancel task clicked');
+}
 
 /* ===== 指标（EXP / Coin / Hour） ===== */
 const toNumber = (v) => {
