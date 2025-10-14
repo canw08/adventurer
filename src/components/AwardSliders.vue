@@ -26,7 +26,6 @@
       />
       <small class="range-hint" :style="bubbleStyle(expLocal, expMin, expMax)">
         {{ expLocal }} 
-        <span v-if="disabled">（请先选择等级）</span> 
       </small>
       <span class="max-val" >{{ expMax }}</span>
     </div>
@@ -49,7 +48,6 @@
       />
       <small class="range-hint" :style="bubbleStyle(coinLocal, coinMin, coinMax)">
         {{ coinLocal }}
-        <span v-if="disabled">（请先选择等级）</span>
       </small>
       <span class="max-val">{{ coinMax }}</span>
     </div>
@@ -72,7 +70,6 @@
       />
       <small class="range-hint" :style="bubbleStyle(hoursLocal, hoursMin, hoursMax)">
         {{ hoursLocal }} 
-        <span v-if="disabled">（请先选择等级）</span>
       </small>
       <span class="max-val">{{ hoursMax }}</span>
     </div>

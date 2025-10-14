@@ -66,36 +66,8 @@
       </div>
     </template>
 
-    <div class="gapping">
-      <!-- Choose level -->
-        <div class="p-field">
-          <label class="choose-size-label">{{ $t('teacherHome.chooseLevel') }}</label>
-          <div class="level-options">
-            <div v-for="level in levels" :key="level" class="level-item">
-              <RadioButton 
-                v-model="selectedLevel"
-                :inputId="level"
-                :value="level"
-                name="quest-level"
-                class="gapBetweenElements"
-                @change="onLevelChange"
-              />
-              <label :for="level">{{ level }}</label>
-            </div>
-          </div>
-        </div>
-      </div>
       <div class="gapping">
-        <!-- 选择奖励 -->
-          <AwardSliders
-            v-if="selectedLevel"
-            :level="selectedLevel === 'Design' ? '定制' : selectedLevel"
-            v-model:exp="exp"
-            v-model:coin="coin"
-            v-model:hours="hours"
-            v-model:num = "num"
-            :customRanges="selectedLevel === 'Design' ? customRanges : null"
-          />
+        <AwardSlidersStu v-model:coin="coin" :coinRange="[1, coinUpper]"/>
       </div>
 
       <div class="gapping">
@@ -402,8 +374,21 @@ import { useToast } from 'primevue/usetoast'
 import UpdateNotice from "../../components/UpdateNotice.vue"
 import AssigneesStack from '../../components/AssigneesStack.vue'
 
+import AwardSlidersStu from '../../components/AwardSliderStu.vue'
 import { useRadialTransition } from '../../components/transations/useRadialTransition.js'
 
+const userStore = useUserStore()
+
+// 计算上限：取用户 token 数量（至少 1）
+const coinUpper = computed(() => {
+  return Math.max(1, Number(userStore?.userInfo?.tokens ?? 0))
+})
+
+// 保证 coin 始终在 [1, 上限] 内
+watch(coinUpper, (max) => {
+  if (coin.value > max) coin.value = max
+  if (coin.value < 1)   coin.value = 1
+})
 const { radialTo, radialEffect } = useRadialTransition()
 
 const avatarUrl = (u) =>
@@ -540,7 +525,7 @@ const ICON_TIME = new URL('../../assets/icon/time.png', import.meta.url).href
 /* ===== Router / i18n / store ===== */
 const router = useRouter()
 const { t } = useI18n()
-const userStore = useUserStore()
+
 
 /* ===== Tabs ===== */
 const activeTab = ref('ongoing')
@@ -723,8 +708,7 @@ const goToProfile = () => {
 }
 
 /* ===== 发布任务表单（保持你原逻辑，editThisTask 依赖这些状态） ===== */
-const showDialog = ref(false)          // 发布任务弹窗
-const selectedLevel = ref('')          // 或 'Level F'
+const showDialog = ref(false)          // 发布任务弹窗 
 const exp   = ref(0)
 const coin  = ref(0)
 const hours = ref(0)
@@ -809,7 +793,6 @@ const onFormSubmit = async (e) => {
       }
     }
 
-    const levelLetter = selectedLevel.value?.split(' ').pop() || ''
     const payload = {
       title: bigTitle.value,
       description: html,
@@ -888,17 +871,6 @@ function editThisTask() {
   isEditing.value = true   // ✅ 新增：标记为编辑模式
   // ① 预填“发布任务”表单
   bigTitle.value     = p.title || ''
-  editorContent.value = p.description || ''
-  // level：如果后端给的是 'E' 这种字母，转成 'Level E'
-  if (p.level === 'Design') {
-    selectedLevel.value = 'Design'
-  } else if (typeof p.level === 'string' && p.level.startsWith('Level ')) {
-    selectedLevel.value = p.level
-  } else if (p.level) {
-    selectedLevel.value = `Level ${p.level}`
-  } else {
-    selectedLevel.value = ''
-  }
   // 三个奖励数值（用你已有的 toNumber 更稳）
   exp.value   = typeof toNumber === 'function' ? toNumber(p.exp)  : (parseFloat(p.exp)  || 0)
   coin.value  = typeof toNumber === 'function' ? toNumber(p.coin) : (parseFloat(p.coin) || 0)
@@ -926,7 +898,6 @@ const formKey = ref(0)
 
 // 新增：重置“发布任务”表单
 function resetPublishForm() {
-  selectedLevel.value = ''
   exp.value = 0
   coin.value = 0
   hours.value = 0
