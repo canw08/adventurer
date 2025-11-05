@@ -347,6 +347,7 @@
             <!-- 左下角按钮 -->
             <div class="qdlg-footer-left">
               <Button 
+                v-if="!isCompleted"
                 :label="$t('teacherHome.approve')" 
                 icon="pi pi-check" 
                 class="approve-btn"
@@ -355,10 +356,19 @@
                 v-tooltip.top="(selectedProject?.accepted_by?.length ?? 0) === 0 ? '无人接取，无法完成' : ''"
                 @click="onApprove"
               />
+              <Button
+                v-if="!selectedProject?.is_completed"
+                label="Cancel"
+                icon="pi pi-times"
+                class="approve-btn"
+                @click="onCancel"
+              />
               <Button 
                 icon="pi pi-share-alt" 
                 class="share-btn p-button-rounded p-button-text" 
                 v-tooltip.top="$t('teacherHome.shareTask')"
+                :loading="isDownloading"
+                :disabled="isDownloading"
                 @click="onShare"
               />
             </div>
@@ -476,69 +486,51 @@ async function onApprove() {
     loadingApprove.value = false
   }
 }
+const isDownloading = ref(false)
 
 /** 分享：复制当前任务 id 到剪贴板（带兜底） */
 async function onShare() {
-  const id = "http://117.72.148.123/forward/" + selectedProject.value?.id
+  
+  if (isDownloading.value) return
+  const proj = selectedProject.value
+  const id = proj?.id
   if (!id) {
-    toast.add({
-      severity: 'warn',
-      summary: '无法分享',
-      detail: '当前没有选中的任务',
-      life: 2500
-    })
+    toast.add({ severity: 'warn', summary: '无法分享', detail: '当前没有选中的任务', life: 2500 })
     return
   }
+  const shareUrl = `http://117.72.148.123/forward/${id}`
+  isDownloading.value = true
+  // 可选：提示正在生成
+  toast.add({ severity: 'info', summary: '处理中', detail: '正在生成二维码，请稍等…', life: 1500 })
 
-  const text = String(id)
-
-  // 先尝试现代 API
   try {
-    await navigator.clipboard.writeText(text)
-    toast.add({
-      severity: 'success',
-      summary: '已复制',
-      detail: `任务 ID ${text} 已复制到剪贴板`,
-      life: 2000
+    const res = await api.get('api/qr/compose/', {
+      params: { data: shareUrl, label: proj?.title || `任务 ${id}` },
+      responseType: 'blob'
     })
-    return
-  } catch (_) {
-    // 忽略，走兜底
-  }
 
-  // 兜底（HTTP/不安全上下文或老浏览器）
-  try {
-    const ta = document.createElement('textarea')
-    ta.value = text
-    ta.style.position = 'fixed'
-    ta.style.opacity = '0'
-    ta.style.pointerEvents = 'none'
-    document.body.appendChild(ta)
-    ta.focus()
-    ta.select()
-    const ok = document.execCommand('copy')
-    document.body.removeChild(ta)
+    const contentType = res.headers?.['content-type'] || 'image/png'
+    const blob = new Blob([res.data], { type: contentType })
+    const url = URL.createObjectURL(blob)
 
-    if (ok) {
-      toast.add({
-        severity: 'success',
-        summary: '已复制',
-        detail: `任务 ID ${text} 已复制到剪贴板`,
-        life: 2000
-      })
-    } else {
-      throw new Error('execCommand 复制失败')
-    }
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `任务-${id}.png`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+
+    toast.add({ severity: 'success', summary: '已下载', detail: '二维码图片已保存到你的设备', life: 2000 })
   } catch (err) {
-    console.error('复制失败:', err)
-    toast.add({
-      severity: 'warn',
-      summary: '复制失败',
-      detail: `请手动复制：${text}`,
-      life: 4000
-    })
+    console.error('二维码下载失败:', err)
+    toast.add({ severity: 'warn', summary: '下载失败', detail: `请稍后重试`, life: 4000 })
+  } finally {
+    isDownloading.value = false
   }
 }
+
+
 
 const handleRemove = async (user) => {
   if (!selectedProject.value?.id) {
@@ -692,6 +684,7 @@ function mapTaskToProject(task) {
     slotsUsed,
     slotsTotal,
     slotsLeft: Math.max(0, slotsTotal - slotsUsed),
+    is_completed: !!task.is_completed,
     accepted_by: Array.isArray(task.accepted_by)
       ? task.accepted_by.map(u => ({
           id: u.id,
@@ -835,6 +828,47 @@ const isValidDateValue = (val) => {
   if (val instanceof Date) return !isNaN(val.getTime())
   return String(val).trim() !== ''
 }
+
+
+async function onCancel() {
+  if (!selectedProject.value?.id) {
+    toast.add({
+      severity: 'warn',
+      summary: '无法操作',
+      detail: '当前没有选中的任务',
+      life: 2500
+    })
+    return
+  }
+
+  const taskId = selectedProject.value.id
+
+  loadingApprove.value = true
+  try {
+    await api.post(`/api/tasks/${taskId}/approve-cancel/?mark_completed=true`, {
+    })
+
+    toast.add({
+      severity: 'success',
+      summary: '操作成功',
+      detail: `任务已取消`,
+      life: 2000
+    })
+
+    // ⭐ 判断是否已经没有参与者，刷新页面
+    window.location.reload()
+
+  } catch (err) {
+    console.error('取消失败:', err)
+    toast.add({
+      severity: 'error',
+      summary: '操作失败',
+      detail: err?.response?.data?.detail || err?.message || '操作失败，请稍后重试',
+      life: 3500
+    })
+  }
+}
+
 
 // ☆ 当前表单金币 -> 实时 Level
 const levelLetter = computed(() => levelFromCoin(Number(coin.value || 0)))
