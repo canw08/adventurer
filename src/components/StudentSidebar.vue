@@ -260,6 +260,7 @@ const copyId = async () => {
   padding: 32px 16px;
   border-right: 1px solid #e3eaf5;
   position: relative;
+  z-index: 100;
 }
 
 .profile-header {

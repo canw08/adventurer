@@ -5,10 +5,23 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, nextTick } from 'vue'
+import { ref, reactive, computed, nextTick, onMounted, onBeforeUnmount } from 'vue'
 
 const visible = ref(false)
 const ball = ref(null)
+
+// 记录最近一次指针位置
+const lastPointer = reactive({ x: null, y: null })
+function handlePointerDown(e) {
+  lastPointer.x = e.clientX
+  lastPointer.y = e.clientY
+}
+onMounted(() => {
+  window.addEventListener('pointerdown', handlePointerDown, { passive: true })
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('pointerdown', handlePointerDown)
+})
 
 const st = reactive({
   color: '#FEF1F5',
@@ -41,11 +54,9 @@ function coverScale({ w, h, cx, cy, r }) {
  *  - push: (to)=>Promise 路由切换函数（可选）
  *  - color: '#FEF1F5'
  *  - baseSize: 160  (px)
- *  - appearDuration: 260 (ms) 浮现
- *  - hold: 180 (ms) 停顿
  *  - coverDuration: 240 (ms) 覆盖
  *  - shrinkDuration: 380 (ms) 缩回
- *  - center: 'center' | {x,y} | MouseEvent
+ *  - center: 'center' | {x,y} | MouseEvent | 'auto' | 方位
  *  - zIndex: 置顶层级（默认 2147483647）
  */
 async function play(opts = {}) {
@@ -57,12 +68,10 @@ async function play(opts = {}) {
     push = null,
     color = '#FEF1F5',
     baseSize = 160,
-    appearDuration = 260,
-    hold = 180,
-    coverDuration = 240,
+    coverDuration = 300,
     shrinkDuration = 380,
-    center = 'center',
-    zIndex = 2147483647
+    center = 'auto',
+    zIndex = 99
   } = opts
 
   st.color = color
@@ -73,12 +82,28 @@ async function play(opts = {}) {
   const h = window.innerHeight
 
   let cx, cy
-  if (center === 'center' || !center) {
+  if (center === 'auto' || !center) {
+    // 优先使用最近一次指针位置；无记录时使用屏幕 85%×85%（偏右下，像 FAB 动画的感觉）
+      cx = w
+      cy = h
+
+  } else if (center === 'center') {
     cx = w / 2; cy = h / 2
   } else if (center?.x != null && center?.y != null) {
     cx = center.x; cy = center.y
   } else if (center?.clientX != null) {
     cx = center.clientX; cy = center.clientY
+  } else if (typeof center === 'string') {
+    // 一些方便的方位预设
+    const map = {
+      'top-left':   [0.15, 0.15],
+      'top-right':  [0.85, 0.15],
+      'bottom-left':[0.15, 0.85],
+      'bottom-right':[0.85, 0.85]
+    }
+    const preset = map[center]
+    if (preset) { cx = Math.round(w * preset[0]); cy = Math.round(h * preset[1]) }
+    else { cx = w / 2; cy = h / 2 }
   } else {
     cx = w / 2; cy = h / 2
   }
@@ -91,37 +116,27 @@ async function play(opts = {}) {
   const r = st.size / 2
   const scaleTo = coverScale({ w, h, cx, cy, r })
 
-  // 初始
+  // 初始：保持 scale(0)
   el.style.transform = 'scale(0)'
   el.style.opacity = '1'
   el.style.background = st.color
 
-  // 1) 浮现（0 → 1）
+  // 直接覆盖（0 → scaleTo）
   await el.animate(
-    [{ transform: 'scale(0)' }, { transform: 'scale(1)' }],
-    { duration: appearDuration, easing: 'cubic-bezier(.2,.7,.2,1)', fill: 'forwards' }
+    [{ transform: 'scale(0)' }, { transform: `scale(${scaleTo})` }],
+    { duration: coverDuration, easing: 'ease-in-out', fill: 'forwards' }
   ).finished.catch(() => {})
 
-  // 2) 停顿
-  await new Promise(r => setTimeout(r, hold))
-
-  // 3) 快速覆盖（1 → scaleTo）
-  await el.animate(
-    [{ transform: 'scale(1)' }, { transform: `scale(${scaleTo})` }],
-    { duration: coverDuration, easing: 'cubic-bezier(.22,.61,.36,1)', fill: 'forwards' }
-  ).finished.catch(() => {})
-
-  // 4) 切换路由（屏幕已被完全遮挡）
+  // 切路由（已被遮挡）
   if (to != null && typeof push === 'function') {
     try { await push(to) } catch {}
-    // 让新页面先完成一次渲染
     await new Promise(r => requestAnimationFrame(() => r()))
   }
 
-  // 5) 缩小退场（scaleTo → 0）
+  // 缩回（scaleTo → 0）
   await el.animate(
     [{ transform: `scale(${scaleTo})` }, { transform: 'scale(0)' }],
-    { duration: shrinkDuration, easing: 'cubic-bezier(.22,.61,.36,1)', fill: 'forwards' }
+    { duration: shrinkDuration, easing: 'ease-in-out', fill: 'forwards' }
   ).finished.catch(() => {})
 
   visible.value = false

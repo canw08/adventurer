@@ -568,10 +568,11 @@ watch(actionTab, (val) => {
   const to = ACTION_ROUTES[val]
   if (to)   radialTo('/student/home-sender', {
     color: '#FEF1F5',
-    appearDuration: 260,
-    hold: 180,
-    coverDuration: 220,
-    shrinkDuration: 380,
+    targetClass: '.main-body',
+    appearDuration: 500,
+    hold: 500,
+    coverDuration: 820,
+    shrinkDuration: 700,
   })
 })
 

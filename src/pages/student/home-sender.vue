@@ -641,10 +641,10 @@ watch(actionTab, (val) => {
   const to = ACTION_ROUTES[val]
   if (to)   radialTo('/student/home', {
     color: '#F4F7FE',
-    appearDuration: 260,
-    hold: 180,
-    coverDuration: 220,
-    shrinkDuration: 380,
+    appearDuration: 500,
+    hold: 500,
+    coverDuration: 820,
+    shrinkDuration: 700,
     // center: 'center',           // 默认值
     // 也可以指定点击位置：center: { x: 300, y: 400 } 或传 MouseEvent
   })
@@ -1206,8 +1206,9 @@ function toLocalEdgeISOString(
   padding-bottom: 4px;
   padding-top: 4px;
   height: 64px;
+
 }
-.header-left-group {
+.header-left-group { 
   display: flex;
   align-items: center;
   gap: 16px;
@@ -1558,7 +1559,7 @@ function toLocalEdgeISOString(
   display: flex;
   align-items: center;
   gap: 12px;             /* 文本与头像间距 */
-  z-index: 1100;         /* 高于分割线和内容 */
+  z-index: 98;         /* 高于分割线和内容 */
 }
 .assigned-label {
   font-size: 18px;
@@ -1578,7 +1579,7 @@ function toLocalEdgeISOString(
   position: fixed;
   bottom: 24px;
   left: 50%;
-  z-index: 1000;
+  z-index: 98;
 }
 .custom-round-button {
   background-color: #2A2C55;
@@ -1763,7 +1764,7 @@ function toLocalEdgeISOString(
   position: absolute; top: 28px; right: 130px;
   color: #2a2c52; font-weight: bold; font-size: 32px;
   text-shadow: 0px 1px 3px rgba(0,0,0,0.2);
-  z-index: 1000; pointer-events: none;
+  z-index: 98; pointer-events: none;
 }
 
 .qdlg-content {
