@@ -25,6 +25,19 @@
 
         </div>
         </section>
+
+        <section class="block">
+          <h3 class="block-title">快捷方式</h3>
+          <button
+            class="icon-btn"
+            :class="{ 'has-dot': showShortcutDot }"
+            @click="onSaveShortcut"
+            aria-label="保存快捷方式至桌面"
+          >
+            <i class="pi pi-download"></i>
+            <span>保存快捷方式至桌面</span>
+          </button>
+        </section>
       <!-- Acknowledgements -->
       <section class="block">
         <h3 class="block-title">
@@ -70,6 +83,10 @@ const userStore = useUserStore();
 const router = useRouter();
 const { locale, t } = useI18n()
 
+const SHORTCUT_DOT_KEY = 'settings.shortcutDotDismissed'  // 记忆小红点是否已消失
+const showShortcutDot = ref(localStorage.getItem(SHORTCUT_DOT_KEY) !== '1')
+
+
 // 在这里扩展语言即可
 const languages = ref([
   { code: 'en', label: 'English' },
@@ -94,6 +111,12 @@ const onSignOut = () => {
   userStore.clearUser()
   router.push('/');
   console.log('Sign out clicked')
+}
+
+const onSaveShortcut = () => {
+  router.push('/help/addToHome');
+  showShortcutDot.value = false
+  localStorage.setItem(SHORTCUT_DOT_KEY, '1')
 }
 </script>
 
@@ -203,4 +226,55 @@ const onSignOut = () => {
 /* 小过渡 */
 .fade-enter-active, .fade-leave-active { transition: opacity .16s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+
+/* 图标按钮（与页面风格一致的主按钮样式） */
+.icon-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px 0 12px;
+  border-radius: 12px;
+  border: 1px solid #d9ddea;
+  background: #ffffff;
+  color: #111827;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  transition: transform .08s ease, box-shadow .12s ease, border-color .12s ease;
+}
+.icon-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(42,44,85,0.12);
+  border-color: #cfd6ea;
+}
+.icon-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 10px rgba(42,44,85,0.12);
+}
+
+/* 小红点（仅在 has-dot 时出现） */
+.icon-btn.has-dot::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 10px;
+  height: 10px;
+  background: #ff3b30; /* 清晰的红色 */
+  border-radius: 999px;
+  box-shadow: 0 0 0 2px #ffffff; /* 形成白色描边，适配浅底 */
+}
+
+/* 让图标与文字的视觉对齐更舒适 */
+.icon-btn .pi {
+  font-size: 16px;
+}
+.icon-btn span {
+  font-size: 14px;
+  font-weight: 700;
+}
+
 </style>
