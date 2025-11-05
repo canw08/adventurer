@@ -24,3 +24,33 @@ export const levelRanges = Object.freeze({
 
 // 小工具函数（可选）
 export const getLevelRange = (key) => levelRanges[key] ?? null;
+
+
+// ===== 固定区间映射（金币 -> Level） =====
+// 用 JSDoc 标注类型，方便编辑器提示
+/**
+ * @typedef {{level:'F'|'E'|'D'|'C'|'B'|'A'|'S', min:number, max:number}} CoinRule
+ * @type {CoinRule[]}
+ */
+export const COIN_LEVEL_RULES = [
+  { level: 'F', min: 1,   max: 9   },
+  { level: 'E', min: 10,  max: 19  },
+  { level: 'D', min: 20,  max: 39  },
+  { level: 'C', min: 40,  max: 69  },
+  { level: 'B', min: 70,  max: 109 },
+  { level: 'A', min: 110, max: 159 },
+  { level: 'S', min: 160, max: Infinity }
+];
+
+/**
+ * 根据金币数返回对应 Level（默认低于 1 视为 'F'）
+ * @param {number} coinNum
+ * @returns {'F'|'E'|'D'|'C'|'B'|'A'|'S'}
+ */
+export function levelFromCoin(coinNum) {
+  if (!Number.isFinite(coinNum) || coinNum < 1) return 'F';
+  for (const r of COIN_LEVEL_RULES) {
+    if (coinNum >= r.min && coinNum <= r.max) return r.level;
+  }
+  return 'S';
+}

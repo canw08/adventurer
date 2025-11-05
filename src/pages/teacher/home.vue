@@ -243,8 +243,9 @@
               {{ selectedProject?.date }}
             </span>
           </div>
-<!-- 编辑任务按钮（右上角小铅笔） -->
+          <!-- 编辑任务按钮（右上角小铅笔） -->
           <Button
+            v-if="!isCompleted"
             icon="pi pi-pencil"
             class="qdlg-edit-task-btn p-button-rounded p-button-text"
             v-tooltip.top="$t('teacherHome.editTask')"
@@ -339,6 +340,7 @@
             <!-- 左下角按钮 -->
             <div class="qdlg-footer-left">
               <Button 
+                v-if="!isCompleted"
                 :label="$t('teacherHome.approve')" 
                 icon="pi pi-check" 
                 class="approve-btn"
@@ -537,6 +539,10 @@ const handleRemove = async (user) => {
   }
 }
 
+const isCompleted = computed(() => {
+  const sp = selectedProject.value
+  return !!(sp?.is_completed || sp?.status === 'completed')
+})
 
 /** 分享：复制当前任务 id 到剪贴板（带兜底） */
 const isDownloading = ref(false)
@@ -684,8 +690,42 @@ const safeDescription = computed(() => {
 })
 
 async function onCancel() {
-  // TODO: 取消任务逻辑
-  console.log('Cancel task clicked');
+  if (!selectedProject.value?.id) {
+    toast.add({
+      severity: 'warn',
+      summary: '无法操作',
+      detail: '当前没有选中的任务',
+      life: 2500
+    })
+    return
+  }
+
+  const taskId = selectedProject.value.id
+
+  loadingApprove.value = true
+  try {
+    await api.post(`/api/tasks/${taskId}/approve-cancel/?mark_completed=true`, {
+    })
+
+    toast.add({
+      severity: 'success',
+      summary: '操作成功',
+      detail: `任务已取消`,
+      life: 2000
+    })
+
+    // ⭐ 判断是否已经没有参与者，刷新页面
+    window.location.reload()
+
+  } catch (err) {
+    console.error('取消失败:', err)
+    toast.add({
+      severity: 'error',
+      summary: '操作失败',
+      detail: err?.response?.data?.detail || err?.message || '操作失败，请稍后重试',
+      life: 3500
+    })
+  }
 }
 
 /* ===== 指标（EXP / Coin / Hour） ===== */

@@ -57,14 +57,28 @@
       @hide="onPublishDialogHide"
     >
       <template #header>
-      <div class="dialog-header-custom">
-        <h2 class="dialog-header-title">{{ $t('teacherHome.releaaseTask') }}</h2>
-        <i 
-          class="pi pi-question-circle help-icon"
-          v-tooltip.top="$t('teacherHome.helpText')"
-        ></i>
+        <div class="dialog-header-custom">
+          <Button
+            icon="pi pi-arrow-left"
+            class="back-btn"
+            text
+            rounded
+            @click="showDialog = false"
+          />
+
+          <h2 class="dialog-header-title">{{ $t('teacherHome.releaaseTask') }}</h2>
+          <i 
+            class="pi pi-question-circle help-icon"
+            v-tooltip.top="$t('teacherHome.helpText')"
+          ></i>
+        </div>
+      </template>
+
+      <!-- ✅ 新增：发布卡片右上角 Level 角标 -->
+      <div class="publish-level-badge" :style="getLevelStyle(levelLetter.value)">
+        <img v-if="levelIcon" :src="levelIcon" alt="" class="publish-level-icon" />
+        <!-- <span class="publish-level-text">Level {{ levelLetter }}</span> -->
       </div>
-    </template>
 
       <div class="gapping">
         <AwardSlidersStu v-model:coin="coin" :coinRange="[1, coinUpper]"/>
@@ -121,13 +135,21 @@
               {{ $form?.content?.error?.message }}
             </Message>
           </div>
-          <Button
-            class="submitPosition"
-            type="submit"
-            severity="secondary"
-            :label="$t('teacherHome.submit')"
-            :disabled="!isFormValid"
-          />
+          <div class="submit-bar">
+            <div class="submit-cost">
+              需支付：
+              <span class="submit-cost-value">{{ totalCost }}</span>
+              <img src="../../assets/icon/token.png" alt="coin" class="cost-icon qdlg-metric-icon qdlg-pixelated" />
+              <div class="submit-fee">（含手续费 5₷, 无优惠券）</div>
+            </div>
+            <Button
+              class="submit-btn"
+              type="submit"
+              severity="secondary"
+              :label="$t('teacherHome.submit')"
+              :disabled="!isFormValid"
+            />
+          </div>
         </Form>
       </div>
     </Dialog>
@@ -235,6 +257,7 @@
             v-tooltip.top="$t('teacherHome.editTask')"
             severity="secondary"
             @click="editThisTask"
+            :disabled="true"
           />
           <!-- 右上角 Level 只显示 -->
           <div class="floating-dialog-level" :style="getLevelStyle(selectedProject?.level)">
@@ -317,6 +340,8 @@
             :avatar-url-fn="avatarUrl"
             :dialog-title="'Assigned'"
             :dialog-width="'420px'"
+            :showRemove="true"
+            :onRemove="handleRemove"
           />
         </div>
             <!-- 左下角按钮 -->
@@ -364,8 +389,6 @@ import Avatar from 'primevue/avatar'
 import ProgressBar from 'primevue/progressbar'
 
 import { showOnce } from '../../composables/tip-once.js'
-import { levelRanges } from '../../components/levelRange.js'
-
 import '../../styles/overrides.css'
 import teamwork from '../../assets/team.png'
 import solo1 from '../../assets/solo.png'
@@ -376,7 +399,7 @@ import AssigneesStack from '../../components/AssigneesStack.vue'
 
 import AwardSlidersStu from '../../components/AwardSliderStu.vue'
 import { useRadialTransition } from '../../components/transations/useRadialTransition.js'
-
+import { levelRanges, levelFromCoin, COIN_LEVEL_RULES } from '../../components/levelRange.js'
 const userStore = useUserStore()
 
 // 计算上限：取用户 token 数量（至少 1）
@@ -517,6 +540,80 @@ async function onShare() {
   }
 }
 
+const handleRemove = async (user) => {
+  if (!selectedProject.value?.id) {
+    toast.add({
+      severity: 'warn',
+      summary: '无法操作',
+      detail: '当前没有选中的任务',
+      life: 2500
+    })
+    return
+  }
+
+  const taskId = selectedProject.value.id
+  const participantId = user?.id
+
+  if (!participantId) {
+    toast.add({
+      severity: 'error',
+      summary: '操作失败',
+      detail: '缺少参与者 ID，无法踢出',
+      life: 3000
+    })
+    return
+  }
+
+  loadingApprove.value = true
+  try {
+    await api.post(`/api/tasks/${taskId}/remove-student/`, {
+      participant_id: participantId
+    })
+
+    // 更新本地 accepted_by
+    if (selectedProject.value?.accepted_by) {
+      selectedProject.value.accepted_by = selectedProject.value.accepted_by.filter(
+        u => u.id !== participantId
+      )
+    }
+
+    // 全局列表同步更新
+    const idx = allProjects.value.findIndex(p => p.id === taskId)
+    if (idx !== -1) {
+      allProjects.value[idx].accepted_by = allProjects.value[idx].accepted_by.filter(
+        u => u.id !== participantId
+      )
+    }
+    if (selectedProject.value) {
+      selectedProject.value = { ...selectedProject.value, status: 'completed', is_completed: true }   // ✅
+    }
+
+    toast.add({
+      severity: 'success',
+      summary: '操作成功',
+      detail: `已将 ${user.nickname || user.name || '该用户'} 踢出`,
+      life: 2000
+    })
+
+    // ⭐ 判断是否已经没有参与者，刷新页面
+    const remaining = selectedProject.value?.accepted_by?.length ?? 0
+    if (remaining === 0) {
+      window.location.reload()
+    }
+
+  } catch (err) {
+    console.error('踢出失败:', err)
+    toast.add({
+      severity: 'error',
+      summary: '操作失败',
+      detail: err?.response?.data?.detail || err?.message || '操作失败，请稍后重试',
+      life: 3500
+    })
+  } finally {
+    loadingApprove.value = false
+  }
+}
+
 /* ===== Icons ===== */
 const ICON_EXP  = new URL('../../assets/icon/exp.png', import.meta.url).href
 const ICON_COIN = new URL('../../assets/icon/token.png', import.meta.url).href
@@ -536,9 +633,10 @@ const tabOptions = ref([
 
 const actionTab = ref('release')
 const actionOptions = ref([
-  { label: 'Accept Task',  value: 'accept'  },
-  { label: 'Release Task', value: 'release' },
+  { label: t('tabs.acceptTask'),  value: 'accept' },
+  { label: t('tabs.releaseTask'), value: 'release' }
 ])
+
 watch(actionTab, (val) => {
   const to = ACTION_ROUTES[val]
   if (to)   radialTo('/student/home', {
@@ -711,6 +809,10 @@ const goToProfile = () => {
 const showDialog = ref(false)          // 发布任务弹窗 
 const exp   = ref(0)
 const coin  = ref(0)
+// 固定手续费
+const fee = 5
+// 实际应支付金额 = coin + 手续费
+const totalCost = computed(() => Math.max(0, Number(coin.value) + fee))
 const hours = ref(0)
 const num = ref(0)
 const bigTitle = ref('')
@@ -733,6 +835,19 @@ const isValidDateValue = (val) => {
   if (val instanceof Date) return !isNaN(val.getTime())
   return String(val).trim() !== ''
 }
+
+// ☆ 当前表单金币 -> 实时 Level
+const levelLetter = computed(() => levelFromCoin(Number(coin.value || 0)))
+
+// 根据等级字母拼出 svg 路径；资源不存在时返回 null（避免 404 报错）
+const levelIcon = computed(() => {
+  try {
+    return new URL(`../../assets/icon/levels/${levelLetter.value}.svg`, import.meta.url).href
+  } catch {
+    return null
+  }
+})
+
 
 const isFormValid = computed(() => {
   const hasAwards = exp.value > 0 || coin.value > 0 || hours.value > 0 || num > 0
@@ -796,11 +911,10 @@ const onFormSubmit = async (e) => {
     const payload = {
       title: bigTitle.value,
       description: html,
-      required_level: levelLetter,
-      experience_reward: exp.value,
-      token_reward: coin.value,
+      required_level: levelLetter.value,
+      token_reward: totalCost.value,
       volunteerTime_reward: hours.value,
-      maximum_users: num.value,
+      maximum_users: 1,
       deadline: toLocalDateTime(taskDate.value, 'end', { withOffset: false }),
       task_type: 'solo'
     }
@@ -822,7 +936,7 @@ const onFormSubmit = async (e) => {
     showDialog.value = false
 
     // 刷新任务列表
-    const res = await api.get('/api/tasks/my-tasks/',{mine : "published"})
+    const res = await api.get('/api/tasks/my-tasks/?mine=published')
     allProjects.value = res.data.map(mapTaskToProject)
 
     // 重置表单和状态
@@ -1952,4 +2066,119 @@ function toLocalEdgeISOString(
 .header-action-toggle .tab-toggle :deep(.p-selectbutton .p-button) {
   padding: 0.35rem 0.8rem;
 }
+
+/* 发布弹窗右上角 Level 角标 */
+.publish-level-badge {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  backdrop-filter: blur(4px);
+  z-index: 10;
+}
+
+.publish-level-icon {
+  width: 74px;
+  height: 74px;
+  display: block;
+}
+
+.publish-level-text {
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: .3px;
+}
+/* 提交栏整体布局 */
+.submit-bar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+  margin-top: 14px;
+  margin-right: 3%;
+}
+
+/* “需支付”文本样式 */
+.submit-cost {
+  font-size: 18px;
+  color: #2A2C55;
+  font-weight: 600;
+  white-space: nowrap;
+  margin-bottom: 0px;
+}
+
+/* 金额部分高亮 */
+.submit-cost-value {
+  color: #DD4546;          /* 红色高亮（可换品牌色） */
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 -3px;
+  margin-left: 0px
+}
+
+/* 发布按钮（原 submitPosition 改名） */
+.submit-btn {
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 18px;
+  background-color: #2A2C55 !important;
+  border-color: #2A2C55 !important;
+  color: #fff !important;
+  transition: background-color 0.3s ease;
+}
+
+.submit-btn:hover {
+  background-color: #DFE8FF !important;
+  color: #2A2C55 !important;
+}
+.cost-icon {
+  width: 25px;
+  height: 25px;
+  vertical-align: middle;
+  margin-left: 5px;
+  margin-bottom: 3px;
+}
+.submit-fee {
+  font-size: 10px;
+  color: #888;
+  margin-top: 0px;
+  margin-left: -5px
+}
+
+/* 发布弹窗标题行布局调整 */
+.dialog-header-custom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 返回按钮样式 */
+.back-btn {
+  color: #2A2C55 !important;
+  border: none !important;
+  background: transparent !important;
+  font-size: 1.2rem;
+  transition: background-color 0.2s ease;
+}
+
+.back-btn:hover {
+  background-color: rgba(42, 44, 85, 0.08) !important;
+  border-radius: 50%;
+}
+
+.dialog-header-title {
+  flex: 1; /* 让标题占据中间空间 */
+  font-size: 28px;
+  font-weight: bold;
+  color: #2A2C55;
+  margin: 0;
+  text-align: left;
+}
+
 </style>

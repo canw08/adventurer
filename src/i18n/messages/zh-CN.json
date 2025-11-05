@@ -37,7 +37,9 @@
   },
   "tabs": {
     "ongoing": "进行中",
-    "completed": "已完成"
+    "completed": "已完成",
+    "acceptTask" : "接取任务",
+    "releaseTask" : "发布任务"
   },
   "common": {
     "na": "空",

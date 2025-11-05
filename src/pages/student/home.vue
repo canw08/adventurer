@@ -12,7 +12,7 @@
         </span>
 
         <!-- 切换模式 -->
-        <!-- <div class="header-action-toggle small-toggle">
+        <div class="header-action-toggle small-toggle">
           <SelectButton
             v-model="actionTab"
             :options="actionOptions"
@@ -22,7 +22,7 @@
             aria-label="action-switch"
             :allowEmpty="false"
           />
-        </div> -->
+        </div>
 
       </div>
       <AnnouncementPanel />
@@ -487,8 +487,8 @@ const tabOptions = computed(() => ([
 // Header 动作切换（Release / Accept）
 const actionTab = ref('accept')
 const actionOptions = ref([
-  { label: 'Accept Task',  value: 'accept'  },
-  { label: 'Release Task', value: 'release' },
+  { label: t('tabs.acceptTask'),  value: 'accept' },
+  { label: t('tabs.releaseTask'), value: 'release' }
 ])
 
 // 项目数据

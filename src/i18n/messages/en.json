@@ -37,7 +37,9 @@
   },
   "tabs": {
     "ongoing": "Ongoing",
-    "completed": "Completed"
+    "completed": "Completed",
+    "acceptTask" : "Accept Task",
+    "releaseTask" : "Release Task"
   },
   "common": {
     "na": "N/A",
