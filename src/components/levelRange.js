@@ -4,22 +4,23 @@
  * @type {Record<string, Range>}
  */
 export const levelRanges = Object.freeze({
-  'F级':     { exp:[5,15],      coin:[10,20],    hours:[0,24] },
-  'E级':     { exp:[30,50],     coin:[50,100],   hours:[0,24] },
-  'D级':     { exp:[80,150],    coin:[100,150],  hours:[0,24] },
-  'C级':     { exp:[250,400],   coin:[300,350],  hours:[0,24] },
-  'B级':     { exp:[500,800],   coin:[400,600],  hours:[0,24] },
-  'A级':     { exp:[1000,2000], coin:[800,1000], hours:[0,24] },
-  'S级':     { exp:[3000,5000], coin:[2000,3000],hours:[0,24] },
-  '定制':     { exp:[1,10000],  coin:[1,10000],  hours:[0,24] },
+  'F级': { exp:[4,4],   coin:[1,3],   hours:[0,24] },
+  'E级': { exp:[8,8],   coin:[4,6],   hours:[0,24] },
+  'D级': { exp:[10,10], coin:[7,10],  hours:[0,24] },
+  'C级': { exp:[14,14], coin:[11,15], hours:[0,24] },
+  'B级': { exp:[18,18], coin:[16,20], hours:[0,24] },
+  'A级': { exp:[24,24], coin:[21,25], hours:[0,24] },
+  'S级': { exp:[30,30], coin:[26,Infinity], hours:[0,24] },
+  '定制': { exp:[1,10000], coin:[1,10000], hours:[0,24] },
 
-  'F': { exp:[5,15],      coin:[10,20],    hours:[0,24] },
-  'E': { exp:[30,50],     coin:[50,100],   hours:[0,24] },
-  'D': { exp:[80,150],    coin:[100,150],  hours:[0,24] },
-  'C': { exp:[250,400],   coin:[300,350],  hours:[0,24] },
-  'B': { exp:[500,800],   coin:[400,600],  hours:[0,24] },
-  'A': { exp:[1000,2000], coin:[800,1000], hours:[0,24] },
-  'S': { exp:[3000,5000], coin:[2000,3000],hours:[0,24] }
+  // 简写版本
+  'F': { exp:[4,4],   coin:[1,3],   hours:[0,24] },
+  'E': { exp:[8,8],   coin:[4,6],   hours:[0,24] },
+  'D': { exp:[10,10], coin:[7,10],  hours:[0,24] },
+  'C': { exp:[14,14], coin:[11,15], hours:[0,24] },
+  'B': { exp:[18,18], coin:[16,20], hours:[0,24] },
+  'A': { exp:[24,24], coin:[21,25], hours:[0,24] },
+  'S': { exp:[30,30], coin:[26,Infinity], hours:[0,24] }
 });
 
 // 小工具函数（可选）
@@ -33,15 +34,14 @@ export const getLevelRange = (key) => levelRanges[key] ?? null;
  * @type {CoinRule[]}
  */
 export const COIN_LEVEL_RULES = [
-  { level: 'F', min: 1,   max: 9   },
-  { level: 'E', min: 10,  max: 19  },
-  { level: 'D', min: 20,  max: 39  },
-  { level: 'C', min: 40,  max: 69  },
-  { level: 'B', min: 70,  max: 109 },
-  { level: 'A', min: 110, max: 159 },
-  { level: 'S', min: 160, max: Infinity }
+  { level: 'F', min: 1,  max: 3 },
+  { level: 'E', min: 4,  max: 6 },
+  { level: 'D', min: 7,  max: 10 },
+  { level: 'C', min: 11, max: 15 },
+  { level: 'B', min: 16, max: 20 },
+  { level: 'A', min: 21, max: 25 },
+  { level: 'S', min: 26, max: Infinity }
 ];
-
 /**
  * 根据金币数返回对应 Level（默认低于 1 视为 'F'）
  * @param {number} coinNum

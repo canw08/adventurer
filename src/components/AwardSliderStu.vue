@@ -55,10 +55,10 @@ const coinStep = ref(1)
 
 function pickStep(min:number, max:number) {
   const span = max - min
-  if (span <= 25) return 0.5
+  if (span <= 25) return 1
   if (span <= 50) return 1
-  if (span <= 200) return 5
-  if (span <= 1000) return 10
+  if (span <= 200) return 1
+  if (span <= 1000) return 1
   return 50
 }
 function clamp(v:number, min:number, max:number){ return Math.min(max, Math.max(min, v)) }

@@ -9,7 +9,7 @@
     </div>
 
     <!-- EXP -->
-    <div class="award-item">
+    <!-- <div class="award-item">
       <label>EXP</label>
       <span class="min-val">{{ expMin }}</span>
       <input
@@ -28,7 +28,7 @@
         {{ expLocal }} 
       </small>
       <span class="max-val" >{{ expMax }}</span>
-    </div>
+    </div> -->
 
     <!-- coin -->
     <div class="award-item">
@@ -162,22 +162,24 @@ const disabled = computed(() => !normalizeLevel(props.level))
 
 // 等级映射
 const levelRanges: Record<string, {exp:[number,number], coin:[number,number], hours:[number,number]}> = {
-  'F级':     { exp:[5,15],      coin:[10,20],    hours:[0,24] },
-  'E级':     { exp:[30,50],     coin:[50,100],   hours:[0,24] },
-  'D级':     { exp:[80,150],    coin:[100,150],  hours:[0,24] },
-  'C级':     { exp:[250,400],   coin:[300,350],  hours:[0,24] },
-  'B级':     { exp:[500,800],   coin:[400,600],  hours:[0,24] },
-  'A级':     { exp:[1000,2000], coin:[800,1000], hours:[0,24] },
-  'S级':     { exp:[3000,5000], coin:[2000,3000],hours:[0,24] },
-  '定制':     { exp:[1,10000],  coin:[1,10000],  hours:[0,24] },
-  'Level F': { exp:[5,15],      coin:[10,20],    hours:[0,24] },
-  'Level E': { exp:[30,50],     coin:[50,100],   hours:[0,24] },
-  'Level D': { exp:[80,150],    coin:[100,150],  hours:[0,24] },
-  'Level C': { exp:[250,400],   coin:[300,350],  hours:[0,24] },
-  'Level B': { exp:[500,800],   coin:[400,600],  hours:[0,24] },
-  'Level A': { exp:[1000,2000], coin:[800,1000], hours:[0,24] },
-  'Level S': { exp:[3000,5000], coin:[2000,3000],hours:[0,24] }
-}
+  'F级':     { exp:[4,4],   coin:[1,3],   hours:[0,24] },
+  'E级':     { exp:[8,8],   coin:[4,6],   hours:[0,24] },
+  'D级':     { exp:[10,10], coin:[7,10],  hours:[0,24] },
+  'C级':     { exp:[14,14], coin:[11,15], hours:[0,24] },
+  'B级':     { exp:[18,18], coin:[16,20], hours:[0,24] },
+  'A级':     { exp:[24,24], coin:[21,25], hours:[0,24] },
+  'S级':     { exp:[30,30], coin:[26,40], hours:[0,24] },
+  '定制':     { exp:[1,10000], coin:[1,10000], hours:[0,24] },
+
+  'Level F': { exp:[4,4],   coin:[1,3],   hours:[0,24] },
+  'Level E': { exp:[8,8],   coin:[4,6],   hours:[0,24] },
+  'Level D': { exp:[10,10], coin:[7,10],  hours:[0,24] },
+  'Level C': { exp:[14,14], coin:[11,15], hours:[0,24] },
+  'Level B': { exp:[18,18], coin:[16,20], hours:[0,24] },
+  'Level A': { exp:[24,24], coin:[21,25], hours:[0,24] },
+  'Level S': { exp:[30,30], coin:[26,40], hours:[0,24] }
+};
+
 
 function normalizeLevel(lvl?: string): string {
   if (!lvl) return ''
@@ -196,7 +198,7 @@ function normalizeLevel(lvl?: string): string {
 
 function pickStep(min:number, max:number) {
   const span = max - min
-  if (span <= 25) return 0.5
+  if (span <= 25) return 1
   if (span <= 50) return 1
   if (span <= 200) return 5
   if (span <= 1000) return 10
@@ -229,7 +231,7 @@ function applyRange(levelRaw?: string) {
 
   expMin.value = emin;  expMax.value = emax;  expStep.value  = pickStep(emin, emax)
   coinMin.value = cmin; coinMax.value = cmax; coinStep.value = pickStep(cmin, cmax)
-  hoursMin.value = hmin;hoursMax.value = hmax;hoursStep.value = pickStep(hmin, hmax)
+  hoursMin.value = hmin;hoursMax.value = hmax;hoursStep.value = 0.5
 
   // 统一设为“最左边”
   expLocal.value   = emin
