@@ -498,7 +498,7 @@ async function onShare() {
     toast.add({ severity: 'warn', summary: '无法分享', detail: '当前没有选中的任务', life: 2500 })
     return
   }
-  const shareUrl = `http://117.72.148.123/forward/${id}`
+  const shareUrl = `https://www.aidiventure.com/forward/${id}`
   isDownloading.value = true
   // 可选：提示正在生成
   toast.add({ severity: 'info', summary: '处理中', detail: '正在生成二维码，请稍等…', life: 1500 })
