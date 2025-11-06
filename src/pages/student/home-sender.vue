@@ -2150,7 +2150,7 @@ function toLocalEdgeISOString(
 
 /* 金额部分高亮 */
 .submit-cost-value {
-  color: #DD4546;          /* 红色高亮（可换品牌色） */
+  color: #2B2C55;          /* 红色高亮（可换品牌色） */
   font-size: 18px;
   font-weight: 600;
   margin: 0 -3px;
