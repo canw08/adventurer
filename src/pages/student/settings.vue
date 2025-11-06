@@ -114,6 +114,7 @@ const onSignOut = () => {
 }
 
 const onSaveShortcut = () => {
+  sessionStorage.setItem('visitedFromHomeIcon', '1')
   router.push('/help/addToHome');
   showShortcutDot.value = false
   localStorage.setItem(SHORTCUT_DOT_KEY, '1')
