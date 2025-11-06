@@ -57,14 +57,21 @@ const isStandalone = () => {
 }
 // 判断是否为“桌面启动”
 const checkShouldRedirect = () => {
-  // 若当前 session 里还没存标记 => 是桌面启动（新 session）
   const hasFlag = sessionStorage.getItem('visitedFromHomeIcon')
-  if (!hasFlag && (isStandalone() || true)) {
-    // 第一次进入主屏幕/独立窗口 => 标记 & 跳主界面
+  const query = new URLSearchParams(window.location.search)
+  const fromLink = query.get('from') === 'link'
+
+  if (fromLink) {
+    // 来自特定链接 => 不跳转
+    return
+  }
+
+  if (!hasFlag && isStandalone()) {
     sessionStorage.setItem('visitedFromHomeIcon', '1')
     router.replace('/')
   }
 }
+
 
 onMounted(() => {
   checkShouldRedirect()
