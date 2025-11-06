@@ -56,21 +56,36 @@ const isStandalone = () => {
          ('standalone' in navigator && navigator.standalone)
 }
 // 判断是否为“桌面启动”
+const stripQueryOnce = () => {
+  // 仅把地址栏改成无查询参数的同一路径，不刷新页面
+  if (location.search) {
+    history.replaceState(null, '', location.pathname + location.hash);
+  }
+};
+
 const checkShouldRedirect = () => {
-  const hasFlag = sessionStorage.getItem('visitedFromHomeIcon')
-  const query = new URLSearchParams(window.location.search)
-  const fromLink = query.get('from') === 'link'
+  const hasFlag = sessionStorage.getItem('visitedFromHomeIcon');
+  const params = new URLSearchParams(location.search);
+  const fromLink = params.get('from') === 'link';
 
-  if (fromLink) {
-    // 来自特定链接 => 不跳转
-    return
+  // 进入后立刻清理参数，避免被保存到桌面快捷方式
+  if (fromLink) stripQueryOnce();
+
+  if (isStandalone()) {
+    // 主屏幕/独立模式启动：忽略任何 from=link，照常执行跳转逻辑
+    if (!hasFlag) {
+      sessionStorage.setItem('visitedFromHomeIcon', '1');
+      router.replace('/');
+    }
+    return;
   }
 
-  if (!hasFlag && isStandalone()) {
-    sessionStorage.setItem('visitedFromHomeIcon', '1')
-    router.replace('/')
-  }
-}
+  // 浏览器环境：如果来自特定链接，则本次不跳转
+  if (fromLink) return;
+
+  // 浏览器环境 + 没有标记：这里通常不需要跳转，保持现状
+  // 如果你仍想在非独立模式下也做其他判断，可在这里补充
+};
 
 
 onMounted(() => {
