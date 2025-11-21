@@ -540,6 +540,7 @@ const handleRemove = async (user) => {
 }
 
 const isCompleted = computed(() => {
+  
   const sp = selectedProject.value
   return !!(sp?.is_completed || sp?.status === 'completed')
 })
