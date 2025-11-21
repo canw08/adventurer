@@ -1,9 +1,8 @@
-<!-- ========================== 模板 ========================== -->
 <template>
   <div class="agreement-shell">
     <!-- 页头（竖直上方） -->
     <header class="page-header">
-      <h1 class="page-title">校园任务发布与使用协议</h1>
+      <h1 class="page-title">冒险者公会发布协议</h1>
       <p class="page-subtitle">请逐条阅读并勾选，本页全部勾选后方可继续</p>
     </header>
 
@@ -67,15 +66,51 @@
       <div class="footer-right">
         <Button label="上一步" icon="pi pi-arrow-left" :disabled="currentStep===0" severity="secondary" @click="prev" />
         <Button v-if="currentStep < steps.length - 1" label="下一步" icon="pi pi-arrow-right" iconPos="right" :disabled="!canNext" @click="next" />
-        <Button v-else label="我已阅读并同意全部条款" icon="pi pi-check" :disabled="!canNext" @click="finish" />
+        <Button v-else label="我已阅读并同意全部条款" icon="pi pi-check" :disabled="!canNext" @click="openSignatureDialog" />
       </div>
     </footer>
+
+    <!-- 签名对话框（已添加前缀下拉） -->
+    <Dialog
+      v-model:visible="signatureDialogVisible"
+      header="签名确认"
+      :modal="true"
+      :closable="true"
+      :style="{ width: '480px' }"
+      draggable
+      aria-label="签名对话框"
+      @hide="onSignatureDialogHide"
+    >
+      <div class="signature-row">
+        <Dropdown
+          v-model="selectedPrefix"
+          :options="prefixOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="选择前缀"
+          class="prefix-dropdown"
+          showClear
+        />
+        <InputText
+          v-model="signature"
+          placeholder="输入姓名"
+          class="signature-input"
+          @keyup.enter="confirmSignature"
+        />
+      </div>
+
+      <p class="preview" v-if="previewSignature">预览：{{ previewSignature }}</p>
+
+      <template #footer>
+        <Button label="取消" text @click="signatureDialogVisible = false" />
+        <Button label="确认" :disabled="!canConfirmSignature" @click="confirmSignature" />
+      </template>
+    </Dialog>
   </div>
 </template>
 
-<!-- ========================== 脚本 ========================== -->
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 
 import Card from 'primevue/card'
@@ -83,7 +118,9 @@ import Checkbox from 'primevue/checkbox'
 import Divider from 'primevue/divider'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
-
+import Dialog from 'primevue/dialog'
+import InputText from 'primevue/inputtext'
+import Dropdown from 'primevue/dropdown'
 const AGREEMENT_VERSION = '2025-11-11'
 
 function safeUseRouter() {
@@ -125,12 +162,41 @@ const clauses: Record<number, { title: string; content: string | string[] }> = {
   8: { title: '协议修改与生效', content: '平台可根据实际情况修改本协议并公示；修改后的协议自发布之日起生效；用户继续使用平台视为同意更新内容；本协议自首次使用任务发布功能时生效，长期有效。' }
 }
 
+const prefixOptions = [
+  { label: '帅气的', value: '帅气的' },
+  { label: '温柔的', value: '温柔的' },
+  { label: '神秘的', value: '神秘的' },
+  { label: '快乐的', value: '快乐的' },
+  { label: '高冷的', value: '高冷的' },
+  { label: '创意无限的', value: '创意无限的' },
+  { label: '代码骑士', value: '代码骑士' },
+  { label: '学习狂魔', value: '学习狂魔' },
+  { label: '掌柜的', value: '掌柜的' },
+  { label: '甜甜的', value: '甜甜的' },
+  { label: '唐唐的', value: '唐唐的' },
+  { label: '细心的', value: '细心的' },
+  { label: '冷静的', value: '冷静的' },
+  { label: '阳光的', value: '阳光的' },
+  { label: 'BOT的', value: 'BOT的' },
+  { label: 'SSS级的', value: 'SSS级的' },
+  { label: '赤石冠军', value: '赤石冠军' },
+  { label: '资深搬运工', value: '资深搬运工' },
+  { label: '来自异世界的', value: '来自异世界的' },
+  { label: '从头帅到脚趾间的', value: '从头帅到脚趾间的' },
+  { label: '装糊涂的天才', value: '装糊涂的天才' },
+  { label: '不想写作业的', value: '不想写作业的' },
+  { label: '表情包大王', value: '表情包大王' },
+  { label: '社恐却努力的', value: '社恐却努力的' },
+]
+
 /* 勾选与分页逻辑 */
 const checked = reactive<Record<number, boolean>>({1:false,2:false,3:false,4:false,5:false,6:false,7:false,8:false})
 const currentStep = ref(0)
 const pageTotal = computed(() => steps[currentStep.value].clauseIds.length)
 const pageCheckedCount = computed(() => steps[currentStep.value].clauseIds.filter(id => checked[id]).length)
 const canNext = computed(() => pageCheckedCount.value === pageTotal.value)
+
+
 
 /* 顶部横向分段条：状态与交互 */
 function isStepComplete(idx: number) { return steps[idx].clauseIds.every(id => checked[id]) }
@@ -144,21 +210,108 @@ function stepClass(idx: number) {
 }
 function goStep(idx: number) { if (canJumpTo(idx)) currentStep.value = idx }
 
-/* 上一步 / 下一步 / 完成 */
+/* 上一步 / 下一步 */
 function prev() { if (currentStep.value > 0) currentStep.value-- }
 function next() { if (canNext.value && currentStep.value < steps.length - 1) currentStep.value++ }
-function finish() {
-  if (!canNext.value) return
-  localStorage.setItem('agreementConsent', JSON.stringify({ version: AGREEMENT_VERSION, agreedAt: Date.now(), checked }))
-  if (router) router.push('/student/publish')
-  else window.location.assign('/student/publish')
-}
 
 /* 细轨迹百分比（仅位置感） */
 const trackPercent = computed(() => (steps.length <= 1 ? 100 : Math.round((currentStep.value / (steps.length - 1)) * 100)))
+
+/* -------------------- 签名对话框逻辑 -------------------- */
+const signatureDialogVisible = ref(false) // already present in original — keep single source of truth
+const signature = ref('')
+const signatureError = ref('')
+const signatureInputRef = ref<HTMLInputElement | null>(null)
+
+const selectedPrefix = ref<string | null>(null)
+const customPrefix = ref('')
+
+
+/* 计算：是否可以确认（需要前缀 + 姓名） */
+const canConfirmSignature = computed(() => {
+  const hasPrefix = selectedPrefix.value && (selectedPrefix.value !== 'other' || customPrefix.value.trim().length > 0)
+  return Boolean(hasPrefix && signature.value.trim().length > 0)
+})
+
+/* 预览最终签名（例如：帅气的 张三） */
+const previewSignature = computed(() => {
+  if (!selectedPrefix.value) return ''
+  const prefix = selectedPrefix.value === 'other' ? customPrefix.value.trim() : selectedPrefix.value
+  if (!prefix) return ''
+  const name = signature.value.trim()
+  return name ? `${prefix} ${name}` : ''
+})
+
+/* 打开对话框时清理并聚焦 */
+function openSignatureDialog() {
+  if (!canNext.value) return
+  signature.value = ''
+  signatureError.value = ''
+  selectedPrefix.value = null
+  customPrefix.value = ''
+  signatureDialogVisible.value = true
+  nextTick(() => {
+    // 聚焦姓名输入
+    const el = (signatureInputRef.value as any)?.$el ?? signatureInputRef.value
+    if (el && typeof el.focus === 'function') el.focus()
+  })
+}
+
+/* 确认签名：保存 prefix、name、finalSignature */
+function confirmSignature() {
+  const name = signature.value.trim()
+  if (!name) {
+    signatureError.value = '签名姓名不能为空，请输入姓名。'
+    return
+  }
+  if (!selectedPrefix.value) {
+    signatureError.value = '请选择一个前缀。'
+    return
+  }
+  let prefix = selectedPrefix.value === 'other' ? customPrefix.value.trim() : selectedPrefix.value
+  if (!prefix) {
+    signatureError.value = '自定义前缀不能为空，请输入或选择其他前缀。'
+    return
+  }
+  if (prefix.length > 30) {
+    signatureError.value = '前缀过长，请保持在 30 字以内。'
+    return
+  }
+
+  // 最终签名组合
+  const finalSignature = `${prefix} ${name}`
+
+  // 保存到 localStorage（保留 checked 快照）
+  try {
+    const payload = {
+      version: AGREEMENT_VERSION,
+      agreedAt: Date.now(),
+      signerPrefix: prefix,
+      signerName: name,
+      finalSignature
+    }
+    localStorage.setItem('agreementConsent', JSON.stringify(payload))
+  } catch (e) {
+    signatureError.value = '保存失败，请检查浏览器设置或稍后重试。'
+    return
+  }
+
+  signatureDialogVisible.value = false
+
+  // 跳转
+  if (router) router.push('/student/home-sender')
+  else window.location.assign('/student/home-sender')
+}
+
+/* onSignatureDialogHide 保持此前实现：清理错误 */
+function onSignatureDialogHide() {
+  signatureError.value = ''
+}
+
+
+
 </script>
 
-<!-- ========================== 样式 ========================== -->
 <style scoped>
 /* 参数：统一宽度，保证顶部分段条与卡片宽度一致且居中 */
 :root, :host {
@@ -171,6 +324,8 @@ const trackPercent = computed(() => (steps.length <= 1 ? 100 : Math.round((curre
   min-height: 100vh;
   max-width: 980px;
   margin: 0  auto;
+  margin-top: 15px;
+  margin-bottom: 100px;
   padding: 16px 16px calc(var(--footer-h) + 20px);
 }
 
@@ -264,10 +419,36 @@ const trackPercent = computed(() => (steps.length <= 1 ? 100 : Math.round((curre
 .tip { color: #6b7280; font-size: .9rem; }
 .footer-right { display: flex; align-items: center; gap: .75rem; }
 
+/* 签名对话框样式微调 */
+.signature-body { display: flex; flex-direction: column; gap: .5rem; padding: .25rem 0; }
+.signature-label { font-weight: 600; color: #374151; }
+.signature-help { color: #dc2626; font-size: .875rem; margin: 0; }
+
 /* 小屏优化 */
 @media (max-width: 480px) {
   :root, :host { --card-w: 760px; }
   .step-pill .step-label { font-size: .9rem; }
   .card-body-scroll { max-height: calc(100vh - var(--footer-h) - 200px); }
+}
+.custom-prefix { margin-top: 0.5rem; margin-bottom: 0.5rem; }
+.signature-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.prefix-dropdown {
+  flex: 0 0 150px;
+}
+
+.signature-input {
+  flex: 1;
+}
+
+.preview {
+  font-size: 0.9rem;
+  color: #666;
+  margin-left: 4px;
 }
 </style>

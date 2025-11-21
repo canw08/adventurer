@@ -156,7 +156,17 @@
             size="large"
             style="width: 50px; height: 50px"
           />
-          <span class="author-name">{{ selectedProject?.author}}</span>
+          <div class="author-block">
+            <span class="author-name">{{ selectedProject?.author }}</span>
+            <div
+              v-if="selectedProject?.wechatId"
+              class="wechat-pill"
+              :title="`Wechat: ${selectedProject.wechatId}`"
+            >
+              Wechat: {{ selectedProject.wechatId }}
+            </div>
+            <!-- 若想无值也显示占位，可把 v-if 改成 v-show，并用三元：{{ selectedProject?.wechatId || 'N/A' }} -->
+          </div>
         </div>
 
         <div class="dialog-description" v-html="safeDescription"></div>
@@ -466,6 +476,7 @@ const mapTaskToProject = (task) => {
     slotsUsed,
     slotsTotal,
     slotsLeft: Math.max(0, slotsTotal - slotsUsed),
+    wechatId: task.wechat || '',
     accepted_by: Array.isArray(task.accepted_by)
       ? task.accepted_by.map(u => ({
           id: u.id, nickname: u.nickname, avatar: u.avatar, realname: u.realname
@@ -1518,4 +1529,27 @@ defineExpose({
 .header-action-toggle .tab-toggle :deep(.p-selectbutton .p-button) {
   padding: 0.35rem 0.8rem;
 }
+
+.author-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0px; /* 作者名与 pill 的垂直间距 */
+}
+
+/* 深色椭圆标签（沿用你的主色 #2A2C55，与 .custom-btn 一致） */
+.wechat-pill {
+  align-self: flex-start;          /* 贴左对齐，不占满 */
+      /* 深色底，与你项目一致 */
+  color: #848282;
+  border-radius: 999px;            /* 椭圆形 */
+  padding: 2px 12px;               /* 高度/左右内边距 */
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 </style>
