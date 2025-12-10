@@ -163,7 +163,7 @@
               class="wechat-pill"
               :title="`Wechat: ${selectedProject.wechatId}`"
             >
-              Wechat: {{ selectedProject.wechatId }}
+              wechat: {{ selectedProject.wechatId }}
             </div>
             <!-- 若想无值也显示占位，可把 v-if 改成 v-show，并用三元：{{ selectedProject?.wechatId || 'N/A' }} -->
           </div>
@@ -1542,7 +1542,7 @@ defineExpose({
       /* 深色底，与你项目一致 */
   color: #848282;
   border-radius: 999px;            /* 椭圆形 */
-  padding: 2px 12px;               /* 高度/左右内边距 */
+  padding: 2px 0px;               /* 高度/左右内边距 */
   font-size: 13px;
   font-weight: 600;
   line-height: 1;

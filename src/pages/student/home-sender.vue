@@ -428,6 +428,18 @@ const avatarUrl = (u) =>
   `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(u?.avatar || u?.nickname || u?.name || 'user')}&skinColor=ecad80,f2d3b1`
 
 
+onMounted(() => {
+  const agreementConsent = localStorage.getItem('agreementConsent')
+  if (!agreementConsent) {
+    // 如果没有agreementConsent，跳转到协议页面
+    if (router) {
+      router.push('/student/agreement')
+    } else {
+      window.location.assign('/student/agreement')
+    }
+  }
+})
+
 const toast = useToast()
 const loadingApprove = ref(false)
 
