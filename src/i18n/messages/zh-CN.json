@@ -1,4 +1,33 @@
 {
+  "Success": {
+    "Operation": "操作成功",
+    "Mark": "任务标记成功",
+    "Success": "Success",
+    "Download": "下载成功",
+    "Preserve": "保存成功",
+    "Cancel": "取消成功"
+  },
+  "Fail": {
+    "Error": "Error",
+    "Operation": "操作失败",
+    "Retry": "操作失败, 请稍后重试",
+    "Download": "下载失败"
+  },
+  "Not": {
+    "Empty": "任务不能为空",
+    "Operation": "无法操作",
+    "Explain": "无任务说明",
+    "Select": "没有选中的任务",
+    "Participants": "缺少参与者ID, 踢出失败",
+    "Share": "分享失败"
+  },
+  "Hint": {
+    "Warn": "Warn",
+    "Dispose": "处理中",
+    "ORcode": "正在生成二维码, 请稍等..."
+  },
+
+
   "questLog": {
     "title": "营地",
     "runningQuest": "进行中的任务\n",

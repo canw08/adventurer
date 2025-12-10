@@ -444,8 +444,8 @@ async function onApprove() {
 
     toast.add({
       severity: 'success',
-      summary: '操作成功',
-      detail: '任务已标记为完成',
+      summary: $t('Success.Operation'),
+      detail: $t('Success.Mark'),
       life: 2500
     })
     showProjectDialog.value = false
@@ -454,10 +454,10 @@ async function onApprove() {
     const msg =
       err?.response?.data?.detail ||
       err?.message ||
-      '操作失败，请稍后重试'
+      $t('Fail.Retry')
     toast.add({
       severity: 'error',
-      summary: '操作失败',
+      summary: $t('Fail.Operation'),
       detail: msg,
       life: 3500
     })
@@ -468,9 +468,9 @@ async function onApprove() {
 const handleRemove = async (user) => {
   if (!selectedProject.value?.id) {
     toast.add({
-      severity: 'warn',
-      summary: '无法操作',
-      detail: '当前没有选中的任务',
+      severity: $t('Hint.Warn'),
+      summary: $t('Not.Operation'),
+      detail: $t('Not.Select'),
       life: 2500
     })
     return
@@ -481,9 +481,9 @@ const handleRemove = async (user) => {
 
   if (!participantId) {
     toast.add({
-      severity: 'error',
-      summary: '操作失败',
-      detail: '缺少参与者 ID，无法踢出',
+      severity: $t('Fail.Operation'),
+      summary: $t('Fail.Operation'),
+      detail: $t('Fail.Participants'),
       life: 3000
     })
     return
@@ -514,8 +514,8 @@ const handleRemove = async (user) => {
     }
 
     toast.add({
-      severity: 'success',
-      summary: '操作成功',
+      severity: $t('Success.Operation'),
+      summary: $t('Success.Operation'),
       detail: `已将 ${user.nickname || user.name || '该用户'} 踢出`,
       life: 2000
     })
@@ -529,9 +529,9 @@ const handleRemove = async (user) => {
   } catch (err) {
     console.error('踢出失败:', err)
     toast.add({
-      severity: 'error',
-      summary: '操作失败',
-      detail: err?.response?.data?.detail || err?.message || '操作失败，请稍后重试',
+      severity: $t('Fail.Operation'),
+      summary: $t('Fail.Operation'),
+      detail: err?.response?.data?.detail || err?.message || $t('Fail.Retry'),
       life: 3500
     })
   } finally {
@@ -553,13 +553,13 @@ async function onShare() {
   const proj = selectedProject.value
   const id = proj?.id
   if (!id) {
-    toast.add({ severity: 'warn', summary: '无法分享', detail: '当前没有选中的任务', life: 2500 })
+    toast.add({ severity: $t('Hint.Warn'), summary: $t('Not.Share'), detail: $t('Not.Select'), life: 2500 })
     return
   }
   const shareUrl = `https://www.aidiventure.com/forward/${id}`
   isDownloading.value = true
   // 可选：提示正在生成
-  toast.add({ severity: 'info', summary: '处理中', detail: '正在生成二维码，请稍等…', life: 1500 })
+  toast.add({ severity: 'info', summary: $t('Hint.Dispose'), detail: $t('Hint.ORcode'), life: 1500 })
 
   try {
     const res = await api.get('api/qr/compose/', {
@@ -579,10 +579,10 @@ async function onShare() {
     a.remove()
     URL.revokeObjectURL(url)
 
-    toast.add({ severity: 'success', summary: '已下载', detail: '二维码图片已保存到你的设备', life: 2000 })
+    toast.add({ severity: $t('Success.Success'), summary: $t('Success.Download'), detail: $t('Success.Preserve'), life: 2000 })
   } catch (err) {
     console.error('二维码下载失败:', err)
-    toast.add({ severity: 'warn', summary: '下载失败', detail: `请稍后重试`, life: 4000 })
+    toast.add({ severity: $t('Hint.Warn'), summary: $t('Fail.Download'), detail: $t('Fail.Retry'), life: 4000 })
   } finally {
     isDownloading.value = false
   }
@@ -678,7 +678,7 @@ function openProjectDialog(project) {
 
 /* ===== 安全描述渲染 ===== */
 const safeDescription = computed(() => {
-  const html = selectedProject.value?.description || '无任务说明'
+  const html = selectedProject.value?.description || $t('Not.Explain')
   const clean = DOMPurify.sanitize(html)
   const div = document.createElement('div')
   div.innerHTML = clean
@@ -693,9 +693,9 @@ const safeDescription = computed(() => {
 async function onCancel() {
   if (!selectedProject.value?.id) {
     toast.add({
-      severity: 'warn',
-      summary: '无法操作',
-      detail: '当前没有选中的任务',
+      severity: $t('Hint.Warn'),
+      summary: $t('Not.Operation'),
+      detail: $t('Not.Select'),
       life: 2500
     })
     return
@@ -709,9 +709,9 @@ async function onCancel() {
     })
 
     toast.add({
-      severity: 'success',
-      summary: '操作成功',
-      detail: `任务已取消`,
+      severity: $t('Success.Success'),
+      summary: $t('Success.Operation'),
+      detail: $t('Success.Cancel'),
       life: 2000
     })
 
@@ -721,9 +721,9 @@ async function onCancel() {
   } catch (err) {
     console.error('取消失败:', err)
     toast.add({
-      severity: 'error',
-      summary: '操作失败',
-      detail: err?.response?.data?.detail || err?.message || '操作失败，请稍后重试',
+      severity: $t('Fail.Error'),
+      summary: $t('Fail.Operation'),
+      detail: err?.response?.data?.detail || err?.message || $t('Fail.Retry'),
       life: 3500
     })
   }
