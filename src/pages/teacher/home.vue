@@ -419,9 +419,9 @@ async function onApprove() {
   if (!id || loadingApprove.value || assignedCount === 0) {
     if (assignedCount === 0) {
       toast.add({
-        severity: 'warn',
-        summary: '无法完成',
-        detail: '该任务尚无人接取，不能标记为完成',
+        severity: $('Hint.Warn'),
+        summary: $('Not.Complete'),
+        detail: $('Not.Receive'),
         life: 2500
       })
     }

@@ -5,26 +5,43 @@
     "Success": "Success",
     "Download": "下载成功",
     "Preserve": "保存成功",
-    "Cancel": "取消成功"
+    "Cancel": "取消成功",
+    "Receive": "接取成功",
+    "Application": "任务申请成功, 列表已更新"
   },
   "Fail": {
     "Error": "Error",
     "Operation": "操作失败",
+    "Receive": "接取失败",
     "Retry": "操作失败, 请稍后重试",
-    "Download": "下载失败"
+    "Download": "下载失败",
+    "Update": "更新资料失败, 请重试",
+    "Preserve": "保存失败"
   },
   "Not": {
     "Empty": "任务不能为空",
+    "SignatureEmpty": "签名姓名不能为空，请输入姓名",
+    "PrefixEmpty": "自定义前缀不能为空，请输入或选择其他前缀",
     "Operation": "无法操作",
     "Explain": "无任务说明",
+    "Complete": "无法完成",
+    "Receive": "改任务无人接取, 不能标记为完成",
     "Select": "没有选中的任务",
     "Participants": "缺少参与者ID, 踢出失败",
     "Share": "分享失败"
   },
   "Hint": {
+    "Error": "Error",
+    "Retry": "请稍后重试",
     "Warn": "Warn",
     "Dispose": "处理中",
-    "ORcode": "正在生成二维码, 请稍等..."
+    "ORcode": "正在生成二维码, 请稍等...",
+    "PrefixLong": "前缀过长, 请保持在30自内"
+  },
+  "Input":{
+    "Signature": "签名确认",
+    "Prefix": "选择前缀",
+    "Name": "输入姓名"
   },
 
 

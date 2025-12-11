@@ -140,7 +140,7 @@ async function proceed() {
     }, FADE_MS)
   } catch (err) {
     console.error('更新用户资料失败', err)
-    alert('更新资料失败，请重试') // 你也可以换成 Toast 等提示
+    alert($t('Fail.Update')) // 你也可以换成 Toast 等提示
   }
 }
 function onAvatarError(e) {

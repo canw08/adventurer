@@ -73,7 +73,7 @@
     <!-- 签名对话框（已添加前缀下拉） -->
     <Dialog
       v-model:visible="signatureDialogVisible"
-      header="签名确认"
+      :header="$t('Input.Signature')"
       :modal="true"
       :closable="true"
       :style="{ width: '480px' }"
@@ -87,13 +87,13 @@
           :options="prefixOptions"
           optionLabel="label"
           optionValue="value"
-          placeholder="选择前缀"
+          :placeholder="$t('Input.Prefix')"
           class="prefix-dropdown"
           showClear
         />
         <InputText
           v-model="signature"
-          placeholder="输入姓名"
+          :placeholder="$t('Input.Name')"
           class="signature-input"
           @keyup.enter="confirmSignature"
         />
@@ -261,20 +261,20 @@ function openSignatureDialog() {
 function confirmSignature() {
   const name = signature.value.trim()
   if (!name) {
-    signatureError.value = '签名姓名不能为空，请输入姓名。'
+    signatureError.value = $t('Not.SignatureEmpty')
     return
   }
   if (!selectedPrefix.value) {
-    signatureError.value = '请选择一个前缀。'
+    signatureError.value = $t('Input.Prefix')
     return
   }
   let prefix = selectedPrefix.value === 'other' ? customPrefix.value.trim() : selectedPrefix.value
   if (!prefix) {
-    signatureError.value = '自定义前缀不能为空，请输入或选择其他前缀。'
+    signatureError.value = $t('Not.PrefixEmpty')
     return
   }
   if (prefix.length > 30) {
-    signatureError.value = '前缀过长，请保持在 30 字以内。'
+    signatureError.value = $t('Hint.PrefixLong')
     return
   }
 
@@ -292,7 +292,7 @@ function confirmSignature() {
     }
     localStorage.setItem('agreementConsent', JSON.stringify(payload))
   } catch (e) {
-    signatureError.value = '保存失败，请检查浏览器设置或稍后重试。'
+    signatureError.value = $t('Fail.Preserve')
     return
   }
 

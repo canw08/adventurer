@@ -573,17 +573,17 @@ const applyForTask = async (taskId) => {
     await fetchPage(currentPage.value + 1, wantAssigned)
 
     toast.add({
-      severity: 'success',
-      summary: '已接受任务',
-      detail: '任务申请成功，列表已更新。',
+      severity: $t('Success.Success'),
+      summary: $t('Success.Receive'),
+      detail: $t('Success.Application'),
       life: 3000
     })
   } catch (err) {
     console.error(err)
     toast.add({
-      severity: 'error',
-      summary: '操作失败',
-      detail: (err?.response?.data?.detail) || '接受任务失败，请稍后再试。',
+      severity: $t('Fail.Error'),
+      summary: $t('Fail.Operation'),
+      detail: (err?.response?.data?.detail) || $t('Fail.Receive'),
       life: 4000
     })
   }
