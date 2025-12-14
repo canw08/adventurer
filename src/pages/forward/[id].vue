@@ -171,6 +171,7 @@ const safeDescription = computed(() => {
     img.style.maxWidth = '100%'
     img.style.height = 'auto'
     img.style.display = 'block'
+    img.style.margin = '12px -47.5px'      // ✅ 新增：水平居中
   })
   return div.innerHTML
 })
@@ -639,6 +640,41 @@ const metricsBound = computed(() => {
   width: clamp(220px, 80%, 320px);
   margin: 0;                        /* ← 原本的 margin-left:5% 去掉 */
   align-items: flex-start;
+}
+
+/* 1) 任务封面图（task.image） */
+.media-img{
+  width: 100%;
+  max-width: 100%;
+  height: auto;                 /* 保持比例 */
+  max-height: 52vh;             /* ✅ 关键：限制最大高度（可调 45~60vh） */
+  object-fit: contain;          /* ✅ 关键：整张图完整显示，不裁切 */
+  border-radius: 10px;
+  display: block;
+  margin: 0 auto;
+}
+
+/* 2) 富文本（description）里的所有图片：scoped 下必须用 :deep 才选得到 */
+:deep(.meta .desc img){
+  width: 100%;
+  max-width: 100%;
+  height: auto;                 /* 保持比例 */
+  max-height: 52vh;             /* ✅ 同样限制高度，避免长海报撑爆 */
+  object-fit: contain;          /* ✅ 完整容纳 */
+  display: block;
+  margin: 12px auto;
+}
+/* 让右侧文字区允许收缩，不把内容顶出卡片 */
+.meta{
+  min-width: 0;
+}
+
+/* 让描述文字一定会在卡片内换行 */
+.meta .desc{
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;   /* 最强换行：必要时任意位置断行 */
+  word-break: break-word;    /* 兼容处理 */
 }
 
 

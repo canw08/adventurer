@@ -41,6 +41,11 @@
         aria-label="projects-scroll-container"
       >
         <div class="grid-container">
+          <div v-if="currentPage === 0" class="ranking-grid-row" aria-label="ranking-row">
+            <div class="ranking-grid-inner">
+              <RankingSection :ranking-boards="rankingBoards" />
+            </div>
+          </div>
           <div
             v-for="project in filteredProjects"
             :key="project.id"
@@ -111,10 +116,10 @@
       <!-- ✅ 分页器容器（固定在右下角） -->
       <div class="fixed-footer-wrapper">
         <Paginator
-          :rows="rowsPerPage"
-          :totalRecords="totalRecords"
-          :first="currentPage * rowsPerPage"
-          @page="(e) => (currentPage = e.page)"
+            :rows="UI_ROWS"
+            :totalRecords="totalRecordsForPaginator"
+            :first="currentPage * UI_ROWS"
+            @page="(e) => (currentPage = e.page)"
           style="background-color: white; border-radius: 12px; padding: 4px 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);"
           aria-label="paginator"
         />
@@ -346,6 +351,7 @@ import solo2 from '../../assets/solo2.png'
 import DOMPurify from 'dompurify'
 import { useToast } from 'primevue/usetoast'
 import AssigneesStack from '../../components/AssigneesStack.vue'
+import RankingSection from '../../components/ranking/RankingSection.vue'
 
 const toast = useToast()
 
@@ -355,6 +361,52 @@ const period = computed(() => {
   return h < 4 ? 'night' : h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening'
 })
 const greetingKey = computed(() => `greetings-student.${period.value}`)
+
+/* -------------------- 排行榜（V1 假数据） -------------------- */
+const rankingBoards = [
+  {
+    key: 'rich',
+    title: '富豪榜',
+    unit: '金币',
+    headerLabel: '现有金币',
+    top5: [
+      { userId: 1, avatarUrl: '/img/a1.png', nickname: 'Alice', value: 5200 },
+      { userId: 2, avatarUrl: '/img/a2.png', nickname: 'Bob', value: 4800 },
+      { userId: 3, avatarUrl: '/img/a3.png', nickname: 'Cindy', value: 4300 },
+      { userId: 4, avatarUrl: '/img/a4.png', nickname: 'David', value: 4100 },
+      { userId: 5, avatarUrl: '/img/a5.png', nickname: 'Erik', value: 3900 }
+    ],
+    my: { rank: 12, userId: 99, avatarUrl: '/img/me.png', nickname: 'Shawn', value: 2100 }
+  },
+  {
+    key: 'hours',
+    title: '时长榜',
+    unit: '小时',
+    headerLabel: '已有时长',
+    top5: [
+      { userId: 6, avatarUrl: '/img/b1.png', nickname: 'Amy', value: 86.5 },
+      { userId: 7, avatarUrl: '/img/b2.png', nickname: 'Tom', value: 84.0 },
+      { userId: 8, avatarUrl: '/img/b3.png', nickname: 'Jimmy', value: 80.2 },
+      { userId: 9, avatarUrl: '/img/b4.png', nickname: 'Kelly', value: 78.8 },
+      { userId: 10, avatarUrl: '/img/b5.png', nickname: 'Leo', value: 75.0 }
+    ],
+    my: { rank: 20, userId: 99, avatarUrl: '/img/me.png', nickname: 'Shawn', value: 40.0 }
+  },
+  {
+    key: 'owner',
+    title: '主人榜',
+    unit: '次',
+    headerLabel: '发布任务',
+    top5: [
+      { userId: 11, avatarUrl: '/img/c1.png', nickname: 'Ivy', value: 120 },
+      { userId: 12, avatarUrl: '/img/c2.png', nickname: 'Mike', value: 110 },
+      { userId: 13, avatarUrl: '/img/c3.png', nickname: 'Zoe', value: 102 },
+      { userId: 14, avatarUrl: '/img/c4.png', nickname: 'Tim', value: 98 },
+      { userId: 15, avatarUrl: '/img/c5.png', nickname: 'Nick', value: 90 }
+    ],
+    my: { rank: 8, userId: 99, avatarUrl: '/img/me.png', nickname: 'Shawn', value: 72 }
+  }
+]
 
 /* -------------------- 任务弹窗状态 -------------------- */
 const showDialog = ref(false)
@@ -368,8 +420,17 @@ const openProjectDialog = (project) => {
 const allProjects = ref([])          // 当前页的数据
 const loading = ref(false)
 const loadError = ref('')
-const totalRecords = ref(0)          // 服务端总条数（用于分页器）
-const rowsPerPage = 4                // ✅ 单一来源：分页大小
+const totalRecords = ref(0)
+const UI_ROWS = 4
+const FIRST_PAGE_ROWS = 2
+const BACKEND_PAGE_SIZE = 4
+
+const totalRecordsForPaginator = computed(() => {
+  const total = totalRecords.value || 0
+  if (total <= FIRST_PAGE_ROWS) return total
+  const pages = 1 + Math.ceil((total - FIRST_PAGE_ROWS) / UI_ROWS)
+  return pages * UI_ROWS // PrimeVue 用 totalRecords/rows 算页数，所以这里做一个“等效总数”
+})
 
 // 简单日期展示：直接透传或兜底
 const formatDate = (s) => s || ''
@@ -483,20 +544,50 @@ const safeDescription = computed(() => {
 /* -------------------- 分页与加载方法 -------------------- */
 const currentPage = ref(0) // 0 基，用于配合 Paginator
 
-// 仅加载指定页（page 从 1 开始）
-const fetchPage = async (page = 1, isAssigned = null) => {
+// ✅ 拉后端某一页（固定 page_size=4）
+const fetchBackendPage = async (backendPage = 1, isAssigned = null) => {
+  const params = { page: backendPage, page_size: BACKEND_PAGE_SIZE }
+  if (isAssigned === true) params.is_accepted = true
+  if (isAssigned === false) params.is_accepted = false
+
+  const { data } = await api.get('/api/tasks/', { params })
+  const results = Array.isArray(data?.results) ? data.results : []
+  const count = Number.isFinite(data?.count) ? data.count : (data?.total ?? results.length)
+  return { results, count }
+}
+
+// ✅ 按 UI 页码加载：第 1 页 2 条，其余页 4 条（带 offset 偏移）
+const fetchUiPage = async (uiIndex = 0, isAssigned = null) => {
   loading.value = true
   loadError.value = ''
-  try {
-    const params = { page, page_size: rowsPerPage }
-    // ⭐ 只有在手动筛选时才加 is_accepted
-    if (isAssigned === true) params.is_accepted = true
-    if (isAssigned === false) params.is_accepted = false
 
-    const { data } = await api.get('/api/tasks/', { params })
-    const results = Array.isArray(data?.results) ? data.results : []
-    allProjects.value = results.map(mapTaskToProject)
-    totalRecords.value = Number.isFinite(data?.count) ? data.count : (data?.total ?? results.length)
+  try {
+    // UI 页码 -> 计算全局 offset
+    const start = uiIndex === 0
+      ? 0
+      : FIRST_PAGE_ROWS + (uiIndex - 1) * UI_ROWS
+
+    const need = uiIndex === 0 ? FIRST_PAGE_ROWS : UI_ROWS
+
+    // 后端页（固定每页 4 条）
+    const backendPageStart = Math.floor(start / BACKEND_PAGE_SIZE) + 1
+    const startInPage = start % BACKEND_PAGE_SIZE
+
+    // 先取第一页后端数据
+    const a = await fetchBackendPage(backendPageStart, isAssigned)
+    totalRecords.value = a.count
+
+    let sliceA = a.results.slice(startInPage, startInPage + need)
+
+    // 如果不够，需要再拉下一页后端数据拼上
+    if (sliceA.length < need) {
+      const b = await fetchBackendPage(backendPageStart + 1, isAssigned)
+      const remain = need - sliceA.length
+      sliceA = sliceA.concat(b.results.slice(0, remain))
+    }
+
+    // 映射到你的卡片结构
+    allProjects.value = sliceA.map(mapTaskToProject)
   } catch (err) {
     console.error(err)
     loadError.value = $t('Fail.Loading')
@@ -519,7 +610,7 @@ const applyFilter = async () => {
   if (activeTab.value === 'assigned') flag = true
   if (activeTab.value === 'available') flag = false
 
-  await fetchPage(1, flag)
+  await fetchPage(0, flag)
 }
 const confirmFilter = () => applyFilter()
 
@@ -532,13 +623,14 @@ watch(showFilterDialog, (v) => {
   }
 })
 
-// 翻页时请求对应页（Paginator 会把 e.page 设为 0 基索引）
 watch(currentPage, async (newIdx, oldIdx) => {
   if (newIdx === oldIdx) return
+
   let flag = null
   if (activeTab.value === 'assigned') flag = true
   if (activeTab.value === 'available') flag = false
-  await fetchPage(newIdx + 1, flag)
+
+  await fetchUiPage(newIdx, flag)
 })
 
 /* -------------------- 进度条：按等级动态上下限 -------------------- */
@@ -598,8 +690,7 @@ const onResize = () => {
 }
 
 onMounted(async () => {
-  // 初次加载：不带 is_accepted，交由后端返回“全部/默认集”
-  await fetchPage(1, null)
+  await fetchUiPage(0, null)
   await nextTick()
   updateOverflow()
   window.addEventListener('resize', onResize)
@@ -802,7 +893,7 @@ function getLevelStyle(level) {
 .cards-scroll {
   position: absolute;
   inset: 0 0 64px 0;  /* bottom 预留分页器高度 */
-  padding: 40px;
+  padding: 30px;
   box-sizing: border-box;
   -webkit-overflow-scrolling: touch;
 }
@@ -983,6 +1074,7 @@ function getLevelStyle(level) {
   justify-content: flex-end;
   pointer-events: auto !important;
   z-index: 20 !important;
+  align-items: center;
 }
 .fixed-footer-wrapper :deep(.p-paginator) {
   pointer-events: auto;
@@ -1387,5 +1479,38 @@ function getLevelStyle(level) {
   color: #b8b8b8;
   font-weight: 600;
 }
+.ranking-grid-row {
+  grid-column: 1 / -1; /* 独占一整行（跨两列） */
+  display: flex;
+  justify-content: center; /* 行内居中 */
+}
 
+/* 宽度 = 一张卡片的宽度 = (两列容器宽 - gap) / 2
+   注意：这里 gap 需要与你 grid-container 的 gap 保持一致（你是 40px）
+*/
+.ranking-grid-inner {
+  width: calc(100% );
+  min-width: 0; /* 防止内容撑爆 */
+}
+
+/* 整个分页器容器 */
+.fixed-footer-wrapper :deep(.p-paginator) {
+  padding: 2px 10px;   /* ⬅️ 上下缩短 */
+  min-height: auto;
+}
+
+/* 每一个分页按钮 */
+.fixed-footer-wrapper :deep(.p-paginator .p-paginator-page),
+.fixed-footer-wrapper :deep(.p-paginator .p-paginator-prev),
+.fixed-footer-wrapper :deep(.p-paginator .p-paginator-next),
+.fixed-footer-wrapper :deep(.p-paginator .p-paginator-first),
+.fixed-footer-wrapper :deep(.p-paginator .p-paginator-last) {
+  padding: 15px;    /* ⬅️ 上下关键 */
+  height: auto;
+}
+
+/* 页码文字大小（可选，更紧凑） */
+.fixed-footer-wrapper :deep(.p-paginator .p-paginator-page) {
+  font-size: 13px;
+}
 </style>

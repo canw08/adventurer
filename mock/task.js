@@ -143,6 +143,34 @@ export default [
           is_accepted: false,
           required_level: 'F',
         },
+        {
+          id: 12,
+          title: '打扫图书馆',
+          description: '整理图书馆的书籍并清扫地面',
+          task_type: 'solo',
+          deadline: '2025-08-29 18:00',
+          experience_reward: 100,
+          token_reward: 20,
+          volunteerTime_reward: 0.0,
+          publisher_nickname: 'silverteacher',
+          publisher_avatar: '',
+          is_accepted: false,
+          required_level: 'F',
+        },
+        {
+          id: 11,
+          title: '打扫图书馆',
+          description: '整理图书馆的书籍并清扫地面',
+          task_type: 'solo',
+          deadline: '2025-08-29 18:00',
+          experience_reward: 100,
+          token_reward: 20,
+          volunteerTime_reward: 0.0,
+          publisher_nickname: 'silverteacher',
+          publisher_avatar: '',
+          is_accepted: false,
+          required_level: 'F',
+        },
       ];
 
       const pageSize = 4; // 每页显示 2 条
@@ -190,9 +218,9 @@ export default [
             "avatar": "T4Nh4vlH5NrXygw5JtXfHzM0ULmTcla9kZlEJQfnIZ3pxD51"
           }
         ],
-        description: '整理图书馆的书籍并清扫地面<p>ddd</p><p>ddd</p><p>ddd</p><p>ddd</p><p>ddd</p><p>ddd</p><p>ddd</p><p>ddd</p>',
+        description: '<p>Hi!&nbsp;The&nbsp;English&nbsp;Department&nbsp;needs&nbsp;a&nbsp;minimum&nbsp;6&nbsp;students&nbsp;to&nbsp;help&nbsp;out&nbsp;with&nbsp;some&nbsp;Christmas&nbsp;games&nbsp;at&nbsp;the&nbsp;party&nbsp;event&nbsp;at&nbsp;lunch!&nbsp;Meet&nbsp;at&nbsp;the&nbsp;Avenue&nbsp;of&nbsp;Stars&nbsp;to&nbsp;help&nbsp;the&nbsp;English&nbsp;Department&nbsp;out.</p><p>3&nbsp;shifts&nbsp;that&nbsp;need&nbsp;to&nbsp;be&nbsp;covered:&nbsp;12:00-12:40,&nbsp;12:40-13:20,&nbsp;13:30-14:00&nbsp;(10&nbsp;minutes&nbsp;of&nbsp;clean&nbsp;up&nbsp;time).</p><p><img src="https://www.aidiventure.com/media/images/d6eaf280e75147f6b259dd05acc232f9.png"></p><p><img src="https://www.aidiventure.com/media/images/1049e8f2da0f46d3aa24d48e63f6bd2f.png"></p>',
         task_type: 'solo',
-        maximum_users: 1,
+        maximum_users:  1,
         required_level: 'F',
         experience_reward: 100,
         token_reward: 20,
@@ -207,6 +235,8 @@ export default [
         updated_at: '2025-08-14T07:40:40.798383Z',
         cancel_requested: false,
       };
+
     },
   },
+  
 ];
