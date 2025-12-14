@@ -608,9 +608,9 @@ const handleRemove = async (user) => {
   } catch (err) {
     console.error('踢出失败:', err)
     toast.add({
-      severity: 'error',
-      summary: '操作失败',
-      detail: err?.response?.data?.detail || err?.message || '操作失败，请稍后重试',
+      severity: $t('Fail.Error'),
+      summary: $t('Fail.Operation'),
+      detail: err?.response?.data?.detail || err?.message || $t('Fail.Retry'),
       life: 3500
     })
   } finally {
@@ -845,9 +845,9 @@ const isValidDateValue = (val) => {
 async function onCancel() {
   if (!selectedProject.value?.id) {
     toast.add({
-      severity: 'warn',
-      summary: '无法操作',
-      detail: '当前没有选中的任务',
+      severity: $t('Hint.Warn'),
+      summary: $t('Not.Operation'),
+      detail: $t('Not.Select'),
       life: 2500
     })
     return
@@ -861,9 +861,9 @@ async function onCancel() {
     })
 
     toast.add({
-      severity: 'success',
-      summary: '操作成功',
-      detail: `任务已取消`,
+      severity: $t('Success.Success'),
+      summary: $t('Success.Operation'),
+      detail: $t('Success.Cancel'),
       life: 2000
     })
 
@@ -871,11 +871,11 @@ async function onCancel() {
     window.location.reload()
 
   } catch (err) {
-    console.error('取消失败:', err)
+    console.error($t('Faile.Cancel'), err)
     toast.add({
-      severity: 'error',
-      summary: '操作失败',
-      detail: err?.response?.data?.detail || err?.message || '操作失败，请稍后重试',
+      severity: $t('Hint.Error'),
+      summary: $t('Fail.Operation'),
+      detail: err?.response?.data?.detail || err?.message || $t('Fail.Retry'),
       life: 3500
     })
   }
@@ -923,7 +923,7 @@ const initialValues = { content: '' }
 const resolver = (values) => {
   const errors = {}
   if (!values.content || values.content.trim() === '') {
-    errors.content = { message: '任务内容不能为空' }
+    errors.content = { message: $t('Not.Empty'), }
   }
   return { values, errors }
 }

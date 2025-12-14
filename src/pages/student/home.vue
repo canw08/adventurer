@@ -266,7 +266,7 @@
           <InputText
             v-model="leaveTitle"
             class="leave-title-input"
-            placeholder="申请理由（简要）"
+            placeholder="$t('Input.BriefReason')"
           />
         </div>
 
@@ -277,7 +277,7 @@
             class="leave-detail-textarea"
             :autoResize="true"
             rows="6"
-            placeholder="详情理由（时间范围、交接说明等）"
+            placeholder="$t('Input.DetailReason')"
           />
         </div>
 
@@ -558,7 +558,7 @@ const metricsBound = computed(() => {
 
 // 任务说明（XSS 清洗 + 图片宽度处理）
 const safeDescription = computed(() => {
-  const html = selectedProject.value?.description || t('common.noDescription') || '无任务说明'
+  const html = selectedProject.value?.description || t('common.noDescription') || $t('Not.Explain')
   const clean = DOMPurify.sanitize(html)
   // 避免 SSR 报错：仅在浏览器环境处理 DOM
   if (typeof window === 'undefined' || typeof document === 'undefined') return clean
