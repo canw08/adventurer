@@ -1,4 +1,48 @@
 {
+  "Success": {
+    "Operation": "Operation Successful",
+    "Mark": "Task Marking Successful",
+    "Success": "Success",
+    "Download": "Download successful",
+    "Preserve": "Saved successfully",
+    "Cancel": "Cancelled successfully",
+    "Receive": "Accepted successfully",
+    "Application": "Task application successful, list updated"
+},
+  "Fail": {
+    "Loading": "Loading failed",
+    "Cancel": "Cancellation failed",
+    "Kick": "Removal failed",
+    "Error": "Error",
+    "Operation": "Operation failed",
+    "Receive": "Acceptance failed",
+    "Retry": "Operation failed, please try again later",
+    "Download": "Download failed",
+    "Update": "Failed to update information, please try again",
+    "Preserve": "Save failed"
+},  
+  "Not": {
+    "Empty": "Task cannot be empty",
+    "SignatureEmpty": "Signature name cannot be empty, please enter a name",
+    "PrefixEmpty": "Custom prefix cannot be empty, please enter or select another prefix",
+    "Operation": "Operation not allowed",
+    "Explain": "No task description",
+    "Complete": "Unable to complete",
+    "Receive": "This task has not been accepted by anyone and cannot be marked as completed",
+    "Select": "No task selected",
+    "Participants": "Missing participant ID, removal failed",
+    "Share": "Sharing failed"
+},
+  "Hint": {
+    "Error": "Error",
+    "Retry": "Please try again later",
+    "Warn": "Warning",
+    "Dispose": "Processing",
+    "ORcode": "Generating QR code, please wait...",
+    "PrefixLong": "Prefix is too long, please keep it within 30 characters"
+},
+
+
   "questLog": {
     "title": "Home",
     "runningQuest": "Running Quest",
