@@ -41,6 +41,13 @@
     "ORcode": "Generating QR code, please wait...",
     "PrefixLong": "Prefix is too long, please keep it within 30 characters"
 },
+"Input":{
+    "BriefReason": "申请理由(简要)",
+    "DetailReason": "详情理由(时间范围, 交接说明等)",
+    "Signature": "签名确认",
+    "Prefix": "选择前缀",
+    "Name": "输入姓名"
+  },
 
 
   "questLog": {

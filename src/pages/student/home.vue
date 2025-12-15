@@ -266,7 +266,7 @@
           <InputText
             v-model="leaveTitle"
             class="leave-title-input"
-            placeholder="$t('Input.BriefReason')"
+            :placeholder="$t('Input.BriefReason')"
           />
         </div>
 
@@ -277,7 +277,7 @@
             class="leave-detail-textarea"
             :autoResize="true"
             rows="6"
-            placeholder="$t('Input.DetailReason')"
+            :placeholder="$t('Input.DetailReason')"
           />
         </div>
 
