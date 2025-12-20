@@ -23,6 +23,7 @@ export const levelRanges = Object.freeze({
   'S': { exp:[30,30], coin:[26,Infinity], hours:[0,24] }
 });
 
+
 // 小工具函数（可选）
 export const getLevelRange = (key) => levelRanges[key] ?? null;
 
