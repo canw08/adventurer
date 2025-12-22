@@ -167,11 +167,15 @@ const safeDescription = computed(() => {
   const div = document.createElement('div')
   div.innerHTML = clean
   // 让富文中的图片自适应
+  //ToDo:照片居中，现在照片还不居中
   div.querySelectorAll('img').forEach((img: any) => {
-    img.style.maxWidth = '100%'
-    img.style.height = 'auto'
-    img.style.display = 'block'
-    img.style.margin = '12px -47.5px'      // ✅ 新增：水平居中
+    img.style.maxWidth = '100%'      // 不超过卡片宽度
+    img.style.height = 'auto'        // 保持比例
+    img.style.maxHeight = '52vh'     // ⭐ 关键：限制最大高度（可调 45~60vh）
+    img.style.objectFit = 'contain'  // ⭐ 关键：完整显示，不裁切
+    img.style.display = 'block'      // 让 margin 生效
+    img.style.margin = '12px auto'   // ⭐ 水平居中
+
   })
   return div.innerHTML
 })
@@ -626,7 +630,7 @@ const metricsBound = computed(() => {
   grid-template-columns: repeat(2, 300px);
   gap: 20px;
   max-width: 620px;
-  margin: 0;                        /* ← 原本的 margin-left:5% 去掉 */
+  margin: 0;
 }
 @media (max-width: 700px){
   .media{ grid-template-columns: 300px; max-width: 300px; }
@@ -638,7 +642,7 @@ const metricsBound = computed(() => {
   flex-direction: column;
   gap: var(--metric-gap);
   width: clamp(220px, 80%, 320px);
-  margin: 0;                        /* ← 原本的 margin-left:5% 去掉 */
+  margin: 0;
   align-items: flex-start;
 }
 
@@ -676,6 +680,7 @@ const metricsBound = computed(() => {
   overflow-wrap: anywhere;   /* 最强换行：必要时任意位置断行 */
   word-break: break-word;    /* 兼容处理 */
 }
+
 
 
 </style>
