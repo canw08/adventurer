@@ -201,25 +201,31 @@
           <!-- 纵向 3 条进度条：EXP / Coin / Hour（显示具体数值） -->
           <div class="right-metrics">
             <div v-for="m in metricsBound" :key="m.key" class="metric-item">
-              <div class="metric-row">
-                <img :src="m.icon" alt="" class="metric-icon pixelated click-wiggle" />
-                <ProgressBar
-                  :value="m.pct"
-                  :showValue="false"
-                  class="metric-bar"
-                  :style="{ height: '28px', '--bar-color': m.color }"
-                />
-                <span
-                  class="metric-text"
-                  style="position:absolute;top:50%;left:93%;transform:translate(-50%,-50%);font-size:16px;font-weight:600;color:#2A2C55;pointer-events:none;"
-                >
-                  {{ m.raw }}{{ m.unit }}
+            <div class="metric-row">
+              <img :src="m.icon" alt="" class="metric-icon pixelated click-wiggle" />
+
+              <ProgressBar
+                :value="m.pct"
+                :showValue="false"
+                class="metric-bar"
+                :style="{ height: '28px', '--bar-color': m.color }"
+              />
+
+                <!-- 数值，颜色跟进度条 -->
+                <span class="metric-text" :style="{ color: m.color }">
+                {{ m.raw }}{{ m.unit }}
                 </span>
-              </div>
+
+                <!-- Coin 加成，颜色跟 Coin 一样 -->
+                <span v-if="m.key === 'coin'" class="metric-bonus" :style="{ color: m.color }">
+                  +{{ levelBoost }}
+                </span>
+            </div>
+
               <div class="metric-label">{{ m.label }}</div>
             </div>
 
-            <!-- ✅ 名额条（右侧） -->
+            <!-- 任务名额显示 -->
             <div v-if="(selectedProject?.slotsTotal ?? 1) >= 1" class="metric-item">
               <div
                 class="metric-row dialog-slotsline"
@@ -341,7 +347,7 @@ import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue'
 import api from '../../api.js'
 
 // === 进度条上下限表 ===
-import { levelRanges } from '../../components/levelRange.js'
+import { levelRanges, LEVEL_CONFIG, getLevelLetter } from '../../components/levelRange.js'
 
 // === 图片：按任务类型选择 ===
 import teamwork from '../../assets/team.png'
@@ -352,8 +358,18 @@ import DOMPurify from 'dompurify'
 import { useToast } from 'primevue/usetoast'
 import AssigneesStack from '../../components/AssigneesStack.vue'
 import RankingSection from '../../components/ranking/RankingSection.vue'
+import { useUserStore } from '../../stores/user.js'
+const userStore = useUserStore()
 
 const toast = useToast()
+
+const levelBoost = computed(() => {
+  return LEVEL_CONFIG[levelLetter.value]?.extraGold ?? 0
+})
+
+const levelLetter = computed(() =>
+  getLevelLetter(userStore?.userInfo?.level)
+)
 
 /* -------------------- 问候语 -------------------- */
 const period = computed(() => {
@@ -660,7 +676,11 @@ const metricsBound = computed(() => {
   const p = selectedProject.value || {}
   const b = selectedBounds.value || {}
   return METRIC_DEFS.map(def => {
-    const raw = toNumber(p?.[def.key] ?? 0)
+    let raw = toNumber(p?.[def.key] ?? 0)
+    // 只给金币加成
+    if (def.key === 'coin') {
+      raw += levelBoost.value
+    }
     const ranges = def.key === 'hour' ? b?.hours : b?.[def.key]
     const [min, max] = Array.isArray(ranges) && ranges.length === 2 ? ranges : [0, 0]
     const clamped = max > min ? Math.min(Math.max(raw, min), max) : raw
@@ -781,6 +801,70 @@ function getLevelStyle(level) {
 </script>
 
 <style scoped>
+  
+  @font-face {
+  font-family: 'Jersey10';
+  src: url('../../assets/fonts/jersey-10-regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.metric-text,
+.metric-bonus {
+  font-size: 43px;          /* 可以和数字一样，也可以单独调 */
+  font-weight: 600;
+  color: #FFFFFF;           /* 字体颜色保持你想要的颜色 */
+  font-family: 'Jersey10', sans-serif !important;
+
+  /* 灰色描边 */
+  text-shadow:
+    2px 2px 0 #676767,
+   -2px 2px 0 #676767,
+    2px -2px 0 #676767,
+   -2px -2px 0 #676767,
+    0 2px 0 #676767,
+    0 -2px 0 #676767,
+    2px 0 0 #676767,
+   -2px 0 0 #676767;
+
+  /* 保持位置 */
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 8px);  /* 显示在 Coin 数字右边 */
+  transform: translateY(-50%);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.metric-bonus {
+  left: calc(100% + 8px); /* 显示在 Coin 数字右边 */
+}
+
+.metric-text {
+  font-size: 26px;
+  color: #FFFFFF;
+   text-shadow:
+    2px 2px 0 #676767,
+   -2px 2px 0 #676767,
+    2px -2px 0 #676767,
+   -2px -2px 0 #676767,
+    0 2px 0 #676767,
+    0 -2px 0 #676767,
+    2px 0 0 #676767,
+   -2px 0 0 #676767;
+  left: 93%;
+  transform: translate(-50%, -50%);
+}
+
+.metric-row {
+  position: relative;
+}
+.right-metrics,
+.metric-item,
+.metric-row {
+  overflow: visible;
+}
+
 /* =========================
    布局与头部
    ========================= */
@@ -1307,7 +1391,6 @@ function getLevelStyle(level) {
   background-color: var(--bar-color, #3b82f6);
 }
 .metric-label { margin-left: 10px; font-size: 13px; font-weight: 600; color: #5a6275; }
-.metric-text { font-size: 12px; font-weight: 600; color: #fff; }
 
 .pixelated {
   image-rendering: pixelated;

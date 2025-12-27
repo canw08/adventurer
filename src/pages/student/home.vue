@@ -319,25 +319,6 @@ const levelBoost = computed(() => {
 })
 
 /* ================================
- *  Level & Boost
- * ================================ */
-const levelLetter = computed(() => {
-  const raw = userStore?.userInfo?.level ?? 'D'
-  return String(raw).trim().toUpperCase().slice(0, 1)
-})
-
-const LEVEL_CONFIG = {
-  S: { extraGold: 4 },
-  A: { extraGold: 3 },
-  B: { extraGold: 2 },
-  C: { extraGold: 2 },
-  D: { extraGold: 1 },
-  E: { extraGold: 1 },
-  F: { extraGold: 0 },
-} 
-
-
-/* ================================
  *  Imports
  * ================================ */
 import DOMPurify from 'dompurify'
@@ -356,7 +337,11 @@ import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import ProgressBar from 'primevue/progressbar'
 
-import { levelRanges } from '../../components/levelRange.js'
+import {
+  levelRanges,
+  LEVEL_CONFIG,
+  getLevelLetter
+} from '../../components/levelRange.js'
 import teamwork from '../../assets/team.png'
 import solo1 from '../../assets/solo.png'
 import solo2 from '../../assets/solo2.png'
@@ -364,6 +349,10 @@ import solo2 from '../../assets/solo2.png'
 import { useRadialTransition } from '../../components/transations/useRadialTransition.js'
 
 const { radialTo, radialEffect } = useRadialTransition()
+
+const levelLetter = computed(() =>
+  getLevelLetter(userStore?.userInfo?.level)
+)
 
 /* ================================
  *  Setup basics
