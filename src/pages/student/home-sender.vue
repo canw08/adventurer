@@ -412,6 +412,7 @@ import { useRadialTransition } from '../../components/transations/useRadialTrans
 import { levelRanges, levelFromCoin, COIN_LEVEL_RULES } from '../../components/levelRange.js'
 const userStore = useUserStore()
 
+
 // 计算上限：取用户 token 数量（至少 1）
 const coinUpper = computed(() => {
   return Math.max(1, Number(userStore?.userInfo?.tokens ?? 0))

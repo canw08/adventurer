@@ -159,6 +159,15 @@
             </span>
           </div>
 
+          <Button 
+            icon="pi pi-share-alt" 
+            class="share-btn p-button-rounded p-button-text" 
+            v-tooltip.top="$t('teacherHome.shareTask')"
+            :loading="isDownloading"
+            :disabled="isDownloading"
+            @click="onShare"
+          />
+
           <!-- 浮动右上角的等级标签（只显示） -->
           <div
             class="floating-dialog-level"
@@ -355,6 +364,7 @@ import RankingSection from '../../components/ranking/RankingSection.vue'
 
 const toast = useToast()
 
+const isDownloading = ref(false)
 /* -------------------- 问候语 -------------------- */
 const period = computed(() => {
   const h = new Date().getHours()
@@ -778,6 +788,75 @@ function getLevelStyle(level) {
     ].join(', ')
   }
 }
+
+async function onShare() {
+  if (isDownloading.value) return
+
+  const proj = selectedProject.value
+  const id = proj?.id
+
+  if (!id) {
+    toast.add({
+      severity: 'warn',
+      summary: '无法分享',
+      detail: '请先选择一个任务',
+      life: 2500
+    })
+    return
+  }
+
+  // 分享链接
+  const shareUrl = `https://www.aidiventure.com/forward/${id}`
+
+  isDownloading.value = true
+  toast.add({
+    severity: 'info',
+    summary: '正在生成',
+    detail: '正在生成二维码…',
+    life: 1500
+  })
+
+  try {
+    const res = await api.get('/api/qr/compose/', {
+      params: {
+        data: shareUrl,
+        label: proj?.title || `任务 ${id}`
+      },
+      responseType: 'blob'
+    })
+
+    const blob = new Blob([res.data], {
+      type: res.headers?.['content-type'] || 'image/png'
+    })
+
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `任务-${id}.png`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+
+    toast.add({
+      severity: 'success',
+      summary: '下载成功',
+      detail: '二维码已保存',
+      life: 2000
+    })
+  } catch (err) {
+    console.error('分享失败:', err)
+    toast.add({
+      severity: 'error',
+      summary: '分享失败',
+      detail: '请稍后重试',
+      life: 3500
+    })
+  } finally {
+    isDownloading.value = false
+  }
+}
+
 </script>
 
 <style scoped>
@@ -1512,5 +1591,19 @@ function getLevelStyle(level) {
 /* 页码文字大小（可选，更紧凑） */
 .fixed-footer-wrapper :deep(.p-paginator .p-paginator-page) {
   font-size: 13px;
+}
+
+:deep(.share-btn.p-button.p-button-text) {
+  color: #2A2C55;
+  background-color: #fff !important;
+  border-color: #fff;
+  padding: 24px;
+}
+:deep(.share-btn.p-button) {
+  transition: transform 0.2s ease;
+}
+
+:deep(.share-btn.p-button:hover) {
+  transform: translateY(-2px);
 }
 </style>
