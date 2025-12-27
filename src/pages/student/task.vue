@@ -378,51 +378,6 @@ const period = computed(() => {
 })
 const greetingKey = computed(() => `greetings-student.${period.value}`)
 
-/* -------------------- 排行榜（V1 假数据） -------------------- */
-const rankingBoards = [
-  {
-    key: 'rich',
-    title: '富豪榜',
-    unit: '金币',
-    headerLabel: '现有金币',
-    top5: [
-      { userId: 1, avatarUrl: '/img/a1.png', nickname: 'Alice', value: 5200 },
-      { userId: 2, avatarUrl: '/img/a2.png', nickname: 'Bob', value: 4800 },
-      { userId: 3, avatarUrl: '/img/a3.png', nickname: 'Cindy', value: 4300 },
-      { userId: 4, avatarUrl: '/img/a4.png', nickname: 'David', value: 4100 },
-      { userId: 5, avatarUrl: '/img/a5.png', nickname: 'Erik', value: 3900 }
-    ],
-    my: { rank: 12, userId: 99, avatarUrl: '/img/me.png', nickname: 'Shawn', value: 2100 }
-  },
-  {
-    key: 'hours',
-    title: '时长榜',
-    unit: '小时',
-    headerLabel: '已有时长',
-    top5: [
-      { userId: 6, avatarUrl: '/img/b1.png', nickname: 'Amy', value: 86.5 },
-      { userId: 7, avatarUrl: '/img/b2.png', nickname: 'Tom', value: 84.0 },
-      { userId: 8, avatarUrl: '/img/b3.png', nickname: 'Jimmy', value: 80.2 },
-      { userId: 9, avatarUrl: '/img/b4.png', nickname: 'Kelly', value: 78.8 },
-      { userId: 10, avatarUrl: '/img/b5.png', nickname: 'Leo', value: 75.0 }
-    ],
-    my: { rank: 20, userId: 99, avatarUrl: '/img/me.png', nickname: 'Shawn', value: 40.0 }
-  },
-  {
-    key: 'owner',
-    title: '主人榜',
-    unit: '次',
-    headerLabel: '发布任务',
-    top5: [
-      { userId: 11, avatarUrl: '/img/c1.png', nickname: 'Ivy', value: 120 },
-      { userId: 12, avatarUrl: '/img/c2.png', nickname: 'Mike', value: 110 },
-      { userId: 13, avatarUrl: '/img/c3.png', nickname: 'Zoe', value: 102 },
-      { userId: 14, avatarUrl: '/img/c4.png', nickname: 'Tim', value: 98 },
-      { userId: 15, avatarUrl: '/img/c5.png', nickname: 'Nick', value: 90 }
-    ],
-    my: { rank: 8, userId: 99, avatarUrl: '/img/me.png', nickname: 'Shawn', value: 72 }
-  }
-]
 
 /* -------------------- 任务弹窗状态 -------------------- */
 const showDialog = ref(false)
@@ -441,12 +396,8 @@ const UI_ROWS = 4
 const FIRST_PAGE_ROWS = 2
 const BACKEND_PAGE_SIZE = 4
 
-const totalRecordsForPaginator = computed(() => {
-  const total = totalRecords.value || 0
-  if (total <= FIRST_PAGE_ROWS) return total
-  const pages = 1 + Math.ceil((total - FIRST_PAGE_ROWS) / UI_ROWS)
-  return pages * UI_ROWS // PrimeVue 用 totalRecords/rows 算页数，所以这里做一个“等效总数”
-})
+// ✅ 2) 不再做“等效 totalRecords”，Paginator 直接用真实 total
+const totalRecordsForPaginator = computed(() => totalRecords.value || 0)
 
 // 简单日期展示：直接透传或兜底
 const formatDate = (s) => s || ''
@@ -572,38 +523,15 @@ const fetchBackendPage = async (backendPage = 1, isAssigned = null) => {
   return { results, count }
 }
 
-// ✅ 按 UI 页码加载：第 1 页 2 条，其余页 4 条（带 offset 偏移）
 const fetchUiPage = async (uiIndex = 0, isAssigned = null) => {
   loading.value = true
   loadError.value = ''
 
   try {
-    // UI 页码 -> 计算全局 offset
-    const start = uiIndex === 0
-      ? 0
-      : FIRST_PAGE_ROWS + (uiIndex - 1) * UI_ROWS
-
-    const need = uiIndex === 0 ? FIRST_PAGE_ROWS : UI_ROWS
-
-    // 后端页（固定每页 4 条）
-    const backendPageStart = Math.floor(start / BACKEND_PAGE_SIZE) + 1
-    const startInPage = start % BACKEND_PAGE_SIZE
-
-    // 先取第一页后端数据
-    const a = await fetchBackendPage(backendPageStart, isAssigned)
-    totalRecords.value = a.count
-
-    let sliceA = a.results.slice(startInPage, startInPage + need)
-
-    // 如果不够，需要再拉下一页后端数据拼上
-    if (sliceA.length < need) {
-      const b = await fetchBackendPage(backendPageStart + 1, isAssigned)
-      const remain = need - sliceA.length
-      sliceA = sliceA.concat(b.results.slice(0, remain))
-    }
-
-    // 映射到你的卡片结构
-    allProjects.value = sliceA.map(mapTaskToProject)
+    const backendPage = uiIndex + 1
+    const { results, count } = await fetchBackendPage(backendPage, isAssigned)
+    totalRecords.value = count
+    allProjects.value = results.map(mapTaskToProject)
   } catch (err) {
     console.error(err)
     loadError.value = $t('Fail.Loading')
@@ -613,7 +541,6 @@ const fetchUiPage = async (uiIndex = 0, isAssigned = null) => {
     loading.value = false
   }
 }
-
 // 应用筛选：重置到第 1 页并请求
 const applyFilter = async () => {
   activeTab.value = tempTab.value
