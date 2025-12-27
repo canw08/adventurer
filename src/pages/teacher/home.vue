@@ -141,7 +141,8 @@
             type="submit"
             severity="secondary"
             :label="$t('teacherHome.submit')"
-            :disabled="!isFormValid"
+            :loading="isDownloading"
+            :disabled="!isFormValid || isDownloading"
           />
         </Form>
       </div>
@@ -909,6 +910,11 @@ const onFormSubmit = async (e) => {
       console.log('任务创建成功:', resp.data)
     }
 
+    const newId = resp?.data?.id || taskId
+    if (newId) {
+      await downloadQrForTask(newId, payload.title)
+    }
+
     showDialog.value = false
 
     // 刷新任务列表
@@ -1122,6 +1128,72 @@ function toLocalEdgeISOString(
   else d.setHours(23, 59, 59, 0)
   return d.toISOString() // e.g. "2025-09-16T15:59:59.000Z" (东八区)
 }
+
+// ✅ 复用 2号代码的“下载二维码”逻辑：给 submit 用
+async function downloadQrForTask(taskId: number | string, title?: string) {
+  if (isDownloading.value) return
+  if (!taskId) {
+    toast.add({
+      severity: 'warn',
+      summary: '无法分享',
+      detail: '缺少任务ID',
+      life: 2500
+    })
+    return
+  }
+
+  const shareUrl = `https://www.aidiventure.com/forward/${taskId}`
+
+  isDownloading.value = true
+  toast.add({
+    severity: 'info',
+    summary: '正在生成',
+    detail: '正在生成二维码…',
+    life: 1500
+  })
+
+  try {
+    const res = await api.get('/api/qr/compose/', {
+      params: {
+        data: shareUrl,
+        label: title || `任务 ${taskId}`
+      },
+      responseType: 'blob'
+    })
+
+    const blob = new Blob([res.data], {
+      type: res.headers?.['content-type'] || 'image/png'
+    })
+
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `任务-${taskId}.png`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+
+    toast.add({
+      severity: 'success',
+      summary: '下载成功',
+      detail: '二维码已保存',
+      life: 2000
+    })
+  } catch (err) {
+    console.error('二维码下载失败:', err)
+    toast.add({
+      severity: 'error',
+      summary: '分享失败',
+      detail: '请稍后重试',
+      life: 3500
+    })
+    // 不 throw 也行；看你要不要让 submit 失败
+  } finally {
+    isDownloading.value = false
+  }
+}
+
 </script>
 
 

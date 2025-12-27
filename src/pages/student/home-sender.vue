@@ -501,6 +501,59 @@ async function onApprove() {
 }
 const isDownloading = ref(false)
 
+async function downloadTaskQr(taskId: number | string, title?: string) {
+  if (isDownloading.value) return
+  if (!taskId) return
+
+  const shareUrl = `https://www.aidiventure.com/forward/${taskId}`
+
+  isDownloading.value = true
+  toast.add({
+    severity: 'info',
+    summary: t('Hint.Dispose'),
+    detail: t('Hint.ORcode'),
+    life: 1500
+  })
+
+  try {
+    const res = await api.get('/api/qr/compose/', {   // ✅ 建议加上前导 /
+      params: {
+        data: shareUrl,
+        label: title || `任务 ${taskId}`
+      },
+      responseType: 'blob'
+    })
+
+    const contentType = res.headers?.['content-type'] || 'image/png'
+    const blob = new Blob([res.data], { type: contentType })
+    const url = URL.createObjectURL(blob)
+
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `任务-${taskId}.png`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+
+    toast.add({
+      severity: t('Success.Success'),
+      summary: t('Success.Download'),
+      detail: t('Success.Preserve'),
+      life: 2000
+    })
+  } catch (err) {
+    console.error('二维码下载失败:', err)
+    toast.add({
+      severity: t('Hint.Warn'),
+      summary: t('Fail.Download'),
+      detail: t('Hint.Retry'),
+      life: 4000
+    })
+  } finally {
+    isDownloading.value = false
+  }
+}
 /** 分享：复制当前任务 id 到剪贴板（带兜底） */
 async function onShare() {
   
@@ -980,6 +1033,8 @@ const onFormSubmit = async (e) => {
       console.log('任务创建成功:', resp.data)
     }
 
+    const newId = resp?.data?.id || resp?.data?.task_id || taskId
+    await downloadTaskQr(newId, bigTitle.value)
     showDialog.value = false
 
     // 刷新任务列表
