@@ -116,10 +116,10 @@
       <!-- ✅ 分页器容器（固定在右下角） -->
       <div class="fixed-footer-wrapper">
         <Paginator
-            :rows="UI_ROWS"
-            :totalRecords="totalRecordsForPaginator"
-            :first="currentPage * UI_ROWS"
-            @page="(e) => (currentPage = e.page)"
+          :rows="UI_ROWS"
+          :first="currentPage * UI_ROWS"
+          :totalRecords="totalRecordsForPaginator"
+          @page="onPage"
           style="background-color: white; border-radius: 12px; padding: 4px 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);"
           aria-label="paginator"
         />
@@ -406,8 +406,38 @@ const UI_ROWS = 4
 const FIRST_PAGE_ROWS = 2
 const BACKEND_PAGE_SIZE = 4
 
-// ✅ 2) 不再做“等效 totalRecords”，Paginator 直接用真实 total
-const totalRecordsForPaginator = computed(() => totalRecords.value || 0)
+// ✅ 按你的规则计算真实页数：第一页2条，其余每页4条
+const pageCount = computed(() => {
+  const total = totalRecords.value || 0
+  if (total <= FIRST_PAGE_ROWS) return total === 0 ? 0 : 1
+  return 1 + Math.ceil((total - FIRST_PAGE_ROWS) / UI_ROWS)
+})
+
+// ✅ 给 PrimeVue 的虚拟 totalRecords：让它用 rows=4 也能显示正确页数
+const totalRecordsForPaginator = computed(() => {
+  const pc = pageCount.value || 0
+  return pc * UI_ROWS
+})
+
+
+watch(pageCount, async (pc) => {
+  if (pc <= 0) {
+    if (currentPage.value !== 0) currentPage.value = 0
+    return
+  }
+
+  const maxPage = pc - 1
+  if (currentPage.value > maxPage) {
+    currentPage.value = maxPage
+
+    let flag = null
+    if (activeTab.value === 'assigned') flag = true
+    if (activeTab.value === 'available') flag = false
+
+    await fetchUiPage(currentPage.value, flag)
+  }
+})
+
 
 // 简单日期展示：直接透传或兜底
 const formatDate = (s) => s || ''
@@ -519,7 +549,20 @@ const safeDescription = computed(() => {
 })
 
 /* -------------------- 分页与加载方法 -------------------- */
-const currentPage = ref(0) // 0 基，用于配合 Paginator
+// ✅ 真实“页码”状态（0,1,2...）
+const currentPage = ref(0)
+
+// ✅ Paginator 回调（PrimeVue 会给 page/first/rows）
+const onPage = async (e) => {
+  const nextPage = e.page // 0-based page index
+  currentPage.value = nextPage
+
+  let flag = null
+  if (activeTab.value === 'assigned') flag = true
+  if (activeTab.value === 'available') flag = false
+
+  await fetchUiPage(nextPage, flag)
+}
 
 // ✅ 拉后端某一页（固定 page_size=4）
 const fetchBackendPage = async (backendPage = 1, isAssigned = null) => {
@@ -563,7 +606,7 @@ const applyFilter = async () => {
   if (activeTab.value === 'assigned') flag = true
   if (activeTab.value === 'available') flag = false
 
-  await fetchPage(0, flag)
+  await fetchUiPage(0, flag)
 }
 const confirmFilter = () => applyFilter()
 
@@ -576,15 +619,15 @@ watch(showFilterDialog, (v) => {
   }
 })
 
-watch(currentPage, async (newIdx, oldIdx) => {
-  if (newIdx === oldIdx) return
+// watch(currentPage, async (newIdx, oldIdx) => {
+//   if (newIdx === oldIdx) return
 
-  let flag = null
-  if (activeTab.value === 'assigned') flag = true
-  if (activeTab.value === 'available') flag = false
+//   let flag = null
+//   if (activeTab.value === 'assigned') flag = true
+//   if (activeTab.value === 'available') flag = false
 
-  await fetchUiPage(newIdx, flag)
-})
+//   await fetchUiPage(newIdx, flag)
+// })
 
 /* -------------------- 进度条：按等级动态上下限 -------------------- */
 const toNumber = (v) => {
@@ -674,7 +717,7 @@ const applyForTask = async (taskId) => {
     // 接受任务后，按当前 tab 重新拉取并回到第一页
     const wantAssigned = activeTab.value === 'assigned'
     currentPage.value = 0
-    await fetchPage(1, wantAssigned)
+    await fetchUiPage(1, wantAssigned)
 
     toast.add({
       severity: $t('Success.Success'),
