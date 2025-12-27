@@ -20,7 +20,7 @@
 
       <!-- 第 2-6 行：前五名 -->
       <div
-        v-for="(item, idx) in board.top5"
+        v-for="(item, idx) in board.top3"
         :key="item.userId ?? idx"
         class="ranking-row"
       >
@@ -72,9 +72,9 @@ function getAvatarUrl(u) {
 /**
  * 后端(mock)返回结构（来自你之前的 mock/rankings.js）：
  * {
- *   tokens: { top5: [...], me: {...} },
- *   volunteerTime: { top5: [...], me: {...} },
- *   published_tasks: { top5: [...], me: {...} }
+ *   tokens: { top3: [...], me: {...} },
+ *   volunteerTime: { top3: [...], me: {...} },
+ *   published_tasks: { top3: [...], me: {...} }
  * }
  */
 const rawData = ref(null)
@@ -105,13 +105,13 @@ function mapTopItem(item) {
   }
 }
 
-function mapMeItem(me, top5) {
+function mapMeItem(me, top3) {
   const meId = me?.id
-  const meInTop = Array.isArray(top5) ? top5.find(x => x?.id === meId) : null
+  const meInTop = Array.isArray(top3) ? top3.find(x => x?.id === meId) : null
   return {
     rank: me?.rank ?? '-',
     userId: me?.id,
-    avatarUrl: getAvatarUrl(meInTop || me), // mock 的 me 没 avatar，这里从 top5 里补
+    avatarUrl: getAvatarUrl(meInTop || me), // mock 的 me 没 avatar，这里从 top3 里补
     nickname: me?.nickname ?? '我',
     value: me?.value ?? 0
   }
@@ -120,7 +120,7 @@ function mapMeItem(me, top5) {
 /**
  * 输出给模板渲染的 boards：
  * [
- *   { key,title,unit,headerLabel,top5:[...],my:{...} },
+ *   { key,title,unit,headerLabel,top3:[...],my:{...} },
  *   ...
  * ]
  */
