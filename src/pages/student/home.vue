@@ -334,7 +334,7 @@ const LEVEL_CONFIG = {
   D: { extraGold: 1 },
   E: { extraGold: 1 },
   F: { extraGold: 0 },
-}
+} 
 
 
 /* ================================
