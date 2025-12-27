@@ -23,6 +23,19 @@ export const levelRanges = Object.freeze({
   'S': { exp:[30,30], coin:[26,Infinity], hours:[0,24] }
 });
 
+export const LEVEL_CONFIG = {
+  S: { extraGold: 4 },
+  A: { extraGold: 3 },
+  B: { extraGold: 2 },
+  C: { extraGold: 2 },
+  D: { extraGold: 1 },
+  E: { extraGold: 1 },
+  F: { extraGold: 0 },
+}
+
+export const getLevelLetter = (rawLevel = 'D') => {
+  return String(rawLevel).trim().toUpperCase().slice(0, 1)
+} 
 
 // 小工具函数（可选）
 export const getLevelRange = (key) => levelRanges[key] ?? null;

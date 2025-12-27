@@ -418,6 +418,7 @@ const coinUpper = computed(() => {
   return Math.max(1, Number(userStore?.userInfo?.tokens ?? 0))
 })
 
+
 // 保证 coin 始终在 [1, 上限] 内
 watch(coinUpper, (max) => {
   if (coin.value > max) coin.value = max

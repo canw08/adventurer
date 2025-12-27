@@ -210,25 +210,31 @@
           <!-- 纵向 3 条进度条：EXP / Coin / Hour（显示具体数值） -->
           <div class="right-metrics">
             <div v-for="m in metricsBound" :key="m.key" class="metric-item">
-              <div class="metric-row">
-                <img :src="m.icon" alt="" class="metric-icon pixelated click-wiggle" />
-                <ProgressBar
-                  :value="m.pct"
-                  :showValue="false"
-                  class="metric-bar"
-                  :style="{ height: '28px', '--bar-color': m.color }"
-                />
-                <span
-                  class="metric-text"
-                  style="position:absolute;top:50%;left:93%;transform:translate(-50%,-50%);font-size:16px;font-weight:600;color:#2A2C55;pointer-events:none;"
-                >
-                  {{ m.raw }}{{ m.unit }}
+            <div class="metric-row">
+              <img :src="m.icon" alt="" class="metric-icon pixelated click-wiggle" />
+
+              <ProgressBar
+                :value="m.pct"
+                :showValue="false"
+                class="metric-bar"
+                :style="{ height: '28px', '--bar-color': m.color }"
+              />
+
+                <!-- 数值，颜色跟进度条 -->
+                <span class="metric-text" :style="{ color: m.color }">
+                {{ m.raw }}{{ m.unit }}
                 </span>
-              </div>
+
+                <!-- Coin 加成，颜色跟 Coin 一样 -->
+                <span v-if="m.key === 'coin'" class="metric-bonus" :style="{ color: m.color }">
+                  +{{ levelBoost }}
+                </span>
+            </div>
+
               <div class="metric-label">{{ m.label }}</div>
             </div>
 
-            <!-- ✅ 名额条（右侧） -->
+            <!-- 任务名额显示 -->
             <div v-if="(selectedProject?.slotsTotal ?? 1) >= 1" class="metric-item">
               <div
                 class="metric-row dialog-slotsline"
@@ -350,7 +356,7 @@ import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue'
 import api from '../../api.js'
 
 // === 进度条上下限表 ===
-import { levelRanges } from '../../components/levelRange.js'
+import { levelRanges, LEVEL_CONFIG, getLevelLetter } from '../../components/levelRange.js'
 
 // === 图片：按任务类型选择 ===
 import teamwork from '../../assets/team.png'
@@ -361,8 +367,18 @@ import DOMPurify from 'dompurify'
 import { useToast } from 'primevue/usetoast'
 import AssigneesStack from '../../components/AssigneesStack.vue'
 import RankingSection from '../../components/ranking/RankingSection.vue'
+import { useUserStore } from '../../stores/user.js'
+const userStore = useUserStore()
 
 const toast = useToast()
+
+const levelBoost = computed(() => {
+  return LEVEL_CONFIG[levelLetter.value]?.extraGold ?? 0
+})
+
+const levelLetter = computed(() =>
+  getLevelLetter(userStore?.userInfo?.level)
+)
 
 const isDownloading = ref(false)
 /* -------------------- 问候语 -------------------- */
@@ -372,51 +388,6 @@ const period = computed(() => {
 })
 const greetingKey = computed(() => `greetings-student.${period.value}`)
 
-/* -------------------- 排行榜（V1 假数据） -------------------- */
-const rankingBoards = [
-  {
-    key: 'rich',
-    title: '富豪榜',
-    unit: '金币',
-    headerLabel: '现有金币',
-    top5: [
-      { userId: 1, avatarUrl: '/img/a1.png', nickname: 'Alice', value: 5200 },
-      { userId: 2, avatarUrl: '/img/a2.png', nickname: 'Bob', value: 4800 },
-      { userId: 3, avatarUrl: '/img/a3.png', nickname: 'Cindy', value: 4300 },
-      { userId: 4, avatarUrl: '/img/a4.png', nickname: 'David', value: 4100 },
-      { userId: 5, avatarUrl: '/img/a5.png', nickname: 'Erik', value: 3900 }
-    ],
-    my: { rank: 12, userId: 99, avatarUrl: '/img/me.png', nickname: 'Shawn', value: 2100 }
-  },
-  {
-    key: 'hours',
-    title: '时长榜',
-    unit: '小时',
-    headerLabel: '已有时长',
-    top5: [
-      { userId: 6, avatarUrl: '/img/b1.png', nickname: 'Amy', value: 86.5 },
-      { userId: 7, avatarUrl: '/img/b2.png', nickname: 'Tom', value: 84.0 },
-      { userId: 8, avatarUrl: '/img/b3.png', nickname: 'Jimmy', value: 80.2 },
-      { userId: 9, avatarUrl: '/img/b4.png', nickname: 'Kelly', value: 78.8 },
-      { userId: 10, avatarUrl: '/img/b5.png', nickname: 'Leo', value: 75.0 }
-    ],
-    my: { rank: 20, userId: 99, avatarUrl: '/img/me.png', nickname: 'Shawn', value: 40.0 }
-  },
-  {
-    key: 'owner',
-    title: '主人榜',
-    unit: '次',
-    headerLabel: '发布任务',
-    top5: [
-      { userId: 11, avatarUrl: '/img/c1.png', nickname: 'Ivy', value: 120 },
-      { userId: 12, avatarUrl: '/img/c2.png', nickname: 'Mike', value: 110 },
-      { userId: 13, avatarUrl: '/img/c3.png', nickname: 'Zoe', value: 102 },
-      { userId: 14, avatarUrl: '/img/c4.png', nickname: 'Tim', value: 98 },
-      { userId: 15, avatarUrl: '/img/c5.png', nickname: 'Nick', value: 90 }
-    ],
-    my: { rank: 8, userId: 99, avatarUrl: '/img/me.png', nickname: 'Shawn', value: 72 }
-  }
-]
 
 /* -------------------- 任务弹窗状态 -------------------- */
 const showDialog = ref(false)
@@ -435,12 +406,8 @@ const UI_ROWS = 4
 const FIRST_PAGE_ROWS = 2
 const BACKEND_PAGE_SIZE = 4
 
-const totalRecordsForPaginator = computed(() => {
-  const total = totalRecords.value || 0
-  if (total <= FIRST_PAGE_ROWS) return total
-  const pages = 1 + Math.ceil((total - FIRST_PAGE_ROWS) / UI_ROWS)
-  return pages * UI_ROWS // PrimeVue 用 totalRecords/rows 算页数，所以这里做一个“等效总数”
-})
+// ✅ 2) 不再做“等效 totalRecords”，Paginator 直接用真实 total
+const totalRecordsForPaginator = computed(() => totalRecords.value || 0)
 
 // 简单日期展示：直接透传或兜底
 const formatDate = (s) => s || ''
@@ -566,38 +533,15 @@ const fetchBackendPage = async (backendPage = 1, isAssigned = null) => {
   return { results, count }
 }
 
-// ✅ 按 UI 页码加载：第 1 页 2 条，其余页 4 条（带 offset 偏移）
 const fetchUiPage = async (uiIndex = 0, isAssigned = null) => {
   loading.value = true
   loadError.value = ''
 
   try {
-    // UI 页码 -> 计算全局 offset
-    const start = uiIndex === 0
-      ? 0
-      : FIRST_PAGE_ROWS + (uiIndex - 1) * UI_ROWS
-
-    const need = uiIndex === 0 ? FIRST_PAGE_ROWS : UI_ROWS
-
-    // 后端页（固定每页 4 条）
-    const backendPageStart = Math.floor(start / BACKEND_PAGE_SIZE) + 1
-    const startInPage = start % BACKEND_PAGE_SIZE
-
-    // 先取第一页后端数据
-    const a = await fetchBackendPage(backendPageStart, isAssigned)
-    totalRecords.value = a.count
-
-    let sliceA = a.results.slice(startInPage, startInPage + need)
-
-    // 如果不够，需要再拉下一页后端数据拼上
-    if (sliceA.length < need) {
-      const b = await fetchBackendPage(backendPageStart + 1, isAssigned)
-      const remain = need - sliceA.length
-      sliceA = sliceA.concat(b.results.slice(0, remain))
-    }
-
-    // 映射到你的卡片结构
-    allProjects.value = sliceA.map(mapTaskToProject)
+    const backendPage = uiIndex + 1
+    const { results, count } = await fetchBackendPage(backendPage, isAssigned)
+    totalRecords.value = count
+    allProjects.value = results.map(mapTaskToProject)
   } catch (err) {
     console.error(err)
     loadError.value = $t('Fail.Loading')
@@ -607,7 +551,6 @@ const fetchUiPage = async (uiIndex = 0, isAssigned = null) => {
     loading.value = false
   }
 }
-
 // 应用筛选：重置到第 1 页并请求
 const applyFilter = async () => {
   activeTab.value = tempTab.value
@@ -670,7 +613,11 @@ const metricsBound = computed(() => {
   const p = selectedProject.value || {}
   const b = selectedBounds.value || {}
   return METRIC_DEFS.map(def => {
-    const raw = toNumber(p?.[def.key] ?? 0)
+    let raw = toNumber(p?.[def.key] ?? 0)
+    // 只给金币加成
+    if (def.key === 'coin') {
+      raw += levelBoost.value
+    }
     const ranges = def.key === 'hour' ? b?.hours : b?.[def.key]
     const [min, max] = Array.isArray(ranges) && ranges.length === 2 ? ranges : [0, 0]
     const clamped = max > min ? Math.min(Math.max(raw, min), max) : raw
@@ -860,6 +807,70 @@ async function onShare() {
 </script>
 
 <style scoped>
+  
+  @font-face {
+  font-family: 'Jersey10';
+  src: url('../../assets/fonts/jersey-10-regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.metric-text,
+.metric-bonus {
+  font-size: 43px;          /* 可以和数字一样，也可以单独调 */
+  font-weight: 600;
+  color: #FFFFFF;           /* 字体颜色保持你想要的颜色 */
+  font-family: 'Jersey10', sans-serif !important;
+
+  /* 灰色描边 */
+  text-shadow:
+    2px 2px 0 #676767,
+   -2px 2px 0 #676767,
+    2px -2px 0 #676767,
+   -2px -2px 0 #676767,
+    0 2px 0 #676767,
+    0 -2px 0 #676767,
+    2px 0 0 #676767,
+   -2px 0 0 #676767;
+
+  /* 保持位置 */
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 8px);  /* 显示在 Coin 数字右边 */
+  transform: translateY(-50%);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.metric-bonus {
+  left: calc(100% + 8px); /* 显示在 Coin 数字右边 */
+}
+
+.metric-text {
+  font-size: 26px;
+  color: #FFFFFF;
+   text-shadow:
+    2px 2px 0 #676767,
+   -2px 2px 0 #676767,
+    2px -2px 0 #676767,
+   -2px -2px 0 #676767,
+    0 2px 0 #676767,
+    0 -2px 0 #676767,
+    2px 0 0 #676767,
+   -2px 0 0 #676767;
+  left: 93%;
+  transform: translate(-50%, -50%);
+}
+
+.metric-row {
+  position: relative;
+}
+.right-metrics,
+.metric-item,
+.metric-row {
+  overflow: visible;
+}
+
 /* =========================
    布局与头部
    ========================= */
@@ -1386,7 +1397,6 @@ async function onShare() {
   background-color: var(--bar-color, #3b82f6);
 }
 .metric-label { margin-left: 10px; font-size: 13px; font-weight: 600; color: #5a6275; }
-.metric-text { font-size: 12px; font-weight: 600; color: #fff; }
 
 .pixelated {
   image-rendering: pixelated;
