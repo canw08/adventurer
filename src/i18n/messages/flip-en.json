@@ -1,4 +1,54 @@
 {
+  "Success": {
+    "Operation": "lɟnɔɔǝssnS uoᴉʇɐɹǝdO",
+    "Mark": "lɟnɔɔǝssnS ƃuᴉʞɹɐW ʞsɐ⊥",
+    "Success": "lɟnɔɔǝssnS",
+    "Download": "lɟnɔɔǝssnS pɐolɹuʍoᗡ",
+    "Preserve": "ʎllnɟssǝɔɔn s pǝʌɐS",
+    "Cancel": "ʎllnɟssǝɔɔn s pǝllǝɔuɐƆ",
+    "Receive": "ʎllnɟssǝɔɔn s pǝʇdǝɔɔ∀",
+    "Application": "pǝʇɐpdn ʇsᴉl 'lɟnɔɔǝssnS uoᴉʇɐɔᴉldd∀ ʞsɐ⊥"
+  },
+  "Fail": {
+    "Loading": "pǝlᴉɐɟ ƃuᴉpɐo˥",
+    "Cancel": "pǝlᴉɐɟ uoᴉʇɐllǝɔuɐƆ",
+    "Kick": "pǝlᴉɐɟ lɐʌoɯǝᴚ",
+    "Error": "ɹoɹɹƎ",
+    "Operation": "pǝlᴉɐɟ uoᴉʇɐɹǝdO",
+    "Receive": "pǝlᴉɐɟ ǝɔuɐʇdǝɔɔ∀",
+    "Retry": "ɹǝʇɐl ʎɹʇ ǝsɐǝld 'pǝlᴉɐɟ uoᴉʇɐɹǝdO",
+    "Download": "pǝlᴉɐɟ pɐolɹuʍoᗡ",
+    "Update": "ʎɹʇ ǝsɐǝld 'uoᴉʇɐɯɹoɟuᴉ ǝʇɐpdn oʇ pǝlᴉɐℲ",
+    "Preserve": "pǝlᴉɐɟ ǝʌɐS"
+  },
+  "Not": {
+    "Empty": "ʎʇdɯǝ ǝq ʇouuɐɔ ʞsɐ⊥",
+    "SignatureEmpty": "ǝɯɐu ɐ ɹǝʇuǝ ǝsɐǝld 'ʎʇdɯǝ ǝq ʇouuɐɔ ǝɯɐu ǝɹnʇɐuƃᴉS",
+    "PrefixEmpty": "xᴉɟǝɹd ɹǝɥʇouɐ ʇɔǝlǝs ɹo ɹǝʇuǝ ǝsɐǝld 'ʎʇdɯǝ ǝq ʇouuɐɔ xᴉɟǝɹd ɯoʇsnƆ",
+    "Operation": "pǝʍollɐ ʇou uoᴉʇɐɹǝdO",
+    "Explain": "uoᴉʇdᴉɹɔsǝp ʞsɐ⊥ ou",
+    "Complete": "ǝʇǝldɯoɔ oʇ ǝlqɐu∩",
+    "Receive": "pǝʇǝldɯoɔ sɐ pǝʞɹɐɯ ǝq ʇouuɐɔ puɐ ǝuouʎuɐ ʎq pǝʇdǝɔɔɐ uǝǝq ʇou sɐɥ ʞsɐ⊥ sᴉɥ⊥",
+    "Select": "pǝʇɔǝlǝs ʞsɐ⊥ ou",
+    "Participants": "pǝlᴉɐɟ lɐʌoɯǝɹ 'ᗡI ʇuɐdᴉɔᴉʇɹɐd ƃuᴉssᴉW",
+    "Share": "pǝlᴉɐɟ ƃuᴉɹɐɥS"
+  },
+  "Hint": {
+    "Error": "ɹoɹɹƎ",
+    "Retry": "ɹǝʇɐl ʎɹʇ ǝsɐǝld",
+    "Warn": "ƃuᴉuɹɐM",
+    "Dispose": "ƃuᴉssǝɔoɹԀ",
+    "ORcode": "...ʇᴉɐʍ ǝsɐǝld 'ǝpoɔ ᴚΌ ƃuᴉʇɐɹǝuǝפ",
+    "PrefixLong": "sɹǝʇɔɐɹɐɥɔ 0Ɛ uᴉɥʇᴉʍ ʇᴉ dǝǝʞ ǝsɐǝld 'ƃuol ooʇ sᴉ xᴉɟǝɹԀ"
+  },
+  "Input": {
+  "BriefReason": ")ɟǝᴉɹᗺ( uosɐǝᴚ uoᴉʇɐɔᴉldd∀",
+  "DetailReason": ")ɔʇǝ 'slᴉɐʇǝp ɹǝʌopuɐɥ 'ǝƃuɐɹ ǝɯᴉ⊥( uosɐǝᴚ pǝlᴉɐʇǝᗡ",
+  "Signature": "uoᴉʇɐɯɹᴉɟuoƆ ǝɹnʇɐuƃᴉS",
+  "Prefix": "xᴉɟǝɹԀ ʇɔǝlǝS",
+  "Name": "ǝɯɐN ɹǝʇuƎ"
+},
+
   "questLog": {
     "title": "ƃo˥ ʇsǝnQ",
     "runningQuest": "ʇsǝnQ ƃuᴉuunɹ"
