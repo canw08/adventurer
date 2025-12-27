@@ -128,9 +128,9 @@ const boards = computed(() => {
   const d = rawData.value
   if (!d) return []
 
-  const tokensTop5 = d?.tokens?.top5 ?? []
-  const volunteerTop5 = d?.volunteerTime?.top5 ?? []
-  const publishedTop5 = d?.published_tasks?.top5 ?? []
+  const tokensTop3 = d?.tokens?.top3 ?? []
+  const volunteerTop3 = d?.volunteerTime?.top3 ?? []
+  const publishedTop3 = d?.published_tasks?.top3 ?? []
 
   return [
     {
@@ -138,24 +138,24 @@ const boards = computed(() => {
       title: '富豪榜',
       unit: '阿幺斯',
       headerLabel: 'Tokens',
-      top5: tokensTop5.map(mapTopItem),
-      my: mapMeItem(d?.tokens?.me, tokensTop5)
+      top3: tokensTop3.map(mapTopItem),
+      my: mapMeItem(d?.tokens?.me, tokensTop3)
     },
     {
       key: 'volunteerTime',
       title: '时长榜',
       unit: '小时',
       headerLabel: 'Hours',
-      top5: volunteerTop5.map(mapTopItem),
-      my: mapMeItem(d?.volunteerTime?.me, volunteerTop5)
+      top3: volunteerTop3.map(mapTopItem),
+      my: mapMeItem(d?.volunteerTime?.me, volunteerTop3)
     },
     {
       key: 'published_tasks',
       title: '发布榜',
       unit: '次',
       headerLabel: 'Count',
-      top5: publishedTop5.map(mapTopItem),
-      my: mapMeItem(d?.published_tasks?.me, publishedTop5)
+      top3: publishedTop3.map(mapTopItem),
+      my: mapMeItem(d?.published_tasks?.me, publishedTop3)
     }
   ]
 })
