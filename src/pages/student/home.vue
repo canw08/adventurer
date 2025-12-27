@@ -1,5 +1,10 @@
 <template>
   <UpdateNotice/>
+  <WatchVideoTrialDialog
+  v-model="showTrialDialog"
+  @rewarded="(coins) => toastSuccess('Reward', `+${coins} coins`)"
+  @limit="() => toastError('Trial', 'Trial limit reached')"
+/>
   <!-- 右侧 -->
   <div class="main-content">
     <div class="main-header">
@@ -25,7 +30,24 @@
         </div>
 
       </div>
-      <AnnouncementPanel />
+      <div class="header-right-actions">
+<Button
+  class="video-icon-btn"
+  text
+  rounded
+  aria-label="watch-video"
+  @click="openTrialDialog"
+>
+  <img
+    :src="playerImg"
+    alt="player"
+    class="player-icon"
+  />
+</Button>
+
+  <!-- 原来的通知面板 -->
+  <AnnouncementPanel />
+</div>
     </div>
 
     <div class="main-subheader">
@@ -347,8 +369,16 @@ import solo1 from '../../assets/solo.png'
 import solo2 from '../../assets/solo2.png'
 
 import { useRadialTransition } from '../../components/transations/useRadialTransition.js'
+import WatchVideoTrialDialog from '../../components/dialog/WatchVideoTrialDialog.vue'
+
+
+const playerImg = new URL('../../assets/icon/player.svg', import.meta.url).href
+const showTrialDialog = ref(false)
 
 const { radialTo, radialEffect } = useRadialTransition()
+const openTrialDialog = () => {
+  showTrialDialog.value = true
+}
 
 const levelLetter = computed(() =>
   getLevelLetter(userStore?.userInfo?.level)
@@ -627,6 +657,7 @@ onMounted(async () => {
     console.error('加载任务失败:', err)
     toastError(t('toasts.common.errorSummary'), t('toasts.common.errorDetailFallback'))
     allProjects.value = []
+    } finally {
   }
 })
 
@@ -1642,4 +1673,46 @@ defineExpose({
   text-overflow: ellipsis;
 }
 
+.header-right-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px; /* 视频按钮与通知的间距 */
+}
+/* Header 播放按钮里的 player icon */
+.player-icon {
+  width: 24px;
+  height: 24px;
+  display: block;          /* 去掉 img baseline 偏移 */
+  object-fit: contain;
+}
+
+/* 若你希望 hover 时不变色、不发绿 */
+:deep(.video-icon-btn.p-button) {
+  box-shadow: none !important;
+}
+:deep(.header-right-actions .pi) {
+  color: #000 !important;
+}
+/* ✅ Announcement icon：完全静态（黑色 + 无任何交互变化） */
+:deep(.header-right-actions .pi),
+:deep(.header-right-actions .p-button-icon),
+:deep(.header-right-actions .p-button:hover .pi),
+:deep(.header-right-actions .p-button:focus .pi),
+:deep(.header-right-actions .p-button:focus-visible .pi),
+:deep(.header-right-actions .p-button:active .pi),
+:deep(.header-right-actions .p-button.p-focus .pi) {
+  color: #000 !important;
+}
+
+/* ✅ 同时移除按钮自身的 hover / focus 样式（防止绿圈/阴影） */
+:deep(.header-right-actions .p-button),
+:deep(.header-right-actions .p-button:hover),
+:deep(.header-right-actions .p-button:focus),
+:deep(.header-right-actions .p-button:focus-visible),
+:deep(.header-right-actions .p-button:active),
+:deep(.header-right-actions .p-button.p-focus) {
+  box-shadow: none !important;
+  outline: none !important;
+  background: transparent !important;
+}
 </style>
