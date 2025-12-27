@@ -42,7 +42,7 @@ async function bootstrap() {
   const i18n = await initI18n()
   app.use(i18n)
 
-  app.config.globalProperties.$version = "0.3.0"
+  app.config.globalProperties.$version = "0.3.1"
 
   app.mount('#app')
 

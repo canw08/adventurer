@@ -61,7 +61,7 @@
 
       <!-- 左下角署名 -->
       <div class="footer-note">
-        王灿，张皓阳，周心阳，鲍语暄，代若辰 with love
+        王灿，张皓阳，周心阳，鲍语暄，代若辰，刘天运 with love
       </div>
     </div>
   </div>
@@ -101,7 +101,7 @@ const changeLang = async (code) => {
 
 const ackOpen = ref(false)
 const ackNames = [
-  '王天瑞Eric', "洪天明Tim"
+  '王天瑞Eric', "洪天明Tim", "李爱璐Light", "王瀚国Louis"
 ]
 
 const onSignOut = () => {
