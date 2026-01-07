@@ -22,8 +22,8 @@
             <template v-if="dialogStep === 'watch'">
               Watch videos to get
               <span class="token-wrap">
-                <span class="token-count">{{ rewardCoins }}</span>
-                <img :src="tokenImg" class="token-icon" />
+                <span class="token-count">{{ previewReward }}</span>
+                <img :src="tokenImg" class="token-icon pixelated click-wiggle-y50" />
               </span>
             </template>
 
@@ -67,8 +67,8 @@
       <!-- ================= Reward ================= -->
       <template v-else>
         <div class="reward-middle">
-          <span class="reward-count">{{ rewardCoins }}</span>
-          <img :src="tokenImg" class="reward-token" />
+          <span class="reward-count">{{ rewardAmount }}</span>
+          <img :src="tokenImg" class="reward-token pixelated334" />
         </div>
 
         <div class="reward-footer">
@@ -118,39 +118,42 @@
 </template>
 
 <script setup>
-/**
- * ✅ 最终版核心修复点（不改你逻辑）：
- * 1) 不再用 absolute 去“硬钉”Watch 按钮（会被你上面 transform:none / margin 等样式打架）
- * 2) 改成：.p-dialog-content / .dialog-content 走 flex column
- *    - .dialog-middle { flex:1 } 占满剩余高度
- *    - .watch-btn { margin-top:auto } 自然贴底
- */
-
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
+import api from '../../api.js' // ✅ 用法同 axios
+import { useUserStore } from '../../stores/user.js'
 
+const userStore = useUserStore()
 const tokenImg = new URL('../../assets/icon/token.png', import.meta.url).href
 const playerImg = new URL('../../assets/icon/player.svg', import.meta.url).href
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
-  rewardCoins: { type: Number, default: 5 },
-  maxTrialPerDay: { type: Number, default: 100 },
+  rewardCoins: { type: Number, default: 5 },     // ✅ 一次签到奖励（默认 5）
+  maxTrialPerDay: { type: Number, default: 100 } // ✅ 这里不再用本地次数限制了（保留不影响）
 })
 
-const emit = defineEmits(['update:modelValue', 'rewarded', 'limit'])
+const emit = defineEmits(['update:modelValue', 'rewarded', 'limit', 'available'])
+
 
 /* ================= Dialog 状态 ================= */
 const dialogStep = ref('watch')
 const innerVisible = ref(false)
 const renderDialog = computed(() => props.modelValue || innerVisible.value)
 
+onMounted(() => {
+  refreshCheckinStatus()
+})
+
+
 watch(
   () => props.modelValue,
-  (v) => {
+  async (v) => {
     innerVisible.value = v
-    if (v) refreshRemaining()
+    if (v) {
+      await refreshCheckinStatus()
+    }
   },
   { immediate: true }
 )
@@ -164,21 +167,48 @@ const handleCloseDialog = () => {
   emit('update:modelValue', false)
 }
 
-/* ================= 次数逻辑 ================= */
-const remaining = ref(0)
+/* ================= ✅ 改成 API：签到状态 / 剩余次数 ================= */
+// remaining：用于控制 Watch 按钮是否可点（今天已签到就禁用）
+const remaining = ref(1) // 1=可签到，0=不可（已签到）
+const tokensFromServer = ref(null)
 
-const getTodayKey = () => `trial_watch_${new Date().toISOString().slice(0, 10)}`
-const refreshRemaining = () => {
-  const used = Number(localStorage.getItem(getTodayKey()) || 0)
-  remaining.value = Math.max(props.maxTrialPerDay - used, 0)
+const rewardAmount = ref(0)            // ✅ 最终展示：后端返回的奖励
+const previewReward = computed(() => {
+  // ✅ watch 阶段显示用：随机奖励未发放前显示 "?"
+  // 你也可以改成 "1~10" 或者从后端 GET 返回一个范围
+  return '1~5'
+})
+
+const refreshCheckinStatus = async () => {
+  try {
+    const { data } = await api.get('/api/users/checkin/')
+
+    const checked = !!data?.checked_in
+    remaining.value = checked ? 0 : 1
+    tokensFromServer.value = data?.tokens ?? null
+
+    if (checked) {
+      // ✅ 关掉弹窗（如果父组件误开）
+      emit('update:modelValue', false)
+
+      // ✅ 通知父组件：今天不可用 -> icon 不要显示
+      emit('available', false)
+    } else {
+      emit('available', true)
+    }
+  } catch (err) {
+    emit('available', true)
+    remaining.value = 1
+  }
 }
+
 
 /* ================= Video Overlay ================= */
 const showVideo = ref(false)
 const videoRef = ref(null)
 
 const showConfirmLeave = ref(false)
-const remainSeconds = ref(0) // ✅ 始终从视频真实剩余时间计算
+const remainSeconds = ref(0)
 
 const onKeydown = (e) => {
   e.preventDefault()
@@ -187,7 +217,7 @@ const onKeydown = (e) => {
 
 const lockBody = () => {
   document.body.style.overflow = 'hidden'
-  document.body.style.touchAction = 'none' // ✅ 禁止移动端滑动穿透
+  document.body.style.touchAction = 'none'
 }
 const unlockBody = () => {
   document.body.style.overflow = ''
@@ -204,27 +234,26 @@ watch(showVideo, async (v) => {
   }
 })
 
-// ✅ 统一：从 video 读取剩余秒数（向上取整）
 const syncRemainSeconds = () => {
   const v = videoRef.value
   if (!v) return
-
   const dur = Number(v.duration)
   const cur = Number(v.currentTime)
-
   if (!Number.isFinite(dur) || dur <= 0) {
     remainSeconds.value = 0
     return
   }
-
   const left = Math.max(dur - cur, 0)
   remainSeconds.value = Math.ceil(left)
 }
 
+/* ================= Watch 按钮：先查状态，再播视频 ================= */
 const handleWatch = async () => {
-  refreshRemaining()
+  // ✅ 每次点之前刷新一下，避免多端/多窗口重复领
+  await refreshCheckinStatus()
+
   if (remaining.value <= 0) {
-    emit('limit')
+    emit('limit') // 你原来的事件：这里用来提示“今日已签到/已领取”
     return
   }
 
@@ -252,16 +281,37 @@ const confirmLeave = () => {
   showVideo.value = false
 }
 
-const handleVideoEnded = () => {
-  const used = Number(localStorage.getItem(getTodayKey()) || 0) + 1
-  localStorage.setItem(getTodayKey(), used)
-
-  refreshRemaining()
-  emit('rewarded', props.rewardCoins)
-
+/* ================= ✅ 视频结束：调用签到 API 发放奖励 ================= */
+const handleVideoEnded = async () => {
   showVideo.value = false
-  dialogStep.value = 'reward'
+
+  try {
+    const { data } = await api.post('/api/users/checkin/')
+
+    // ✅ 关键：后端决定奖励数量
+    // 兼容不同字段名：reward / rewardCoins / coins
+    const r =
+      Number(data?.reward ?? data?.rewardCoins ?? data?.coins ?? 0)
+
+    rewardAmount.value = Number.isFinite(r) ? r : 0
+
+    remaining.value = 0
+    tokensFromServer.value = data?.tokens ?? tokensFromServer.value
+
+    // ✅ 通知父组件：本次实际奖励是多少
+    emit('rewarded', rewardAmount.value)
+
+    // ✅ 进入 reward 展示
+    dialogStep.value = 'reward'
+    userStore.refreshUser()
+  } catch (err) {
+    await refreshCheckinStatus()
+    // 如果失败，你可以选择不进 reward 页，或给 0
+    rewardAmount.value = 0
+    dialogStep.value = 'reward'
+  }
 }
+
 
 const handleRewardOk = () => {
   dialogStep.value = 'watch'
@@ -278,7 +328,6 @@ const pt = computed(() => {
       class: ['watch-dialog', isReward ? 'is-reward' : ''],
       style: {
         width: 'min(348px, 90vw)',
-        // ✅ watch 给固定高度，reward 自适应
         height: isReward ? 'auto' : 'min(290px, 90vh)',
       },
     },

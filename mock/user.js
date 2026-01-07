@@ -1,5 +1,6 @@
 import Mock from 'mockjs';
-
+let checkedInToday = false;
+let userTokens = 623;
 export default [
   {
     url: '/api/users/',
@@ -20,6 +21,7 @@ export default [
         level: 'S',
         title: null,
         role: 'student',
+        checked_in: true,
       });
     },
   },
@@ -37,4 +39,42 @@ export default [
       }
     },
   },
+  // ✅ 查询今日是否已签到
+  {
+    url: '/api/users/checkin/',
+    method: 'get',
+    response: () => {
+      return {
+        date: Mock.Random.date('yyyy-MM-dd'),
+        checked_in: checkedInToday,
+        tokens: userTokens,
+      };
+    },
+  },
+
+  // ✅ 每日签到
+  {
+    url: '/api/users/checkin/',
+    method: 'post',
+    response: () => {
+      if (checkedInToday) {
+        return {
+          message: '今天已签到',
+          reward: 0,
+          tokens: userTokens,
+        }
+      }
+
+      checkedInToday = true
+      const reward = Mock.Random.integer(1, 10) // ✅ 随机 1~10
+      userTokens += reward
+
+      return {
+        message: `签到成功，获得 ${reward} tokens`,
+        reward,
+        tokens: userTokens,
+      }
+    },
+  },
+
 ];

@@ -2,9 +2,7 @@
   <UpdateNotice/>
   <WatchVideoTrialDialog
   v-model="showTrialDialog"
-  @rewarded="(coins) => toastSuccess('Reward', `+${coins} coins`)"
-  @limit="() => toastError('Trial', 'Trial limit reached')"
-/>
+  />
   <!-- 右侧 -->
   <div class="main-content">
     <div class="main-header">
@@ -31,19 +29,20 @@
 
       </div>
       <div class="header-right-actions">
-<Button
-  class="video-icon-btn"
-  text
-  rounded
-  aria-label="watch-video"
-  @click="openTrialDialog"
->
-  <img
-    :src="playerImg"
-    alt="player"
-    class="player-icon"
-  />
-</Button>
+      <Button
+        class="video-icon-btn"
+        text
+        rounded
+        aria-label="watch-video"
+        v-if="checkinAvailable"
+        @click="openTrialDialog"
+      >
+        <img
+          :src="playerImg"
+          alt="player"
+          class="player-icon"
+        />
+      </Button>
 
   <!-- 原来的通知面板 -->
   <AnnouncementPanel />
@@ -390,6 +389,7 @@ const levelLetter = computed(() =>
 const router = useRouter()
 const toast = useToast()
 const { t } = useI18n()
+const checkinAvailable = computed(() => !userStore?.userInfo?.checked_in)
 
 /* ================================
  *  Constants & Maps
@@ -476,13 +476,6 @@ const pickTaskImage = (task) => {
     hash |= 0
   }
   return Math.abs(hash) % 2 === 0 ? solo1 : solo2
-}
-
-const toastSuccess = (summary, detail, life = 2000) => {
-  toast.add({ severity: 'success', summary, detail, life })
-}
-const toastError = (summary, detail, life = 2500) => {
-  toast.add({ severity: 'error', summary, detail, life })
 }
 
 const postJson = async (url, payload) => {
