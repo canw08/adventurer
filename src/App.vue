@@ -21,6 +21,7 @@ html, body {
 .main-content {
   font-family: 'Inria Sans', sans-serif !important;
 }
+
 /* src/styles/overrides.css */
 body, button, input, textarea, select {
   font-family: 'Inria Sans', sans-serif !important;
