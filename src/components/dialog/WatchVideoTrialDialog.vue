@@ -68,7 +68,7 @@
       <template v-else>
         <div class="reward-middle">
           <span class="reward-count">{{ rewardAmount }}</span>
-          <img :src="tokenImg" class="reward-token pixelated334" />
+          <img :src="tokenImg" class="reward-token pixelated" />
         </div>
 
         <div class="reward-footer">
@@ -525,18 +525,18 @@ const pt = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .reward-count {
-  font-size: 48px;
+  font-size: 80px;
   font-weight: 800;
   color: #111;
 }
 
 .reward-token {
-  width: 40px;
-  height: 40px;
+  width: 80px;
+  height: 80px;
 }
 
 .reward-footer {

@@ -21,7 +21,7 @@ export default [
         level: 'S',
         title: null,
         role: 'student',
-        checked_in: true,
+        checked_in: false,
       });
     },
   },
@@ -46,7 +46,7 @@ export default [
     response: () => {
       return {
         date: Mock.Random.date('yyyy-MM-dd'),
-        checked_in: checkedInToday,
+        checked_in: false,
         tokens: userTokens,
       };
     },
@@ -66,7 +66,7 @@ export default [
       }
 
       checkedInToday = true
-      const reward = Mock.Random.integer(1, 10) // ✅ 随机 1~10
+      const reward = Mock.Random.integer(1, 5) // ✅ 随机 1~10
       userTokens += reward
 
       return {
