@@ -93,6 +93,15 @@
       </div>
       <div
         class="menu-button"
+        :class="{ active: isActive('/student/store') }"
+        @click="goToStore"
+        v-ripple
+      >
+        <i class="pi pi-shop icon"></i>
+        <span class="label-text">{{ t('sidebar.store') }}</span>
+      </div>
+      <div
+        class="menu-button"
         :class="{ active: isActive('/student/settings') }"
         @click="goToTeam"
         v-ripple
@@ -164,6 +173,7 @@ const expDisplay = computed(() => `${currentExp.value}/${nextExp.value}`)
 const goToLog = () => router.push('/student/home');
 const goToBoard = () => router.push('/student/task');
 const goToTeam = () => router.push('/student/settings');
+const goToStore = () => router.push('/student/store');
 const isActive = (paths) => {
   const current = route.path
   if (Array.isArray(paths)) {
