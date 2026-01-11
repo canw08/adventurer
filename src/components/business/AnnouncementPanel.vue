@@ -547,5 +547,17 @@ defineExpose({
   text-align: center;
 }
 
+/* ===== 铃铛颜色覆盖 ===== */
 
+/* 默认黑色 */
+:deep(.notify-bell .p-button),
+:deep(.notify-bell .p-button-icon) {
+  color: #000 !important;
+}
+
+/* hover 灰色 */
+:deep(.notify-bell .p-button:hover),
+:deep(.notify-bell .p-button:hover .p-button-icon) {
+  color: #6b7280 !important;
+}
 </style>

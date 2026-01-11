@@ -1,8 +1,5 @@
 <template>
   <UpdateNotice/>
-  <WatchVideoTrialDialog
-  v-model="showTrialDialog"
-  />
   <!-- 右侧 -->
   <div class="main-content">
     <div class="main-header">
@@ -29,25 +26,12 @@
 
       </div>
       <div class="header-right-actions">
-      <Button
-        class="video-icon-btn"
-        text
-        rounded
-        aria-label="watch-video"
-        v-if="checkinAvailable"
-        @click="openTrialDialog"
-      >
-        <img
-          :src="playerImg"
-          alt="player"
-          class="player-icon"
-        />
-      </Button>
-
-  <!-- 原来的通知面板 -->
-  <AnnouncementPanel />
-</div>
-    </div>
+        <!-- 看广告 -->
+        <WatchVideoEntry />
+        <!-- 通知面板 -->
+        <AnnouncementPanel />
+      </div>
+  </div>
 
     <div class="main-subheader">
       <span class="greeting">{{ $t(greetingKey) }}</span>
@@ -256,7 +240,6 @@
     </div>
 
     <!-- 右下角 Mandator -->
-    <!-- 右下角 Mandator -->
     <div class="assigned-box">
       <span class="assigned-label">Assigned</span>
 
@@ -347,6 +330,7 @@ import { useToast } from 'primevue/usetoast'
 
 import api from '../../api.js'
 import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue'
+import WatchVideoEntry from '../../components/business/WatchVideoEntry.vue'
 import AssigneesStack from '../../components/AssigneesStack.vue'
 import UpdateNotice from '../../components/UpdateNotice.vue'
 
@@ -371,13 +355,7 @@ import { useRadialTransition } from '../../components/transations/useRadialTrans
 import WatchVideoTrialDialog from '../../components/dialog/WatchVideoTrialDialog.vue'
 
 
-const playerImg = new URL('../../assets/icon/player.svg', import.meta.url).href
-const showTrialDialog = ref(false)
-
 const { radialTo, radialEffect } = useRadialTransition()
-const openTrialDialog = () => {
-  showTrialDialog.value = true
-}
 
 const levelLetter = computed(() =>
   getLevelLetter(userStore?.userInfo?.level)
@@ -389,8 +367,6 @@ const levelLetter = computed(() =>
 const router = useRouter()
 const toast = useToast()
 const { t } = useI18n()
-const checkinAvailable = computed(() => !userStore?.userInfo?.checked_in)
-
 /* ================================
  *  Constants & Maps
  * ================================ */
@@ -1679,33 +1655,4 @@ defineExpose({
   object-fit: contain;
 }
 
-/* 若你希望 hover 时不变色、不发绿 */
-:deep(.video-icon-btn.p-button) {
-  box-shadow: none !important;
-}
-:deep(.header-right-actions .pi) {
-  color: #000 !important;
-}
-/* ✅ Announcement icon：完全静态（黑色 + 无任何交互变化） */
-:deep(.header-right-actions .pi),
-:deep(.header-right-actions .p-button-icon),
-:deep(.header-right-actions .p-button:hover .pi),
-:deep(.header-right-actions .p-button:focus .pi),
-:deep(.header-right-actions .p-button:focus-visible .pi),
-:deep(.header-right-actions .p-button:active .pi),
-:deep(.header-right-actions .p-button.p-focus .pi) {
-  color: #000 !important;
-}
-
-/* ✅ 同时移除按钮自身的 hover / focus 样式（防止绿圈/阴影） */
-:deep(.header-right-actions .p-button),
-:deep(.header-right-actions .p-button:hover),
-:deep(.header-right-actions .p-button:focus),
-:deep(.header-right-actions .p-button:focus-visible),
-:deep(.header-right-actions .p-button:active),
-:deep(.header-right-actions .p-button.p-focus) {
-  box-shadow: none !important;
-  outline: none !important;
-  background: transparent !important;
-}
 </style>

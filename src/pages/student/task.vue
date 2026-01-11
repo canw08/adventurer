@@ -8,8 +8,12 @@
         <span class="header-left">{{ $t('questBoard.title') }}</span>
         <div class="vertical-divider"></div>
       </div>
-      <!-- 公告组件（保持原有交互与样式） -->
-      <AnnouncementPanel />
+      <div class="header-right-actions">
+        <!-- 看广告 -->
+        <WatchVideoEntry />
+        <!-- 通知面板 -->
+        <AnnouncementPanel />
+      </div>
     </div>
 
     <!-- 次级标题与筛选按钮 -->
@@ -351,7 +355,7 @@ import SelectButton from 'primevue/selectbutton'
 import Paginator from 'primevue/paginator'
 import ProgressBar from 'primevue/progressbar'
 import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
-
+import WatchVideoEntry from '../../components/business/WatchVideoEntry.vue'
 import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue'
 import api from '../../api.js'
 
@@ -1658,5 +1662,11 @@ async function onShare() {
 
 :deep(.share-btn.p-button:hover) {
   transform: translateY(-2px);
+}
+
+.header-right-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px; /* 视频按钮与通知的间距 */
 }
 </style>

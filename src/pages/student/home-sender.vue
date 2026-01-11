@@ -24,7 +24,12 @@
             />
           </div>
         </div>
-        <AnnouncementPanel />
+        <div class="header-right-actions">
+          <!-- 看广告 -->
+          <WatchVideoEntry />
+          <!-- 通知面板 -->
+          <AnnouncementPanel />
+        </div>
       </div>
 
       <div class="main-subheader">
@@ -392,7 +397,7 @@ import { useUserStore } from '../../stores/user.js'
 import { useI18n } from 'vue-i18n'
 import api from '../../api.js'
 import DOMPurify from 'dompurify'
-
+import WatchVideoEntry from '../../components/business/WatchVideoEntry.vue'
 import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue'
 import Dialog from 'primevue/dialog'
 import Avatar from 'primevue/avatar'
@@ -2284,4 +2289,9 @@ function toLocalEdgeISOString(
   text-align: left;
 }
 
+.header-right-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px; /* 视频按钮与通知的间距 */
+}
 </style>
