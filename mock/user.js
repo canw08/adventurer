@@ -21,7 +21,7 @@ export default [
         level: 'S',
         title: null,
         role: 'student',
-        checked_in: true,
+        checked_in: false,
       });
     },
   },
@@ -46,7 +46,7 @@ export default [
     response: () => {
       return {
         date: Mock.Random.date('yyyy-MM-dd'),
-        checked_in: checkedInToday,
+        checked_in: false,
         tokens: userTokens,
       };
     },
