@@ -46,8 +46,9 @@
         </div>
       </div>
 
-    <!-- 悬浮按钮 -->
+    <!-- ✅ 悬浮按钮：仅在“有任务”时显示（大按钮不存在时） -->
     <Button
+      v-if="filteredProjects.length"
       icon="pi pi-plus"
       class="floating-new-quest-btn custom-round-button p-button-rounded p-button-icon-only"
       @click="openNewTaskDialog"
@@ -158,6 +159,7 @@
         </Form>
       </div>
     </Dialog>
+
     <!-- 主体卡片区域 -->
     <div class="main-body">
       <div class="grid-container">
@@ -389,6 +391,7 @@ meta:
   requiresAuth: true
   roles: ['student']
 </route>
+
 <script setup lang="ts">
 /* ===== Imports ===== */
 import { ref, computed, onMounted,watch } from 'vue'
