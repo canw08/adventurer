@@ -1,4 +1,11 @@
 <template>
+  <DesktopPet
+    :visible="true"
+    :avatar="avatar"
+    message="我是桌面宠物：拖我移动，点我说话，ESC 关闭。"
+    :size="160"
+    persistKey="desktop-pet-pos"
+  />
   <div class="sidebar" v-if="userStore.userInfo">
     <Toast />
     <!-- 替换你现有的 .profile-header 里的头像块 -->
@@ -124,6 +131,8 @@ import { useUserStore } from '../stores/user'
 import { useI18n } from 'vue-i18n'
 import { useToast } from 'primevue/usetoast'
 import { showOnce } from '../composables/tip-once.js'
+import DesktopPet from '../components/business/DesktopPet.vue'
+import avatar from '../assets/tiper.png'
 
 const toast = useToast()
 const { t } = useI18n()
