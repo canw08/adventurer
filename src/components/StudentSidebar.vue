@@ -1,11 +1,26 @@
 <template>
-  <DesktopPet
-    :visible="true"
-    :avatar="avatar"
-    message="我是桌面宠物：拖我移动，点我说话，ESC 关闭。"
-    :size="160"
-    persistKey="desktop-pet-pos"
-  />
+<DesktopPet @action="handlePetAction" />
+<Dialog
+<Dialog
+  v-if="bagOpen"
+  v-model:visible="bagOpen"
+  header="My back pack"
+  modal
+  :dismissableMask="true"
+  :draggable="false"
+  :style="{ width: 'min(92vw, 720px)' }"
+>
+  <div class="bag-grid" role="grid" aria-label="backpack grid">
+    <button
+      v-for="i in GRID_COLS * GRID_ROWS"
+      :key="i"
+      class="bag-slot"
+      type="button"
+      aria-label="bag slot"
+      @click="onBagSlotClick(i)"
+    />
+  </div>
+</Dialog>
   <div class="sidebar" v-if="userStore.userInfo">
     <Toast />
     <!-- 替换你现有的 .profile-header 里的头像块 -->
@@ -133,12 +148,20 @@ import { useToast } from 'primevue/usetoast'
 import { showOnce } from '../composables/tip-once.js'
 import DesktopPet from '../components/business/DesktopPet.vue'
 import avatar from '../assets/tiper.png'
+import Dialog from 'primevue/dialog'
 
 const toast = useToast()
 const { t } = useI18n()
 const router = useRouter();
 const route = useRoute();
 const userStore = useUserStore();
+const bagOpen = ref(false)
+const GRID_COLS = 8
+const GRID_ROWS = 6
+
+function onBagSlotClick(index) {
+  console.log('bag slot clicked:', index)
+}
 
 // 如果这些 PNG 原图是 16x16，显示用 32x32、64x64 等整数倍
 const tokenIcon = new URL('../assets/icon/token.png', import.meta.url).href;
@@ -146,6 +169,26 @@ const timeIcon  = new URL('../assets/icon/time.png', import.meta.url).href;
 // carpet 是矢量/底图，不需要像素化
 const carpetImgB = new URL('../assets/icon/redcarpet.png', import.meta.url).href;
 const carpetImgA = new URL('../assets/icon/bluecarpet.png', import.meta.url).href;
+
+
+function handlePetAction(action) {
+  switch (action) {
+    case 'open-bag':
+      bagOpen.value = true
+      break
+
+    case 'open-store':
+      router.push('/student/store')
+      break
+
+    case 'open-quest':
+      router.push('/student/task')
+      break
+
+    default:
+      console.log('unknown pet action:', action)
+  }
+}
 
 const showExp = ref(false)
 const toggleExp = () => 
@@ -220,7 +263,7 @@ const copyId = async () => {
   const legacyCopy = () => {
     try {
       const ta = document.createElement('textarea');
-      ta.value = t;
+      ta.value = text;
       ta.setAttribute('readonly', '');
       ta.style.position = 'fixed';
       ta.style.left = '-9999px';
@@ -523,4 +566,36 @@ const copyId = async () => {
   /* .user-name:hover .level-badge { transform: scale(1.05); } */
 }
 
+/* ========== Backpack Dialog Grid ========== */
+
+.bag-slot {
+  width: 80px;
+  height: 80px;
+  border-radius: 0;              /* ✅ 去掉圆角 */
+  border: 1px solid #dcdcdc;     /* 更像背包格子 */
+  background: #f8f8f8;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.bag-slot:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.bag-slot:active {
+  transform: scale(0.98);
+}
+
+.bag-grid {
+  --gap: 6px; /* 控制所有间距 */
+
+  display: grid;
+  grid-template-columns: repeat(8, 80px);
+  grid-auto-rows: 80px;
+
+  gap: var(--gap);       /* 格子之间距离 */
+  padding: var(--gap);   /* 与四周边框距离 */
+
+  justify-content: center;
+}
 </style>

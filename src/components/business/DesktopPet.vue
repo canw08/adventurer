@@ -8,7 +8,7 @@
           class="desktop-pet__body pixelated"
           type="button"
           aria-label="desktop pet"
-          @pointerdown="onPointerDown"
+          @pointerdown.stop="onPointerDown"
           @click="onPetClick"
         >
           <img :src="AVATAR" alt="" draggable="false" :class="{ mirrored: isRightSide }" />
@@ -27,19 +27,19 @@
           <button class="desktop-pet__close" aria-label="关闭" @click="panelOpen = false">×</button>
 
           <div class="desktop-pet__panel-head">
-            <p class="desktop-pet__greeting">{{ greeting }}</p>
-
-            <div class="desktop-pet__affection">
-              <span class="desktop-pet__affection-label">好感度❤</span>
-              <span class="desktop-pet__affection-value">{{ affection }}</span>
-            </div>
+            <p class="desktop-pet__greeting">I can help you to...</p>
           </div>
 
-          <div class="desktop-pet__panel-actions">
-            <button class="desktop-pet__btn" type="button" @click="onAction(0)">{{ ACTIONS[0] }}</button>
-            <button class="desktop-pet__btn" type="button" @click="onAction(1)">{{ ACTIONS[1] }}</button>
-            <button class="desktop-pet__btn" type="button" @click="onAction(2)">{{ ACTIONS[2] }}</button>
-          </div>
+<div class="desktop-pet__panel-actions">
+  <button
+  class="desktop-pet__btn"
+  type="button"
+  @pointerdown.stop
+  @click="dispatch('open-bag')"
+>
+  Open your bag
+</button>
+</div>
 
           <div class="desktop-pet__tail"></div>
         </div>
@@ -71,7 +71,12 @@ function getInitialPosition() {
 
 const { x: INIT_X, y: INIT_Y } = getInitialPosition()
 
+const emit = defineEmits(['action'])
 
+function dispatch(action) {
+  emit('action', action)
+  panelOpen.value = false
+}
 // 拖动阈值：避免拖动后误触发 click
 const DRAG_THRESHOLD = 6
 
@@ -80,9 +85,6 @@ const GRAVITY = 540
 const MAX_VY = 5200
 const STOP_EPS = 0.6
 
-// 面板内容（都在组件内）
-const DEFAULT_GREETING = '嘿，冒险者！今天也要加油喔。'
-const ACTIONS = ['摸摸头', '投喂', '聊天']
 
 /** =========================
  *  状态
@@ -94,8 +96,7 @@ const x = ref(INIT_X)
 const y = ref(INIT_Y)
 
 const panelOpen = ref(false)
-const greeting = ref(DEFAULT_GREETING)
-const affection = ref(12) // 好感度数值：你可以随按钮变化
+
 
 // 拖拽状态
 const dragging = ref(false)
@@ -253,19 +254,6 @@ function onPetClick(e) {
   panelOpen.value = !panelOpen.value
 }
 
-function onAction(idx) {
-  // 这里给你一个默认交互：不同按钮影响好感度与问候
-  if (idx === 0) {
-    affection.value += 1
-    greeting.value = '嗯哼～被摸摸头了！'
-  } else if (idx === 1) {
-    affection.value += 2
-    greeting.value = '投喂成功！我充满力量了。'
-  } else {
-    greeting.value = '想聊什么？我一直都在。'
-  }
-}
-
 /** =========================
  *  其他：键盘、resize
  *  ========================= */
@@ -337,22 +325,6 @@ onBeforeUnmount(() => {
   transform: scaleX(-1);
 }
 
-/* ===== 面板 ===== */
-.desktop-pet__panel {
-  pointer-events: auto;
-  position: relative;
-  width: 40px;
-  background: #fff;
-  color: #222;
-  border-radius: 14px;
-  padding: 14px 14px 12px;
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.14);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-
-  /* 让面板离宠物一点距离（基于 size） */
-  margin-bottom: calc(var(--pet-size) * 0.28);
-}
-
 /* 头部 */
 .desktop-pet__panel-head {
   display: flex;
@@ -365,26 +337,6 @@ onBeforeUnmount(() => {
   margin: 0;
   line-height: 1.45;
   font-size: 14px;
-}
-
-.desktop-pet__affection {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 10px;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.035);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.desktop-pet__affection-label {
-  font-size: 12px;
-  color: #555;
-}
-
-.desktop-pet__affection-value {
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
 }
 
 /* 按钮区 */
