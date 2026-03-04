@@ -30,7 +30,7 @@
         <h3 class="block-title">
           List of Acknowledgements ：
           <button class="linklike" @click="ackOpen = !ackOpen">
-            {{ ackOpen ? 'Collapse' : 'Unfold' }}
+            {{ ackOpen ? '▼' : '▲' }}
           </button>
         </h3>
 
