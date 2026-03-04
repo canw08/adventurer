@@ -22,102 +22,28 @@
         <section class="block">
         </section>
         
-        <!-- 示例产品展示框 -->
-        <div class="product-card">
-          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxh9Pn1t9AALRLCBwG90kcSQj1r1kxqvDFWw&s" alt="瑞幸咖啡">
-          <div class="product-title">瑞幸咖啡</div>
-          <div class="product-description">
-            这个咖啡是瑞幸的，它的配料是张忠泽, 不知道, 和橙子。它非常的好喝。
+          
+            <!-- 动态生成产品卡片 -->
+            <div
+              class="product-card"
+              v-for="product in products"
+              :key="product.id"
+            >
+              <img :src="product.image" :alt="product.title" />
+              <div class="product-title">{{ product.title }}</div>
+              <div class="product-description">{{ product.description }}</div>
+              <div class="product-footer">
+                <div class="product-price">
+                  <img
+                    src="../../assets/icon/token.png"
+                    alt="token"
+                    style="width:20px; height:20px; vertical-align:middle; margin-right:0px;"
+                  />
+                  {{ product.price }}
+                </div>
+                <button class="product-buy-btn">购买</button>
+            </div>
           </div>
-          <div class="product-footer">
-            <div class="product-price">
-                <img src="../../assets/icon/token.png" alt="token" style="width:20px; height:20px; vertical-align:middle; margin-right:0px;">
-                32
-            </div>
-            <button class="product-buy-btn">购买</button>
-          </div>
-        </div>
-
-        <!-- 第二个产品展示框 -->
-        <div class="product-card">
-        <img src="https://www.zhanlu.com.tw/wp-content/uploads/2023/12/d5b715852e9014d4254650a4e7ba30c0.jpg" alt="瑞幸咖啡2">
-        <div class="product-title">瑞幸拿铁</div>
-        <div class="product-description">
-            这是一款瑞幸拿铁，配料是牛奶, 咖啡, 糖，非常好喝。
-        </div>
-        <div class="product-footer">
-            <div class="product-price">
-            <img src="../../assets/icon/token.png" alt="token" style="width:20px; height:20px; vertical-align:middle; margin-right:0px;">
-            35
-            </div>
-            <button class="product-buy-btn">购买</button>
-        </div>
-        </div>
-
-        <!-- 第三个产品展示框 -->
-        <div class="product-card">
-        <img src="https://www.zhanlu.com.tw/wp-content/uploads/2023/12/d5b715852e9014d4254650a4e7ba30c0.jpg" alt="瑞幸咖啡2">
-        <div class="product-title">瑞幸拿铁</div>
-        <div class="product-description">
-            这是一款瑞幸拿铁，配料是牛奶, 咖啡, 糖，非常好喝。
-        </div>
-        <div class="product-footer">
-            <div class="product-price">
-            <img src="../../assets/icon/token.png" alt="token" style="width:20px; height:20px; vertical-align:middle; margin-right:0px;">
-            35
-            </div>
-            <button class="product-buy-btn">购买</button>
-        </div>
-        </div>
-
-        <!-- 第四个产品展示框 -->
-        <div class="product-card">
-        <img src="https://www.zhanlu.com.tw/wp-content/uploads/2023/12/d5b715852e9014d4254650a4e7ba30c0.jpg" alt="瑞幸咖啡2">
-        <div class="product-title">瑞幸拿铁</div>
-        <div class="product-description">
-            这是一款瑞幸拿铁，配料是牛奶, 咖啡, 糖，非常好喝。
-        </div>
-        <div class="product-footer">
-            <div class="product-price">
-            <img src="../../assets/icon/token.png" alt="token" style="width:20px; height:20px; vertical-align:middle; margin-right:0px;">
-            35
-            </div>
-            <button class="product-buy-btn">购买</button>
-        </div>
-        </div>
-
-         <!-- 第五个产品展示框 -->
-        <div class="product-card">
-        <img src="https://www.zhanlu.com.tw/wp-content/uploads/2023/12/d5b715852e9014d4254650a4e7ba30c0.jpg" alt="瑞幸咖啡2">
-        <div class="product-title">瑞幸拿铁</div>
-        <div class="product-description">
-            这是一款瑞幸拿铁，配料是牛奶, 咖啡, 糖，非常好喝。
-        </div>
-        <div class="product-footer">
-            <div class="product-price">
-            <img src="../../assets/icon/token.png" alt="token" style="width:20px; height:20px; vertical-align:middle; margin-right:0px;">
-            35
-            </div>
-            <button class="product-buy-btn">购买</button>
-        </div>
-        </div>
-
-        <!-- 第六个产品展示框 -->
-        <div class="product-card">
-        <img src="https://www.zhanlu.com.tw/wp-content/uploads/2023/12/d5b715852e9014d4254650a4e7ba30c0.jpg" alt="瑞幸咖啡2">
-        <div class="product-title">瑞幸拿铁</div>
-        <div class="product-description">
-            这是一款瑞幸拿铁，配料是牛奶, 咖啡, 糖，非常好喝。
-        </div>
-        <div class="product-footer">
-            <div class="product-price">
-            <img src="../../assets/icon/token.png" alt="token" style="width:20px; height:20px; vertical-align:middle; margin-right:0px;">
-            35
-            </div>
-            <button class="product-buy-btn">购买</button>
-        </div>
-        </div>
-
       </div>
     </div>
   </div>
@@ -142,6 +68,45 @@ const { locale, t } = useI18n()
 const SHORTCUT_DOT_KEY = 'settings.shortcutDotDismissed'  // 记忆小红点是否已消失
 const showShortcutDot = ref(localStorage.getItem(SHORTCUT_DOT_KEY) !== '1')
 
+// 商店产品展示框
+const products = ref([
+  {
+    id: 1,
+    title: '瑞幸咖啡',
+    description: '这个咖啡是瑞幸的，它的配料是张忠泽, 不知道, 和橙子。它非常的好喝。',
+    price: 32,
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxh9Pn1t9AALRLCBwG90kcSQj1r1kxqvDFWw&s'
+  },
+  {
+    id: 2,
+    title: '瑞幸拿铁',
+    description: '这是一款瑞幸拿铁，配料是牛奶, 咖啡, 糖，非常好喝。',
+    price: 35,
+    image: 'https://www.zhanlu.com.tw/wp-content/uploads/2023/12/d5b715852e9014d4254650a4e7ba30c0.jpg'
+  },
+  {
+    id: 3,
+    title: '瑞幸拿铁',
+    description: '这是一款瑞幸拿铁，配料是牛奶, 咖啡, 糖，非常好喝。',
+    price: 35,
+    image: 'https://www.zhanlu.com.tw/wp-content/uploads/2023/12/d5b715852e9014d4254650a4e7ba30c0.jpg'
+  },
+  {
+    id: 4,
+    title: '瑞幸拿铁',
+    description: '这是一款瑞幸拿铁，配料是牛奶, 咖啡, 糖，非常好喝。',
+    price: 35,
+    image: 'https://www.zhanlu.com.tw/wp-content/uploads/2023/12/d5b715852e9014d4254650a4e7ba30c0.jpg'
+  },
+  {
+    id: 5,
+    title: '瑞幸拿铁',
+    description: '这是一款瑞幸拿铁，配料是牛奶, 咖啡, 糖，非常好喝。',
+    price: 35,
+    image: 'https://www.zhanlu.com.tw/wp-content/uploads/2023/12/d5b715852e9014d4254650a4e7ba30c0.jpg'
+  },
+  // 可以继续添加更多产品
+])
 
 // 在这里扩展语言即可
 const languages = ref([
@@ -236,7 +201,7 @@ const createProductCard = (title, description, price) => {
 .main-body {
   position: relative;
   flex: 1;
-  display: flex;
+  display: block;
   flex-direction: column;
   border-radius: 32px;
   overflow: auto;
@@ -369,41 +334,36 @@ const createProductCard = (title, description, price) => {
 
 /* ===== 双栏布局 ===== */
 .two-column {
-  display: flex;
-  gap: 24px;
+  flex: 1;
 }
 
 /* 左侧保持原设置栏 */
 .left-panel {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(275px, 1fr));
-  gap: 16px; /* 控制水平和垂直间距 */
-  justify-items: start;
-  justify-content: start;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px ; /* 控制水平和垂直间距 */
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 /* ===== 产品展示卡片 ===== */
 .product-card {
-  position: relative;
   background: #ffffff;
-  border-radius: 5px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  margin-bottom: 10px;
-  width: 275px;
-  height: 360px;
+  border-radius: 15px;
+  min-width: 0;
+  height: 375px;
 }
 
 .product-card img {
-  width: 100%;
-  height: auto;
+  width: 90%;
+  height: 200px;
+  object-fit: cover;
   border-radius: 12px;
-  margin-bottom: 12px;
-  width: 243px;
-  height: 250px;
+  margin: 10px auto 10px;
+  display: block;
 }
 
 .product-card .product-title {
@@ -411,6 +371,9 @@ const createProductCard = (title, description, price) => {
   font-weight: 700;
   font-size: 18px;
   margin-bottom: 8px;
+  padding-left: 11px;
+  padding-right: 11px;
+  box-sizing: border-box
 }
 
 .product-card .product-description {
@@ -418,23 +381,33 @@ const createProductCard = (title, description, price) => {
   font-weight: 400;
   font-size: 14px;
   margin-bottom: 12px;
+  padding-left: 11px;
+  padding-right: 11px;
+  box-sizing: border-box;
 }
-
 
 .product-card .product-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding-left: 11px;
+  padding-right: 11px;
+  box-sizing: border-box
 }
 
 .product-card .product-price {
   font-weight: 500;
   font-size: 16px;
+  padding-left: 11px;
+  padding-right: 11px;
+  box-sizing: border-box
 }
 
 .product-card .product-price img {
+  padding-left: -10px;
+  padding-right: -10px;
   vertical-align: middle;
-  margin-right: 0px; /* 调整数字与图片间距 */
+  margin-right: 1px; /* 调整数字与图片间距 */
   margin-bottom: 2px;
   width: 16px;
   height: 16px;
