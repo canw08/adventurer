@@ -11,7 +11,7 @@
     <div class="main-body">
       <!-- Language -->
       <section class="block">
-        <h3 class="block-title">Language</h3>
+        <h3 class="block-title">{{ $t('settings.language') }}</h3>
         <div class="lang-toggle" role="tablist">
           <button
             v-for="lang in languages"
@@ -27,28 +27,28 @@
 
       <!-- 快捷方式 -->
       <section class="block">
-        <h3 class="block-title">快捷方式</h3>
+        <h3 class="block-title">{{ $t('settings.shortcutTitle') }}</h3>
         <button
           class="icon-btn"
           :class="{ 'has-dot': showShortcutDot }"
           @click="onSaveShortcut"
-          aria-label="保存快捷方式至桌面"
+          :aria-label="$t('settings.shortcutSave')"
         >
           <i class="pi pi-download"></i>
-          <span>保存快捷方式至桌面</span>
+          <span>{{ $t('settings.shortcutSave') }}</span>
         </button>
       </section>
 
       <!-- Acknowledgements（改为按钮跳转到 animations/endroll） -->
       <section class="block">
-        <h3 class="block-title">List of Acknowledgements</h3>
+        <h3 class="block-title">{{ $t('settings.acknowledgementsTitle') }}</h3>
         <button
           class="icon-btn"
           @click="goAcknowledgements"
-          aria-label="跳转到致谢页面"
+          :aria-label="$t('settings.viewAcknowledgements')"
         >
           <i class="pi pi-external-link"></i>
-          <span>查看致谢名单</span>
+          <span>{{ $t('settings.viewAcknowledgements') }}</span>
         </button>
       </section>
 
@@ -73,7 +73,7 @@ meta:
 </route>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { setLocale } from '../../i18n/index.js' // 👈 引入你写的 setLocale 方法
 import { useRouter } from 'vue-router'
@@ -81,17 +81,17 @@ import { useUserStore } from '../../stores/user'
 
 const userStore = useUserStore()
 const router = useRouter()
-const { locale } = useI18n()
+const { locale, t } = useI18n()
 
 const SHORTCUT_DOT_KEY = 'settings.shortcutDotDismissed' // 记忆小红点是否已消失
 const showShortcutDot = ref(localStorage.getItem(SHORTCUT_DOT_KEY) !== '1')
 
 // 在这里扩展语言即可
-const languages = ref([
-  { code: 'en', label: 'English' },
-  { code: 'zh-CN', label: '中文' },
-  { code: 'flip-en', label: 'ɥsᴉlƃuƎ dᴉlℲ' },
-  // { code: 'jp', label: '日本語' } // 扩展示例
+const languages = computed(() => [
+  { code: 'en', label: t('settings.languageOptions.en') },
+  { code: 'zh-CN', label: t('settings.languageOptions.zhCN') },
+  { code: 'flip-en', label: t('settings.languageOptions.flipEn') },
+  // { code: 'jp', label: 'Japanese' } // example
 ])
 
 const changeLang = async (code) => {

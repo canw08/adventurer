@@ -8,7 +8,7 @@
     "Cancel": "Cancelled successfully",
     "Receive": "Accepted successfully",
     "Application": "Task application successful, list updated"
-},
+  },
   "Fail": {
     "Loading": "Loading failed",
     "Cancel": "Cancellation failed",
@@ -20,7 +20,7 @@
     "Download": "Download failed",
     "Update": "Failed to update information, please try again",
     "Preserve": "Save failed"
-},  
+  },
   "Not": {
     "Empty": "Task cannot be empty",
     "SignatureEmpty": "Signature name cannot be empty, please enter a name",
@@ -32,7 +32,7 @@
     "Select": "No task selected",
     "Participants": "Missing participant ID, removal failed",
     "Share": "Sharing failed"
-},
+  },
   "Hint": {
     "Error": "Error",
     "Retry": "Please try again later",
@@ -40,16 +40,14 @@
     "Dispose": "Processing",
     "ORcode": "Generating QR code, please wait...",
     "PrefixLong": "Prefix is too long, please keep it within 30 characters"
-},
-"Input":{
+  },
+  "Input": {
     "BriefReason": "申请理由(简要)",
     "DetailReason": "详情理由(时间范围, 交接说明等)",
     "Signature": "签名确认",
     "Prefix": "选择前缀",
     "Name": "输入姓名"
   },
-
-
   "questLog": {
     "title": "Home",
     "runningQuest": "Running Quest",
@@ -89,8 +87,8 @@
   "tabs": {
     "ongoing": "Ongoing",
     "completed": "Completed",
-    "acceptTask" : "Accept Task",
-    "releaseTask" : "Release Task"
+    "acceptTask": "Accept Task",
+    "releaseTask": "Release Task"
   },
   "common": {
     "na": "N/A",
@@ -133,7 +131,17 @@
   },
   "settings": {
     "title": "Settings",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "language": "Language",
+    "shortcutTitle": "Shortcut",
+    "shortcutSave": "Save shortcut to desktop",
+    "acknowledgementsTitle": "List of Acknowledgements",
+    "viewAcknowledgements": "View acknowledgements",
+    "languageOptions": {
+      "en": "English",
+      "zhCN": "中文",
+      "flipEn": "Flip English"
+    }
   },
   "teacherCancel": {
     "approve": "Approve cancellation",

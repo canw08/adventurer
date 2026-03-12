@@ -42,13 +42,12 @@
     "PrefixLong": "sɹǝʇɔɐɹɐɥɔ 0Ɛ uᴉɥʇᴉʍ ʇᴉ dǝǝʞ ǝsɐǝld 'ƃuol ooʇ sᴉ xᴉɟǝɹԀ"
   },
   "Input": {
-  "BriefReason": ")ɟǝᴉɹᗺ( uosɐǝᴚ uoᴉʇɐɔᴉldd∀",
-  "DetailReason": ")ɔʇǝ 'slᴉɐʇǝp ɹǝʌopuɐɥ 'ǝƃuɐɹ ǝɯᴉ⊥( uosɐǝᴚ pǝlᴉɐʇǝᗡ",
-  "Signature": "uoᴉʇɐɯɹᴉɟuoƆ ǝɹnʇɐuƃᴉS",
-  "Prefix": "xᴉɟǝɹԀ ʇɔǝlǝS",
-  "Name": "ǝɯɐN ɹǝʇuƎ"
-},
-
+    "BriefReason": ")ɟǝᴉɹᗺ( uosɐǝᴚ uoᴉʇɐɔᴉldd∀",
+    "DetailReason": ")ɔʇǝ 'slᴉɐʇǝp ɹǝʌopuɐɥ 'ǝƃuɐɹ ǝɯᴉ⊥( uosɐǝᴚ pǝlᴉɐʇǝᗡ",
+    "Signature": "uoᴉʇɐɯɹᴉɟuoƆ ǝɹnʇɐuƃᴉS",
+    "Prefix": "xᴉɟǝɹԀ ʇɔǝlǝS",
+    "Name": "ǝɯɐN ɹǝʇuƎ"
+  },
   "questLog": {
     "title": "ƃo˥ ʇsǝnQ",
     "runningQuest": "ʇsǝnQ ƃuᴉuunɹ"
@@ -94,6 +93,17 @@
     "settings": "sƃuᴉʇʇǝS"
   },
   "settings": {
-    "title": "sƃuᴉʇʇǝS"
+    "title": "sƃuᴉʇʇǝs",
+    "signOut": "ʇno uƃᴉS",
+    "language": "ǝƃɐnƃnɐ˥",
+    "shortcutTitle": "ʇnɔʇɹoɥS",
+    "shortcutSave": "doʇʞsǝp oʇ ʇnɔʇɹoɥs ǝʌɐS",
+    "acknowledgementsTitle": "sʇuǝɯǝƃpǝlʍouʞɔ∀ ɟo ʇsᴉ˥",
+    "viewAcknowledgements": "sʇuǝɯǝƃpǝlʍouʞɔɐ ʍǝᴉΛ",
+    "languageOptions": {
+      "en": "ɥsᴉlƃuƎ",
+      "zhCN": "文中",
+      "flipEn": "ɥsᴉlƃuƎ dᴉl™"
+    }
   }
 }

@@ -41,15 +41,13 @@
     "ORcode": "正在生成二维码, 请稍等...",
     "PrefixLong": "前缀过长, 请保持在30自内"
   },
-  "Input":{
+  "Input": {
     "BriefReason": "申请理由(简要)",
     "DetailReason": "详情理由(时间范围, 交接说明等)",
     "Signature": "签名确认",
     "Prefix": "选择前缀",
     "Name": "输入姓名"
   },
-
-
   "questLog": {
     "title": "营地",
     "runningQuest": "进行中的任务\n",
@@ -89,8 +87,8 @@
   "tabs": {
     "ongoing": "进行中",
     "completed": "已完成",
-    "acceptTask" : "接取任务",
-    "releaseTask" : "发布任务"
+    "acceptTask": "接取任务",
+    "releaseTask": "发布任务"
   },
   "common": {
     "na": "空",
@@ -133,7 +131,17 @@
   },
   "settings": {
     "title": "设置",
-    "signOut": "退出登录"
+    "signOut": "退出登录",
+    "language": "语言",
+    "shortcutTitle": "快捷方式",
+    "shortcutSave": "保存快捷方式至桌面",
+    "acknowledgementsTitle": "致谢名单",
+    "viewAcknowledgements": "查看致谢名单",
+    "languageOptions": {
+      "en": "English",
+      "zhCN": "中文",
+      "flipEn": "ɥsᴉlƃuƎ dᴉl™"
+    }
   },
   "teacherCancel": {
     "approve": "同意取消请求",
