@@ -4,14 +4,13 @@
   <div class="main-content">
       <div class="main-header">
         <div class="header-left-group">
-          <span class="header-left">{{ $t('questLog.title') }}</span>
+          <span class="header-left">管理员后台</span>
           <div class="vertical-divider"></div>
           <span class="header-right">
             <span class="running-count">{{ runningProjects.length }}</span>
             <span class="running-label"> {{ $t('questLog.runningQuest') }}</span>
           </span>
         </div>
-        <AnnouncementPanel />
       </div>
 
       <div class="main-subheader">
@@ -244,12 +243,10 @@ import { useI18n } from 'vue-i18n'
 import api from '../../api.js'
 import DOMPurify from 'dompurify'
 
-import AnnouncementPanel from '../../components/business/AnnouncementPanel.vue'
 import Dialog from 'primevue/dialog'
 import Avatar from 'primevue/avatar'
 import ProgressBar from 'primevue/progressbar'
 
-import { showOnce } from '../../composables/tip-once.js'
 import { levelRanges } from '../../components/levelRange.js'
 
 import '../../styles/overrides.css'
@@ -626,12 +623,6 @@ const metricsBound = computed(() => {
   })
 })
 
-const period = computed(() => {
-  const h = new Date().getHours()
-  return h < 4 ? 'night' : h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening'
-})
-const greetingKey = computed(() => `greetings-teacher.${period.value}`)
-
 /* ===== 过滤视图数据 ===== */
 const filteredProjects = computed(() =>
   allProjects.value.filter((p) => p.status === activeTab.value)
@@ -640,10 +631,7 @@ const runningProjects = computed(() =>
   allProjects.value.filter((p) => p.status === 'ongoing')
 )
 
-/* ===== 路由跳转 ===== */
-const goToProfile = () => {
-  router.push('/teacher/home')
-}
+
 
 /* ===== 发布任务表单（保持你原逻辑，editThisTask 依赖这些状态） ===== */
           // 发布任务弹窗
