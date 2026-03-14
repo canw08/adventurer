@@ -52,13 +52,13 @@
                 class="purchase-box"
               >
                 <div class="purchase-text">
-                  是否购买？要消耗{{ selectedProduct.price }}
-                  <span class="token-inline">
-                    <img
-                      src="../../assets/icon/token.png"
-                      alt="token"
-                    />
-                  </span>
+                  是否购买？要消耗
+                  <img
+                  src="../../assets/icon/token.png"
+                  alt="token"
+                  style="width:16px; height:16px; vertical-align:middle; margin:0 4px;"
+                  />
+                {{ selectedProduct.price }}
                 </div>
                 <div class="purchase-buttons">
                   <button class="cancel-btn" @click="cancelPurchase">取消</button>
@@ -92,6 +92,45 @@ const selectedProduct = ref(null)
 const SHORTCUT_DOT_KEY = 'settings.shortcutDotDismissed'  // 记忆小红点是否已消失
 const showShortcutDot = ref(localStorage.getItem(SHORTCUT_DOT_KEY) !== '1')
 
+// 商店产品展示框
+const products = ref([
+  {
+    id: 1,
+    title: '瑞幸咖啡',
+    description: '这个咖啡是瑞幸的，它的配料是张忠泽, 不知道, 和橙子。它非常的好喝。',
+    price: 32,
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxh9Pn1t9AALRLCBwG90kcSQj1r1kxqvDFWw&s'
+  },
+  {
+    id: 2,
+    title: '瑞幸拿铁',
+    description: '这是一款瑞幸拿铁，配料是牛奶, 咖啡, 糖，非常好喝。',
+    price: 35,
+    image: 'https://www.zhanlu.com.tw/wp-content/uploads/2023/12/d5b715852e9014d4254650a4e7ba30c0.jpg'
+  },
+  {
+    id: 3,
+    title: '瑞幸拿铁',
+    description: '这是一款瑞幸拿铁，配料是牛奶, 咖啡, 糖，非常好喝。',
+    price: 35,
+    image: 'https://www.zhanlu.com.tw/wp-content/uploads/2023/12/d5b715852e9014d4254650a4e7ba30c0.jpg'
+  },
+  {
+    id: 4,
+    title: '瑞幸拿铁',
+    description: '这是一款瑞幸拿铁，配料是牛奶, 咖啡, 糖，非常好喝。',
+    price: 35,
+    image: 'https://www.zhanlu.com.tw/wp-content/uploads/2023/12/d5b715852e9014d4254650a4e7ba30c0.jpg'
+  },
+  {
+    id: 5,
+    title: '瑞幸拿铁',
+    description: '这是一款瑞幸拿铁，配料是牛奶, 咖啡, 糖，非常好喝。',
+    price: 35,
+    image: 'https://www.zhanlu.com.tw/wp-content/uploads/2023/12/d5b715852e9014d4254650a4e7ba30c0.jpg'
+  },
+  // 可以继续添加更多产品
+])
 
 // 在这里扩展语言即可
 const languages = ref([
@@ -198,7 +237,7 @@ const confirmPurchase = () => {
 .main-body {
   position: relative;
   flex: 1;
-  display: flex;
+  display: block;
   flex-direction: column;
   border-radius: 32px;
   overflow: auto;
@@ -279,7 +318,6 @@ const confirmPurchase = () => {
 .fade-enter-active, .fade-leave-active { transition: opacity .16s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 
-
 /* 图标按钮（与页面风格一致的主按钮样式） */
 .icon-btn {
   position: relative;
@@ -331,8 +369,7 @@ const confirmPurchase = () => {
 
 /* ===== 双栏布局 ===== */
 .two-column {
-  display: flex;
-  gap: 24px;
+  flex: 1;
 }
 
 /* 左侧保持原设置栏 */
@@ -347,7 +384,6 @@ const confirmPurchase = () => {
 
 /* ===== 产品展示卡片 ===== */
 .product-card {
-  position: relative;
   background: #ffffff;
   border-radius: 15px;
   min-width: 0;
@@ -356,12 +392,12 @@ const confirmPurchase = () => {
 }
 
 .product-card img {
-  width: 100%;
-  height: auto;
+  width: 90%;
+  height: 200px;
+  object-fit: cover;
   border-radius: 12px;
-  margin-bottom: 12px;
-  width: 243px;
-  height: 250px;
+  margin: 10px auto 10px;
+  display: block;
 }
 
 .product-card .product-title {
@@ -369,6 +405,9 @@ const confirmPurchase = () => {
   font-weight: 700;
   font-size: 18px;
   margin-bottom: 8px;
+  padding-left: 11px;
+  padding-right: 11px;
+  box-sizing: border-box
 }
 
 .product-card .product-description {
@@ -376,23 +415,33 @@ const confirmPurchase = () => {
   font-weight: 400;
   font-size: 14px;
   margin-bottom: 12px;
+  padding-left: 11px;
+  padding-right: 11px;
+  box-sizing: border-box;
 }
-
 
 .product-card .product-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding-left: 11px;
+  padding-right: 11px;
+  box-sizing: border-box
 }
 
 .product-card .product-price {
   font-weight: 500;
   font-size: 16px;
+  padding-left: 11px;
+  padding-right: 11px;
+  box-sizing: border-box
 }
 
 .product-card .product-price img {
+  padding-left: -10px;
+  padding-right: -10px;
   vertical-align: middle;
-  margin-right: 0px; /* 调整数字与图片间距 */
+  margin-right: 1px; /* 调整数字与图片间距 */
   margin-bottom: 2px;
   width: 16px;
   height: 16px;
@@ -430,25 +479,11 @@ const confirmPurchase = () => {
   box-shadow: 0 8px 20px rgba(0,0,0,0.15);
 }
 
-.purchase-text {
+.purchase-text{
   font-size: 14px;
   font-weight: 600;
   text-align: center;
   margin-bottom: 10px;
-  line-height: 1.4;
-  word-break: break-word;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 4px;
-  margin-top: 8px;
-}
-
-.purchase-text .token-inline img{
-  width: 14px;
-  height: 14px;
-  vertical-align: middle;
-  margin-left: 4px;
 }
 
 .purchase-buttons{
