@@ -22,102 +22,28 @@
         <section class="block">
         </section>
         
-        <!-- 示例产品展示框 -->
-        <div class="product-card">
-          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxh9Pn1t9AALRLCBwG90kcSQj1r1kxqvDFWw&s" alt="瑞幸咖啡">
-          <div class="product-title">瑞幸咖啡</div>
-          <div class="product-description">
-            这个咖啡是瑞幸的，它的配料是张忠泽, 不知道, 和橙子。它非常的好喝。
+          
+            <!-- 动态生成产品卡片 -->
+            <div
+              class="product-card"
+              v-for="product in products"
+              :key="product.id"
+            >
+              <img :src="product.image" :alt="product.title" />
+              <div class="product-title">{{ product.title }}</div>
+              <div class="product-description">{{ product.description }}</div>
+              <div class="product-footer">
+                <div class="product-price">
+                  <img
+                    src="../../assets/icon/token.png"
+                    alt="token"
+                    style="width:20px; height:20px; vertical-align:middle; margin-right:0px;"
+                  />
+                  {{ product.price }}
+                </div>
+                <button class="product-buy-btn">购买</button>
+            </div>
           </div>
-          <div class="product-footer">
-            <div class="product-price">
-                <img src="../../assets/icon/token.png" alt="token" style="width:20px; height:20px; vertical-align:middle; margin-right:0px;">
-                32
-            </div>
-            <button class="product-buy-btn">购买</button>
-          </div>
-        </div>
-
-        <!-- 第二个产品展示框 -->
-        <div class="product-card">
-        <img src="https://www.zhanlu.com.tw/wp-content/uploads/2023/12/d5b715852e9014d4254650a4e7ba30c0.jpg" alt="瑞幸咖啡2">
-        <div class="product-title">瑞幸拿铁</div>
-        <div class="product-description">
-            这是一款瑞幸拿铁，配料是牛奶, 咖啡, 糖，非常好喝。
-        </div>
-        <div class="product-footer">
-            <div class="product-price">
-            <img src="../../assets/icon/token.png" alt="token" style="width:20px; height:20px; vertical-align:middle; margin-right:0px;">
-            35
-            </div>
-            <button class="product-buy-btn">购买</button>
-        </div>
-        </div>
-
-        <!-- 第三个产品展示框 -->
-        <div class="product-card">
-        <img src="https://www.zhanlu.com.tw/wp-content/uploads/2023/12/d5b715852e9014d4254650a4e7ba30c0.jpg" alt="瑞幸咖啡2">
-        <div class="product-title">瑞幸拿铁</div>
-        <div class="product-description">
-            这是一款瑞幸拿铁，配料是牛奶, 咖啡, 糖，非常好喝。
-        </div>
-        <div class="product-footer">
-            <div class="product-price">
-            <img src="../../assets/icon/token.png" alt="token" style="width:20px; height:20px; vertical-align:middle; margin-right:0px;">
-            35
-            </div>
-            <button class="product-buy-btn">购买</button>
-        </div>
-        </div>
-
-        <!-- 第四个产品展示框 -->
-        <div class="product-card">
-        <img src="https://www.zhanlu.com.tw/wp-content/uploads/2023/12/d5b715852e9014d4254650a4e7ba30c0.jpg" alt="瑞幸咖啡2">
-        <div class="product-title">瑞幸拿铁</div>
-        <div class="product-description">
-            这是一款瑞幸拿铁，配料是牛奶, 咖啡, 糖，非常好喝。
-        </div>
-        <div class="product-footer">
-            <div class="product-price">
-            <img src="../../assets/icon/token.png" alt="token" style="width:20px; height:20px; vertical-align:middle; margin-right:0px;">
-            35
-            </div>
-            <button class="product-buy-btn">购买</button>
-        </div>
-        </div>
-
-         <!-- 第五个产品展示框 -->
-        <div class="product-card">
-        <img src="https://www.zhanlu.com.tw/wp-content/uploads/2023/12/d5b715852e9014d4254650a4e7ba30c0.jpg" alt="瑞幸咖啡2">
-        <div class="product-title">瑞幸拿铁</div>
-        <div class="product-description">
-            这是一款瑞幸拿铁，配料是牛奶, 咖啡, 糖，非常好喝。
-        </div>
-        <div class="product-footer">
-            <div class="product-price">
-            <img src="../../assets/icon/token.png" alt="token" style="width:20px; height:20px; vertical-align:middle; margin-right:0px;">
-            35
-            </div>
-            <button class="product-buy-btn">购买</button>
-        </div>
-        </div>
-
-        <!-- 第六个产品展示框 -->
-        <div class="product-card">
-        <img src="https://www.zhanlu.com.tw/wp-content/uploads/2023/12/d5b715852e9014d4254650a4e7ba30c0.jpg" alt="瑞幸咖啡2">
-        <div class="product-title">瑞幸拿铁</div>
-        <div class="product-description">
-            这是一款瑞幸拿铁，配料是牛奶, 咖啡, 糖，非常好喝。
-        </div>
-        <div class="product-footer">
-            <div class="product-price">
-            <img src="../../assets/icon/token.png" alt="token" style="width:20px; height:20px; vertical-align:middle; margin-right:0px;">
-            35
-            </div>
-            <button class="product-buy-btn">购买</button>
-        </div>
-        </div>
-
       </div>
     </div>
   </div>
@@ -138,7 +64,9 @@ import { useUserStore } from '../../stores/user'
 const userStore = useUserStore();
 const router = useRouter();
 const { locale, t } = useI18n()
-
+const userCoins = ref(200)
+const showConfirm = ref(false)
+const selectedProduct = ref(null)
 const SHORTCUT_DOT_KEY = 'settings.shortcutDotDismissed'  // 记忆小红点是否已消失
 const showShortcutDot = ref(localStorage.getItem(SHORTCUT_DOT_KEY) !== '1')
 
@@ -176,12 +104,24 @@ const onSaveShortcut = () => {
   localStorage.setItem(SHORTCUT_DOT_KEY, '1')
 }
 
-const createProductCard = (title, description, price) => {
-  return {
-    title,
-    description,
-    price,
-    image: '', // 预留图片路径
+const openConfirm = (product) => {
+selectedProduct.value = product
+showConfirm.value = true
+}
+
+const cancelPurchase = () => {
+  showConfirm.value = false
+  selectedProduct.value = null
+}
+
+const confirmPurchase = () => {
+  if (!selectedProduct.value) return
+
+  if (userCoins.value >= selectedProduct.value.price){
+    userCoins.value -= selectedProduct.value.price
+    console.log("购买成功:", selectedProduct.value.title)
+  } else{
+    alert("金币不足")
   }
 }
 </script>
@@ -280,7 +220,7 @@ const createProductCard = (title, description, price) => {
 }
 .ack-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px 16px;
   margin: 12px 0 0;
   padding: 0;
@@ -376,25 +316,22 @@ const createProductCard = (title, description, price) => {
 /* 左侧保持原设置栏 */
 .left-panel {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(275px, 1fr));
-  gap: 16px; /* 控制水平和垂直间距 */
-  justify-items: start;
-  justify-content: start;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px ; /* 控制水平和垂直间距 */
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 /* ===== 产品展示卡片 ===== */
 .product-card {
   position: relative;
   background: #ffffff;
-  border-radius: 5px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  margin-bottom: 10px;
-  width: 275px;
-  height: 360px;
+  border-radius: 15px;
+  min-width: 0;
+  height: 375px;
 }
 
 .product-card img {
@@ -452,5 +389,75 @@ const createProductCard = (title, description, price) => {
 .product-card .product-buy-btn:hover {
   background: #24264a;
 }
+ 
+ /* ===== 卡片内购买确认框 ===== */
+.purchase-box{
+  position: absolute;
+  top:355px;
+  left: 10px;
 
+  z-index: 10;
+  
+  width: 310px;
+  min-height: 140px;
+
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  padding-bottom: 60px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.purchase-text {
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 10px;
+  line-height: 1.4;
+  word-break: break-word;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.purchase-text .token-inline img{
+  width: 14px;
+  height: 14px;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
+.purchase-buttons{
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+  
+.cancel-btn{
+  background: #e5e7eb;
+  border: none;
+  border-radius: 8px;
+  width: 120px;
+  height: 36px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.confirm-btn{
+  background: #2a2c55;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  width: 120px;
+  height: 36px;
+  cursor: pointer;
+  font-weight: 600;
+}
 </style>
