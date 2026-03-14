@@ -19,9 +19,6 @@
     <div class="main-body two-column">
       <!-- 左侧：原有设置内容 -->
       <div class="left-panel">
-        <section class="block">
-        </section>
-        
           
             <!-- 动态生成产品卡片 -->
             <div
@@ -41,12 +38,37 @@
                   />
                   {{ product.price }}
                 </div>
-                <button class="product-buy-btn">购买</button>
+                <button
+                  class = "product-buy-btn"
+                  @click="openConfirm(product)"
+                >
+                购买
+              </button>
+              </div>
+
+                          <!-- 购买确认矩形 -->
+              <div
+                v-if="showConfirm && selectedProduct && selectedProduct.id === product.id"
+                class="purchase-box"
+              >
+                <div class="purchase-text">
+                  是否购买？要消耗{{ selectedProduct.price }}
+                  <span class="token-inline">
+                    <img
+                      src="../../assets/icon/token.png"
+                      alt="token"
+                    />
+                  </span>
+                </div>
+                <div class="purchase-buttons">
+                  <button class="cancel-btn" @click="cancelPurchase">取消</button>
+                  <button class="confirm-btn" @click="confirmPurchase">确认</button>
+                </div>
+              </div>
             </div>
           </div>
-      </div>
-    </div>
-  </div>
+         </div>
+         </div>
 </template>
 
 <route lang="yaml">
@@ -316,13 +338,11 @@ const confirmPurchase = () => {
 /* 左侧保持原设置栏 */
 .left-panel {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 24px ; /* 控制水平和垂直间距 */
+  grid-template-columns: repeat(3,1fr);
+  gap: 24px;
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0;
-  box-sizing: border-box;
 }
 
 /* ===== 产品展示卡片 ===== */
@@ -332,6 +352,7 @@ const confirmPurchase = () => {
   border-radius: 15px;
   min-width: 0;
   height: 375px;
+  position: relative;
 }
 
 .product-card img {
