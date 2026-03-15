@@ -16,7 +16,8 @@
 
    <!-- 主体卡片（浅蓝背景） -->
     <!-- 主体卡片（浅蓝背景） -->
-    <div class="main-body two-column">
+    <div class="main-body two-column"
+  @click.self="cancelPurchase">
       <!-- 左侧：原有设置内容 -->
       <div class="left-panel">
           
@@ -50,15 +51,13 @@
               <div
                 v-if="showConfirm && selectedProduct && selectedProduct.id === product.id"
                 class="purchase-box"
+                @click.stop
               >
                 <div class="purchase-text">
-                  是否购买？要消耗
-                  <img
-                  src="../../assets/icon/token.png"
-                  alt="token"
-                  style="width:16px; height:16px; vertical-align:middle; margin:0 4px;"
-                  />
-                {{ selectedProduct.price }}
+                  是否购买？需消耗
+                  <span class="price">
+                     {{ selectedProduct.price }}<img src="../../assets/icon/token.png" alt=""/>
+                  </span>          
                 </div>
                 <div class="purchase-buttons">
                   <button class="cancel-btn" @click="cancelPurchase">取消</button>
@@ -181,6 +180,8 @@ const confirmPurchase = () => {
   if (userCoins.value >= selectedProduct.value.price){
     userCoins.value -= selectedProduct.value.price
     console.log("购买成功:", selectedProduct.value.title)
+
+    cancelPurchase()
   } else{
     alert("金币不足")
   }
@@ -438,8 +439,6 @@ const confirmPurchase = () => {
 }
 
 .product-card .product-price img {
-  padding-left: -10px;
-  padding-right: -10px;
   vertical-align: middle;
   margin-right: 1px; /* 调整数字与图片间距 */
   margin-bottom: 2px;
@@ -461,11 +460,17 @@ const confirmPurchase = () => {
 }
  
  /* ===== 卡片内购买确认框 ===== */
+ .purchase-text img{
+  width: 16px;
+  height: 16px;
+ }
 .purchase-box{
   position: absolute;
   top:355px;
-  left: 10px;
 
+  left: 50%;
+  transform: translateX(-50%);
+  
   z-index: 10;
   
   width: 310px;
@@ -482,8 +487,16 @@ const confirmPurchase = () => {
 .purchase-text{
   font-size: 14px;
   font-weight: 600;
-  text-align: center;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  gap: 4px;
+
   margin-bottom: 10px;
+
+  white-space: nowrap;
 }
 
 .purchase-buttons{
@@ -515,5 +528,11 @@ const confirmPurchase = () => {
   height: 36px;
   cursor: pointer;
   font-weight: 600;
+}
+
+.price{
+  display: flex;
+  align-items: center;
+  gap: 2px;
 }
 </style>
