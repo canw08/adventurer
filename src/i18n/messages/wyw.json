@@ -1,0 +1,255 @@
+{
+  "Success": {
+    "Operation": "操作已成",
+    "Mark": "标记已成",
+    "Success": "已成",
+    "Download": "下载已成",
+    "Preserve": "保存已成",
+    "Cancel": "取消已成",
+    "Receive": "接取已成",
+    "Application": "所请已达，簿册已更新"
+  },
+  "Fail": {
+    "Loading": "加载未成",
+    "Cancel": "取消未成",
+    "Kick": "逐出未成",
+    "Error": "有误",
+    "Operation": "操作未成",
+    "Receive": "接取未成",
+    "Retry": "操作未成，请稍后再试",
+    "Download": "下载未成",
+    "Update": "更新未成，请重试",
+    "Preserve": "保存未成"
+  },
+  "Not": {
+    "Empty": "差事不可为空",
+    "SignatureEmpty": "署名不可空，请书姓名",
+    "PrefixEmpty": "前缀不可空，请输入或另择",
+    "Operation": "此举不可行",
+    "Explain": "未载差事说明",
+    "Complete": "不可完结",
+    "Receive": "此差事尚无人领，不可记为已成",
+    "Select": "尚未选差事",
+    "Participants": "缺参与者 ID，逐出未成",
+    "Share": "转示未成"
+  },
+  "Hint": {
+    "Error": "有误",
+    "Retry": "请稍候再试",
+    "Warn": "警示",
+    "Dispose": "处理中",
+    "ORcode": "二维码生成中，请稍候…",
+    "PrefixLong": "前缀过长，请限三十字内"
+  },
+  "Input": {
+    "BriefReason": "缘由（略）",
+    "DetailReason": "详述（时段、交接等）",
+    "Signature": "署名确认",
+    "Prefix": "择前缀",
+    "Name": "书姓名"
+  },
+  "questLog": {
+    "title": "行馆",
+    "runningQuest": "行中差事\n",
+    "getQuest": "领差",
+    "publishQuest": "张榜",
+    "prompting": "催审",
+    "askleave": "请辞"
+  },
+  "questBoard": {
+    "title": "悬赏榜\n",
+    "filter": "筛选",
+    "filterTasks": "筛差事",
+    "chooseLevel": "择等",
+    "assigned": "已领",
+    "available": "可领"
+  },
+  "teacherHome": {
+    "releaaseTask": "张榜差事",
+    "chooseLevel": "择等级",
+    "taskDetails": "差事详目",
+    "helpText": "F等：如搬运水箱之类；E等：如礼仪协助。其余以时长与难度分等，宜酌量而定，并可加赏。",
+    "datePlaceholder": "月/日/年（期限）",
+    "bigTitle": "书标题",
+    "submit": "呈交",
+    "editTask": "修订差事",
+    "approve": "准其已成",
+    "shareTask": "转示差事",
+    "assigned": "已领",
+    "cancelTask": "销此差事",
+    "deadlineLabel": "限期",
+    "paymentLabel": "所费：",
+    "feeHint": "（含手续费 {fee}₷，无券可减）",
+    "editorPlaceholder": "请书差事之详：所为何事、需几人、细则为何、须具何能，并可附个性之述……",
+    "levelTip": "等级愈高，所赏愈厚，然可领之人亦愈受其限。点击左上问号，可观其例。",
+    "contentRequired": "差事内容不可空",
+    "slotsSummary": "已占 {used} / 名额 {total}；余 {left}",
+    "removedUser": "已逐 {name}",
+    "defaultUser": "其人",
+    "downloadFileName": "差事-{id}.png",
+    "taskLabel": "差事 {id}",
+    "noAssigneeToComplete": "尚无人领，不可记为已成。",
+    "metrics": {
+      "exp": "阅历",
+      "coin": "代币",
+      "hours": "时数",
+      "hoursUnit": "时",
+      "expUnit": "exp"
+    },
+    "rewards": {
+      "title": "择其赏",
+      "helpText": "代币者，可购奇巧之物。志愿时数者，惟志愿差事当填之；余事守零可也。",
+      "studentHelpText": "代币者，可购奇巧之物。",
+      "coin": "代币",
+      "hours": "时数",
+      "num": "人数",
+      "coinRangeAria": "代币之域",
+      "hoursRangeAria": "志愿时数之域",
+      "decreaseNumAria": "减其人数",
+      "increaseNumAria": "增其人数"
+    }
+  },
+  "greetings-student": {
+    "night": "夜深矣，行者宜自珍重。",
+    "morning": "晨安，行者",
+    "afternoon": "午安，行者",
+    "evening": "暮安，行者"
+  },
+  "greetings-teacher": {
+    "night": "夜深矣，师尚未歇乎？",
+    "morning": "晨安，师者",
+    "afternoon": "午安，师者\n",
+    "evening": "暮安，师者"
+  },
+  "tabs": {
+    "ongoing": "行中",
+    "completed": "已毕",
+    "acceptTask": "领差",
+    "releaseTask": "张榜"
+  },
+  "common": {
+    "na": "无",
+    "level": "等",
+    "back": "返",
+    "confirm": "确认",
+    "close": "关闭",
+    "decline": "却之",
+    "accept": "受之",
+    "markComplete": "记为已成",
+    "notComplete": "未成",
+    "warning": "警示",
+    "success": "已成",
+    "failed": "未成",
+    "target": "对象",
+    "reason": "缘由",
+    "applicant": "请者"
+  },
+  "ranking": {
+    "rank": "名次",
+    "name": "姓名",
+    "me": "我",
+    "meSuffix": "（吾）",
+    "boards": {
+      "tokens": {
+        "title": "富豪榜",
+        "header": "代币",
+        "unit": "阿幺斯"
+      },
+      "volunteerTime": {
+        "title": "勤时榜",
+        "header": "时长",
+        "unit": "时"
+      },
+      "publishedTasks": {
+        "title": "张榜榜",
+        "header": "次数",
+        "unit": "次"
+      }
+    }
+  },
+  "notifications": {
+    "systemName": "司署",
+    "type": {
+      "system": "告示",
+      "invite": "邀约",
+      "completion_request": "请验之书",
+      "unknown": "告示",
+      "cancel_request": "请辞之书"
+    },
+    "markAll": "尽标为已阅",
+    "showAll": "观诸告示",
+    "clickToView": "点击以观",
+    "zeroInbox": "今无文牍，四境安然。",
+    "empty": "无事可述",
+    "readFail": "虽成，然未能记为已阅",
+    "accepted": "所请已准",
+    "rejected": "所请已驳"
+  },
+  "sidebar": {
+    "home": "行馆\n",
+    "board": "悬赏榜\n",
+    "store": "商肆",
+    "settings": "设置\n"
+  },
+  "settings": {
+    "title": "设置",
+    "signOut": "退出",
+    "language": "语言",
+    "shortcutTitle": "捷径",
+    "shortcutSave": "存于桌面",
+    "acknowledgementsTitle": "致谢录",
+    "viewAcknowledgements": "观致谢录",
+    "languageOptions": {
+      "en": "English",
+      "zhCN": "中文",
+      "flipEn": "倒转英文",
+      "wyw": "文言"
+    }
+  },
+  "teacherCancel": {
+    "approve": "准其请辞",
+    "reject": "驳其请辞\n",
+    "toastApprove": "请辞已准",
+    "toastReject": "请辞已驳"
+  },
+  "login": {
+    "username": "书用户 ID",
+    "password": "书密码"
+  },
+  "setup": {
+    "nickname": "书汝之名号（务须谨慎！）"
+  },
+  "toasts": {
+    "common": {
+      "errorSummary": "呈交未成",
+      "errorDetailFallback": "所请未成，请稍候再试"
+    },
+    "validation": {
+      "errorSummary": "校验未成",
+      "leaveReasonRequired": "缘由不可空"
+    },
+    "urge": {
+      "successSummary": "请已发",
+      "successDetail": "请候师者核验"
+    },
+    "cancel": {
+      "successSummary": "呈交已成",
+      "successDetail": "请辞之书已发"
+    },
+    "loadTasksError": {
+      "consoleTag": "加载差事未成:"
+    }
+  },
+  "errors": {
+    "missingTaskId": "缺差事 ID，不可用",
+    "unknown": "操作未成，请稍候再试"
+  },
+  "updateNotice": {
+    "header": "今有新更",
+    "title": "新版本已出",
+    "desc": "今已发布 v{version}，有所增修。",
+    "descSmall": "可点击下方以观其详。",
+    "ctaView": "试观之",
+    "ctaDismiss": "已知"
+  }
+}

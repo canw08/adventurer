@@ -90,6 +90,7 @@ const showShortcutDot = ref(localStorage.getItem(SHORTCUT_DOT_KEY) !== '1')
 const languages = computed(() => [
   { code: 'en', label: t('settings.languageOptions.en') },
   { code: 'zh-CN', label: t('settings.languageOptions.zhCN') },
+  { code: 'wyw', label: t('settings.languageOptions.wyw') },
   { code: 'flip-en', label: t('settings.languageOptions.flipEn') },
   // { code: 'jp', label: 'Japanese' } // example
 ])

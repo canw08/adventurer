@@ -102,7 +102,7 @@
               v-model="taskDate"
               inputId="taskDateInput"
               dateFormat="mm/dd/yy"
-              placeholder="MM/DD/YYYY(ddl date)"
+              :placeholder="$t('teacherHome.datePlaceholder')"
               showIcon
               class="task-date-input"
               :minDate="todayStart"
@@ -131,7 +131,12 @@
           class="flex flex-col gap-4"
         >
           <div class="flex flex-col gap-1 pos">
-            <Editor name="content" v-model="editorContent" editorStyle="height: 320px"/>
+            <Editor
+              name="content"
+              v-model="editorContent"
+              editorStyle="height: 320px"
+              :placeholder="$t('teacherHome.editorPlaceholder')"
+            />
             <Message
               v-if="$form?.content?.invalid"
               severity="error"
@@ -143,10 +148,10 @@
           </div>
           <div class="submit-bar">
             <div class="submit-cost">
-              需支付：
+              {{ $t('teacherHome.paymentLabel') }}
               <span class="submit-cost-value">{{ totalCost }}</span>
               <img src="../../assets/icon/token.png" alt="coin" class="cost-icon qdlg-metric-icon qdlg-pixelated" />
-              <div class="submit-fee">（含手续费 5₷, 无优惠券）</div>
+              <div class="submit-fee">{{ $t('teacherHome.feeHint', { fee }) }}</div>
             </div>
             <Button
               class="submit-btn"
@@ -174,15 +179,15 @@
             <h3 class="task-title">{{ project.title }}</h3>
             <div class="task-time">
               <span>
-                <label>DDL</label>
+                <label>{{ $t('teacherHome.deadlineLabel') }}</label>
                 {{ project.date }}
               </span>
             </div>
-            <div class="task-exp">{{ project.exp || $t('common.na') }}</div>
+            <div class="task-exp">{{ formatExp(project.exp) }}</div>
           <div
             v-if="project.slotsTotal >= 1"
             class="task-slotsline"
-            :title="`已占 ${project.slotsUsed} / 名额 ${project.slotsTotal}；剩余 ${Math.max(0, project.slotsTotal - project.slotsUsed)}`"
+            :title="formatSlotsTitle(project.slotsUsed, project.slotsTotal, Math.max(0, project.slotsTotal - project.slotsUsed))"
             aria-label="available-slots"
           >
             <i class="pi pi-users" aria-hidden="true"></i>
@@ -203,7 +208,7 @@
                 <span class="avatar-name">{{ project.author }}</span>
               </div>
               <span class="task-level" :style="getLevelStyle(project.level)">
-                Level {{ project.level }}
+                {{ $t('common.level') }} {{ project.level }}
               </span>
             </div>
           </div>
@@ -253,7 +258,7 @@
           <div class="qdlg-header-center">
             <span class="qdlg-title">{{ selectedProject?.title || '' }}</span>
             <span class="qdlg-date-inline">
-              <label>DDL</label>
+              <label>{{ $t('teacherHome.deadlineLabel') }}</label>
               {{ selectedProject?.date }}
             </span>
           </div>
@@ -268,7 +273,7 @@
           />
           <!-- 右上角 Level 只显示 -->
           <div class="floating-dialog-level" :style="getLevelStyle(selectedProject?.level)">
-            Level {{ selectedProject?.level || '' }}
+            {{ $t('common.level') }} {{ selectedProject?.level || '' }}
           </div>
         </div>
       </template>
@@ -319,7 +324,7 @@
           <div v-if="(selectedProject?.slotsTotal ?? 1) >= 1" class="metric-item">
             <div
               class="metric-row dialog-slotsline"
-              :title="`已占 ${selectedProject?.slotsUsed} / 名额 ${selectedProject?.slotsTotal}；剩余 ${Math.max(0, (selectedProject?.slotsLeft ?? 0))}`"
+              :title="formatSlotsTitle(selectedProject?.slotsUsed, selectedProject?.slotsTotal, Math.max(0, (selectedProject?.slotsLeft ?? 0)))"
               aria-label="available-slots-dialog"
             >
               <i class="pi pi-users" aria-hidden="true"></i>
@@ -334,10 +339,10 @@
 
         <!-- 右下角 Assigned（显示用） -->
         <div
-          v-if="selectedProject?.accepted_by && selectedProject.accepted_by.length > 0"
-          class="qdlg-assigned qdlg-assigned-stack"
-        >
-          <span class="qdlg-assigned-label">Assigned</span>
+        v-if="selectedProject?.accepted_by && selectedProject.accepted_by.length > 0"
+        class="qdlg-assigned qdlg-assigned-stack"
+      >
+          <span class="qdlg-assigned-label">{{ $t('teacherHome.assigned') }}</span>
 
           <AssigneesStack
             :users="selectedProject.accepted_by"
@@ -345,7 +350,7 @@
             :size="44"
             :overlap-offset="18"
             :avatar-url-fn="avatarUrl"
-            :dialog-title="'Assigned'"
+            :dialog-title="$t('teacherHome.assigned')"
             :dialog-width="'420px'"
             :showRemove="true"
             :onRemove="handleRemove"
@@ -360,12 +365,12 @@
                 class="approve-btn"
                 :loading="loadingApprove"
                 :disabled="loadingApprove || (selectedProject?.accepted_by?.length ?? 0) === 0"
-                v-tooltip.top="(selectedProject?.accepted_by?.length ?? 0) === 0 ? '无人接取，无法完成' : ''"
+                v-tooltip.top="(selectedProject?.accepted_by?.length ?? 0) === 0 ? $t('teacherHome.noAssigneeToComplete') : ''"
                 @click="onApprove"
               />
               <Button
                 v-if="!selectedProject?.is_completed"
-                label="Cancel"
+                :label="$t('teacherHome.cancelTask')"
                 icon="pi pi-times"
                 class="approve-btn"
                 @click="onCancel"
@@ -461,9 +466,9 @@ async function onApprove() {
   if (!id || loadingApprove.value || assignedCount === 0) {
     if (assignedCount === 0) {
       toast.add({
-        severity: $t('Hint.Warn'),
-        summary: $t('Not.Complete'),
-        detail: $t('Not.Receive'),
+        severity: t('Hint.Warn'),
+        summary: t('Not.Complete'),
+        detail: t('Not.Receive'),
         life: 2500
       })
     }
@@ -486,8 +491,8 @@ async function onApprove() {
 
     toast.add({
       severity: 'info',
-      summary: $t('Success.Operation'),
-      detail: $t('Success.Mark'),
+      summary: t('Success.Operation'),
+      detail: t('Success.Mark'),
       life: 2500
     })
     showProjectDialog.value = false
@@ -496,10 +501,10 @@ async function onApprove() {
     const msg =
       err?.response?.data?.detail ||
       err?.message ||
-      $t('Fail.Retry')
+      t('Fail.Retry')
     toast.add({
-      severity: $t('Hint.Error'),
-      summary: $t('Fail.Operation'),
+      severity: t('Hint.Error'),
+      summary: t('Fail.Operation'),
       detail: msg,
       life: 3500
     })
@@ -527,7 +532,7 @@ async function downloadTaskQr(taskId: number | string, title?: string) {
     const res = await api.get('/api/qr/compose/', {   // ✅ 建议加上前导 /
       params: {
         data: shareUrl,
-        label: title || `任务 ${taskId}`
+        label: title || t('teacherHome.taskLabel', { id: taskId })
       },
       responseType: 'blob'
     })
@@ -538,7 +543,7 @@ async function downloadTaskQr(taskId: number | string, title?: string) {
 
     const a = document.createElement('a')
     a.href = url
-    a.download = `任务-${taskId}.png`
+    a.download = getTaskDownloadName(taskId)
     document.body.appendChild(a)
     a.click()
     a.remove()
@@ -569,17 +574,17 @@ async function onShare() {
   const proj = selectedProject.value
   const id = proj?.id
   if (!id) {
-    toast.add({ severity: $t('Hint.Warn'), summary: $t('Not.Share'), detail: $t('Not.Select'), life: 2500 })
+    toast.add({ severity: t('Hint.Warn'), summary: t('Not.Share'), detail: t('Not.Select'), life: 2500 })
     return
   }
   const shareUrl = `https://www.aidiventure.com/forward/${id}`
   isDownloading.value = true
   // 可选：提示正在生成
-  toast.add({ severity: 'info', summary: $t('Hint.Dispose'), detail: $t('Hint.ORcode'), life: 1500 })
+  toast.add({ severity: 'info', summary: t('Hint.Dispose'), detail: t('Hint.ORcode'), life: 1500 })
 
   try {
     const res = await api.get('api/qr/compose/', {
-      params: { data: shareUrl, label: proj?.title || `任务 ${id}` },
+      params: { data: shareUrl, label: proj?.title || t('teacherHome.taskLabel', { id }) },
       responseType: 'blob'
     })
 
@@ -589,16 +594,16 @@ async function onShare() {
 
     const a = document.createElement('a')
     a.href = url
-    a.download = `任务-${id}.png`
+    a.download = getTaskDownloadName(id)
     document.body.appendChild(a)
     a.click()
     a.remove()
     URL.revokeObjectURL(url)
 
-    toast.add({ severity: $t('Success.Success'), summary: $t('Success.Download'), detail: $t('Success.Preserve'), life: 2000 })
+    toast.add({ severity: t('Success.Success'), summary: t('Success.Download'), detail: t('Success.Preserve'), life: 2000 })
   } catch (err) {
     console.error('二维码下载失败:', err)
-    toast.add({ severity: $t('Hint.Warn'), summary: $t('Fail.Download'), detail: $t('Hint.Retry'), life: 4000 })
+    toast.add({ severity: t('Hint.Warn'), summary: t('Fail.Download'), detail: t('Hint.Retry'), life: 4000 })
   } finally {
     isDownloading.value = false
   }
@@ -609,9 +614,9 @@ async function onShare() {
 const handleRemove = async (user) => {
   if (!selectedProject.value?.id) {
     toast.add({
-      severity: $t('Hint.Warn'),
-      summary: $t('Not.Operation'),
-      detail: $t('Not.Select'),
+      severity: t('Hint.Warn'),
+      summary: t('Not.Operation'),
+      detail: t('Not.Select'),
       life: 2500
     })
     return
@@ -622,9 +627,9 @@ const handleRemove = async (user) => {
 
   if (!participantId) {
     toast.add({
-      severity: $t('Hint.Error'),
-      summary: $t('Fail.Operation'),
-      detail: $t('Not.Participants'),
+      severity: t('Hint.Error'),
+      summary: t('Fail.Operation'),
+      detail: t('Not.Participants'),
       life: 3000
     })
     return
@@ -655,9 +660,9 @@ const handleRemove = async (user) => {
     }
 
     toast.add({
-      severity: $t('Success.Success'),
-      summary: $t('Success.Operation'),
-      detail: `已将 ${user.nickname || user.name || '该用户'} 踢出`,
+      severity: t('Success.Success'),
+      summary: t('Success.Operation'),
+      detail: t('teacherHome.removedUser', { name: user.nickname || user.name || t('teacherHome.defaultUser') }),
       life: 2000
     })
 
@@ -670,9 +675,9 @@ const handleRemove = async (user) => {
   } catch (err) {
     console.error('踢出失败:', err)
     toast.add({
-      severity: $t('Fail.Error'),
-      summary: $t('Fail.Operation'),
-      detail: err?.response?.data?.detail || err?.message || $t('Fail.Retry'),
+      severity: t('Fail.Error'),
+      summary: t('Fail.Operation'),
+      detail: err?.response?.data?.detail || err?.message || t('Fail.Retry'),
       life: 3500
     })
   } finally {
@@ -692,13 +697,13 @@ const { t } = useI18n()
 
 /* ===== Tabs ===== */
 const activeTab = ref('ongoing')
-const tabOptions = ref([
+const tabOptions = computed(() => [
   { label: t('tabs.ongoing'), value: 'ongoing' },
   { label: t('tabs.completed'), value: 'completed' }
 ])
 
 const actionTab = ref('release')
-const actionOptions = ref([
+const actionOptions = computed(() => [
   { label: t('tabs.acceptTask'),  value: 'accept' },
   { label: t('tabs.releaseTask'), value: 'release' }
 ])
@@ -748,7 +753,7 @@ function mapTaskToProject(task) {
     date: task.deadline, // 可是 ISO 或字符串，后续 parseDateLoose 兜底
     status: task.is_completed ? 'completed' : 'ongoing',
     image: pickTaskImage(task),
-    exp: `${task.experience_reward} exp`,
+    exp: Number(task.experience_reward ?? 0),
     coin: task.token_reward,
     hour: task.volunteerTime_reward,
     level: task.required_level, // 例：'E' 或 'Level E'
@@ -793,7 +798,7 @@ function openProjectDialog(project) {
 
 /* ===== 安全描述渲染 ===== */
 const safeDescription = computed(() => {
-  const html = selectedProject.value?.description || '无任务说明'
+  const html = selectedProject.value?.description || t('Not.Explain')
   const clean = DOMPurify.sanitize(html)
   const div = document.createElement('div')
   div.innerHTML = clean
@@ -820,16 +825,16 @@ const selectedBounds = computed(() => {
   const lvl = selectedProject.value?.level
   return getBoundsByLevel(lvl)
 })
-const METRIC_DEFS = [
-  { key: 'exp',  label: 'EXP',  unit: '',  icon: ICON_EXP,  color: '#11AF9B' },
-  { key: 'coin', label: 'Coin', unit: '',  icon: ICON_COIN, color: '#FBE838' },
-  { key: 'hour', label: 'Hours', unit: 'h', icon: ICON_TIME, color: '#4ACDF2' },
-]
+const metricDefs = computed(() => [
+  { key: 'exp',  label: t('teacherHome.metrics.exp'),  unit: '', icon: ICON_EXP,  color: '#11AF9B' },
+  { key: 'coin', label: t('teacherHome.metrics.coin'), unit: '', icon: ICON_COIN, color: '#FBE838' },
+  { key: 'hour', label: t('teacherHome.metrics.hours'), unit: t('teacherHome.metrics.hoursUnit'), icon: ICON_TIME, color: '#4ACDF2' },
+])
 const metricsBound = computed(() => {
   const p = selectedProject.value || {}
   const b = selectedBounds.value || {}
 
-  return METRIC_DEFS.map(def => {
+  return metricDefs.value.map(def => {
     const raw = toNumber(p?.[def.key] ?? 0)
 
     // ⭐ bounds 用 'hours'（复数），而 metric key 是 'hour'（单数）
@@ -907,9 +912,9 @@ const isValidDateValue = (val) => {
 async function onCancel() {
   if (!selectedProject.value?.id) {
     toast.add({
-      severity: $t('Hint.Warn'),
-      summary: $t('Not.Operation'),
-      detail: $t('Not.Select'),
+      severity: t('Hint.Warn'),
+      summary: t('Not.Operation'),
+      detail: t('Not.Select'),
       life: 2500
     })
     return
@@ -923,9 +928,9 @@ async function onCancel() {
     })
 
     toast.add({
-      severity: $t('Success.Success'),
-      summary: $t('Success.Operation'),
-      detail: $t('Success.Cancel'),
+      severity: t('Success.Success'),
+      summary: t('Success.Operation'),
+      detail: t('Success.Cancel'),
       life: 2000
     })
 
@@ -933,11 +938,11 @@ async function onCancel() {
     window.location.reload()
 
   } catch (err) {
-    console.error($t('Faile.Cancel'), err)
+    console.error(t('Fail.Cancel'), err)
     toast.add({
-      severity: $t('Hint.Error'),
-      summary: $t('Fail.Operation'),
-      detail: err?.response?.data?.detail || err?.message || $t('Fail.Retry'),
+      severity: t('Hint.Error'),
+      summary: t('Fail.Operation'),
+      detail: err?.response?.data?.detail || err?.message || t('Fail.Retry'),
       life: 3500
     })
   }
@@ -978,14 +983,14 @@ const levels = computed(() => {
 })
 
 const onLevelChange = () => {
-  showOnce('select-level-tip', '等级越高的任务奖励越丰厚，但等级越高对冒险者的限制会越多噢~ 【点击左上角小问号可查看示例】 ')
+  showOnce('select-level-tip', t('teacherHome.levelTip'))
 }
 
 const initialValues = { content: '' }
 const resolver = (values) => {
   const errors = {}
   if (!values.content || values.content.trim() === '') {
-    errors.content = { message: $t('Not.Empty'), }
+    errors.content = { message: t('Not.Empty') }
   }
   return { values, errors }
 }
@@ -1146,6 +1151,19 @@ function onPublishDialogHide() {
     isEditing.value = false
     resetPublishForm()
   }
+}
+
+function formatSlotsTitle(used, total, left) {
+  return t('teacherHome.slotsSummary', { used: used ?? 0, total: total ?? 0, left: left ?? 0 })
+}
+
+function formatExp(value) {
+  const exp = Number(value ?? 0)
+  return exp > 0 ? `${exp} ${t('teacherHome.metrics.expUnit')}` : t('common.na')
+}
+
+function getTaskDownloadName(taskId) {
+  return t('teacherHome.downloadFileName', { id: taskId })
 }
 const levelColors = {
   S: '#C4A010',
@@ -1834,7 +1852,7 @@ function toLocalEdgeISOString(
   margin-left: 2%;
 }
 :deep(.p-editor .ql-editor.ql-blank::before) {
-  content: "Please enter your assignment description including: Purpose, Number of students needed, Assignment details, Required skills, Personal stylish interpretation......";
+  content: attr(data-placeholder);
   color: #999;
   position: absolute;
 }

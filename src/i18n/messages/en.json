@@ -69,12 +69,45 @@
     "chooseLevel": "Choose level",
     "taskDetails": "Task Details",
     "helpText": "F-level: Volunteer carries two boxes of water // E-level: Awards helper for midterm // The essential difference is duration and task difficulty. Please judge freely and add proper rewards.",
-    "datePlaceholder": "MM/DD/YYYY",
+    "datePlaceholder": "MM/DD/YYYY (deadline)",
     "bigTitle": "Enter main title",
     "submit": "Submit",
     "editTask": "Edit task details",
     "approve": "Approve",
-    "shareTask": "Share task"
+    "shareTask": "Share task",
+    "assigned": "Assigned",
+    "cancelTask": "Cancel task",
+    "deadlineLabel": "DDL",
+    "paymentLabel": "You will pay:",
+    "feeHint": "(Includes {fee}₷ fee, no coupon)",
+    "editorPlaceholder": "Describe the task here: purpose, number of students needed, task details, required skills, and any style notes...",
+    "levelTip": "Higher-level tasks offer better rewards, but they also limit which adventurers can take them. Click the question mark for examples.",
+    "contentRequired": "Task content cannot be empty",
+    "slotsSummary": "Used {used} / Slots {total}; Left {left}",
+    "removedUser": "Removed {name}",
+    "defaultUser": "this user",
+    "downloadFileName": "task-{id}.png",
+    "taskLabel": "Task {id}",
+    "noAssigneeToComplete": "No one has accepted this task, so it cannot be completed.",
+    "metrics": {
+      "exp": "EXP",
+      "coin": "Coin",
+      "hours": "Hours",
+      "hoursUnit": "h",
+      "expUnit": "exp"
+    },
+    "rewards": {
+      "title": "Choose reward",
+      "helpText": "Coin: students can spend it on fun items. Volunteer hours: fill this in only for volunteer tasks; leave it at 0 for other tasks.",
+      "studentHelpText": "Coin: students can spend it on fun items.",
+      "coin": "COIN",
+      "hours": "HOURS",
+      "num": "NUM",
+      "coinRangeAria": "coin range",
+      "hoursRangeAria": "volunteer hours range",
+      "decreaseNumAria": "decrease number of people",
+      "increaseNumAria": "increase number of people"
+    }
   },
   "greetings-student": {
     "night": "Burning the midnight oil, adventurer?",
@@ -97,6 +130,7 @@
   "common": {
     "na": "N/A",
     "level": "Level",
+    "back": "Back",
     "confirm": "Confirm",
     "close": "Close",
     "decline": "Decline",
@@ -168,7 +202,8 @@
     "languageOptions": {
       "en": "English",
       "zhCN": "中文",
-      "flipEn": "Flip English"
+      "flipEn": "Flip English",
+      "wyw": "Classical Chinese"
     }
   },
   "teacherCancel": {

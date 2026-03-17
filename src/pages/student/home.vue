@@ -367,6 +367,24 @@ const levelLetter = computed(() =>
 const router = useRouter()
 const toast = useToast()
 const { t } = useI18n()
+
+const toastSuccess = (summary, detail, life = 2500) => {
+  toast.add({
+    severity: 'success',
+    summary,
+    detail,
+    life,
+  })
+}
+
+const toastError = (summary, detail, life = 3500) => {
+  toast.add({
+    severity: 'error',
+    summary,
+    detail,
+    life,
+  })
+}
 /* ================================
  *  Constants & Maps
  * ================================ */
