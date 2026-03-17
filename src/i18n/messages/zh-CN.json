@@ -58,7 +58,11 @@
   },
   "questBoard": {
     "title": "委托墙\n",
-    "filter": "筛选"
+    "filter": "筛选",
+    "filterTasks": "筛选任务",
+    "chooseLevel": "选择等级",
+    "assigned": "已接取",
+    "available": "可接取"
   },
   "teacherHome": {
     "releaaseTask": "发布任务",
@@ -93,6 +97,7 @@
   "common": {
     "na": "空",
     "level": "等级",
+    "confirm": "确认",
     "close": "关闭",
     "decline": "拒绝",
     "accept": "接受",
@@ -104,6 +109,29 @@
     "target": "目标",
     "reason": "原因",
     "applicant": "申请人"
+  },
+  "ranking": {
+    "rank": "排名",
+    "name": "名称",
+    "me": "我",
+    "meSuffix": "（我）",
+    "boards": {
+      "tokens": {
+        "title": "富豪榜",
+        "header": "代币",
+        "unit": "阿幺斯"
+      },
+      "volunteerTime": {
+        "title": "时长榜",
+        "header": "时长",
+        "unit": "小时"
+      },
+      "publishedTasks": {
+        "title": "发布榜",
+        "header": "次数",
+        "unit": "次"
+      }
+    }
   },
   "notifications": {
     "systemName": "系统",

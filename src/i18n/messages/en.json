@@ -58,7 +58,11 @@
   },
   "questBoard": {
     "title": "Board",
-    "filter": "Filter"
+    "filter": "Filter",
+    "filterTasks": "Filter Tasks",
+    "chooseLevel": "Choose level",
+    "assigned": "Assigned",
+    "available": "Available"
   },
   "teacherHome": {
     "releaaseTask": "Release a task",
@@ -93,6 +97,7 @@
   "common": {
     "na": "N/A",
     "level": "Level",
+    "confirm": "Confirm",
     "close": "Close",
     "decline": "Decline",
     "accept": "Accept",
@@ -104,6 +109,29 @@
     "target": "Target",
     "reason": "Reason",
     "applicant": "Applicant"
+  },
+  "ranking": {
+    "rank": "Rank",
+    "name": "Name",
+    "me": "Me",
+    "meSuffix": " (Me)",
+    "boards": {
+      "tokens": {
+        "title": "Token Ranking",
+        "header": "Tokens",
+        "unit": "Tokens"
+      },
+      "volunteerTime": {
+        "title": "Volunteer Hours Ranking",
+        "header": "Hours",
+        "unit": "Hours"
+      },
+      "publishedTasks": {
+        "title": "Published Tasks Ranking",
+        "header": "Count",
+        "unit": "Times"
+      }
+    }
   },
   "notifications": {
     "systemName": "system",

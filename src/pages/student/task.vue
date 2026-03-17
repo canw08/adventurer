@@ -293,7 +293,7 @@
       v-model:visible="showFilterDialog"
       modal
       dismissableMask
-      header="Filter Tasks"
+      :header="$t('questBoard.filterTasks')"
       class="filter-dialog"
       appendTo="self"
       :style="{ width: '1100px', height: '700px', position: 'relative' }"
@@ -303,7 +303,9 @@
         <div class="status-toggle-wrap">
           <SelectButton
             v-model="tempTab"
-            :options="['assigned', 'available']"
+            :options="filterStatusOptions"
+            optionLabel="label"
+            optionValue="value"
             class="status-toggle"
             aria-label="status-toggle"
           />
@@ -312,7 +314,7 @@
 
       <!-- Level 多选 -->
       <div class="filter-section level-section">
-        <div class="level-label">Choose level</div>
+        <div class="level-label">{{ $t('questBoard.chooseLevel') }}</div>
         <div class="level-row">
           <div v-for="opt in levelOptions" :key="opt.value" class="level-item">
             <Checkbox v-model="tempLevels" :inputId="'lvl-' + opt.value" :value="opt.value" />
@@ -323,7 +325,7 @@
 
       <!-- 确认应用 -->
       <div class="absolute-apply-button">
-        <Button label="confirm" @click="confirmFilter" class="apply-button custom-btn" />
+        <Button :label="$t('common.confirm')" @click="confirmFilter" class="apply-button custom-btn" />
       </div>
     </Dialog>
   </div>
@@ -372,7 +374,9 @@ import { useToast } from 'primevue/usetoast'
 import AssigneesStack from '../../components/AssigneesStack.vue'
 import RankingSection from '../../components/ranking/RankingSection.vue'
 import { useUserStore } from '../../stores/user.js'
+import { useI18n } from 'vue-i18n'
 const userStore = useUserStore()
+const { t } = useI18n()
 
 const toast = useToast()
 
@@ -516,16 +520,20 @@ function mapTaskToProject(task) {
 const activeTab = ref('available')  // ✅ 明确默认 Tab
 const showFilterDialog = ref(false)
 const tempTab = ref(activeTab.value)
-const levelOptions = [
-  { label: 'Level F', value: 'F' },
-  { label: 'Level E', value: 'E' },
-  { label: 'Level D', value: 'D' },
-  { label: 'Level C', value: 'C' },
-  { label: 'Level B', value: 'B' },
-  { label: 'Level A', value: 'A' },
-  { label: 'Level S', value: 'S' },
-  { label: 'Level S*', value: 'S*' },
-]
+const filterStatusOptions = computed(() => [
+  { label: t('questBoard.assigned'), value: 'assigned' },
+  { label: t('questBoard.available'), value: 'available' }
+])
+const levelOptions = computed(() => [
+  { label: `${t('common.level')} F`, value: 'F' },
+  { label: `${t('common.level')} E`, value: 'E' },
+  { label: `${t('common.level')} D`, value: 'D' },
+  { label: `${t('common.level')} C`, value: 'C' },
+  { label: `${t('common.level')} B`, value: 'B' },
+  { label: `${t('common.level')} A`, value: 'A' },
+  { label: `${t('common.level')} S`, value: 'S' },
+  { label: `${t('common.level')} S*`, value: 'S*' },
+])
 const selectedLevels = ref([])
 const tempLevels = ref([])
 
@@ -591,7 +599,7 @@ const fetchUiPage = async (uiIndex = 0, isAssigned = null) => {
     allProjects.value = results.map(mapTaskToProject)
   } catch (err) {
     console.error(err)
-    loadError.value = $t('Fail.Loading')
+    loadError.value = t('Fail.Loading')
     allProjects.value = []
     totalRecords.value = 0
   } finally {
@@ -724,17 +732,17 @@ const applyForTask = async (taskId) => {
     await fetchUiPage(1, wantAssigned)
 
     toast.add({
-      severity: $t('Success.Success'),
-      summary: $t('Success.Receive'),
-      detail: $t('Success.Application'),
+      severity: t('Success.Success'),
+      summary: t('Success.Receive'),
+      detail: t('Success.Application'),
       life: 3000
     })
   } catch (err) {
     console.error(err)
     toast.add({
-      severity: $t('Hint.Error'),
-      summary: $t('Fail.Operation'),
-      detail: (err?.response?.data?.detail) || $t('Fail.Receive'),
+      severity: t('Hint.Error'),
+      summary: t('Fail.Operation'),
+      detail: (err?.response?.data?.detail) || t('Fail.Receive'),
       life: 4000
     })
   }
