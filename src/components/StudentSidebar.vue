@@ -1,15 +1,17 @@
 <template>
 <DesktopPet @action="handlePetAction" />
 <Dialog
-<Dialog
   v-if="bagOpen"
   v-model:visible="bagOpen"
-  header="My back pack"
   modal
-  :dismissableMask="true"
-  :draggable="false"
-  :style="{ width: 'min(92vw, 720px)' }"
+  :dismissableMask="true" 
+  :closable="false"
+  :showHeader="false"
+  :style="{ width: '755px' }"
 >
+<div class="bag-content">
+  <div class="bag-title">My back pack</div>
+
   <div class="bag-grid" role="grid" aria-label="backpack grid">
     <button
       v-for="i in GRID_COLS * GRID_ROWS"
@@ -20,6 +22,7 @@
       @click="onBagSlotClick(i)"
     />
   </div>
+</div>
 </Dialog>
   <div class="sidebar" v-if="userStore.userInfo">
     <Toast />
@@ -158,6 +161,7 @@ const userStore = useUserStore();
 const bagOpen = ref(false)
 const GRID_COLS = 8
 const GRID_ROWS = 6
+
 
 function onBagSlotClick(index) {
   console.log('bag slot clicked:', index)
@@ -586,16 +590,33 @@ const copyId = async () => {
   transform: scale(0.98);
 }
 
+
+
+:deep(.p-dialog-content) {
+  padding: 0 !important;
+}
+
 .bag-grid {
-  --gap: 6px; /* 控制所有间距 */
+  --inner-gap: 8px;
 
   display: grid;
   grid-template-columns: repeat(8, 80px);
   grid-auto-rows: 80px;
 
-  gap: var(--gap);       /* 格子之间距离 */
-  padding: var(--gap);   /* 与四周边框距离 */
-
+  gap: var(--inner-gap);
+}
+.bag-content {
+    padding-left: 6px;
+  padding-right: px;
+  padding-bottom: 6px;
+  padding-top: 10px; /* 可单独调标题间距 */
   justify-content: center;
+}
+.bag-title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  color: #2f4668;
 }
 </style>

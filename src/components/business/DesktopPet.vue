@@ -32,13 +32,31 @@
 
 <div class="desktop-pet__panel-actions">
   <button
-  class="desktop-pet__btn"
-  type="button"
-  @pointerdown.stop
-  @click="dispatch('open-bag')"
->
-  Open your bag
-</button>
+    class="desktop-pet__btn"
+    type="button"
+    @pointerdown.stop
+    @click="dispatch('open-bag')"
+  >
+    Open your bag
+  </button>
+
+  <button
+    class="desktop-pet__btn"
+    type="button"
+    @pointerdown.stop
+    @click="dispatch('open-quest')"
+  >
+    Quest
+  </button>
+
+  <button
+    class="desktop-pet__btn"
+    type="button"
+    @pointerdown.stop
+    @click="dispatch('open-store')"
+  >
+    Store
+  </button>
 </div>
 
           <div class="desktop-pet__tail"></div>
@@ -335,8 +353,11 @@ onBeforeUnmount(() => {
 
 .desktop-pet__greeting {
   margin: 0;
-  line-height: 1.45;
-  font-size: 14px;
+  line-height: 1.3;
+
+  font-size: 15px;     /* 👈 放大 */
+  font-weight: 530;    /* 👈 加粗 */
+
 }
 
 /* 按钮区 */
@@ -356,6 +377,8 @@ onBeforeUnmount(() => {
   font-size: 13px;
   line-height: 1;
   transition: transform 0.06s ease, box-shadow 0.12s ease;
+  text-align: left;   /* 👈 文本靠左 */
+  width: 100%;        /* 👈 撑满整行 */
 }
 .desktop-pet__btn:active {
   transform: translateY(1px);
@@ -414,11 +437,11 @@ onBeforeUnmount(() => {
 .desktop-pet__panel {
   pointer-events: auto;
   position: absolute;          /* ✅ 关键：不参与 flex，避免撑宽导致跑位 */
-  width: min(78vw, 320px);
+  width: min(78vw, 280px);
   background: #fff;
   color: #222;
   border-radius: 14px;
-  padding: 14px 14px 12px;
+  padding: 10px 20px 12px;
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.14);
   border: 1px solid rgba(0, 0, 0, 0.06);
 
