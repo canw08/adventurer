@@ -41,15 +41,13 @@
     "ORcode": "正在生成二维码, 请稍等...",
     "PrefixLong": "前缀过长, 请保持在30自内"
   },
-  "Input":{
+  "Input": {
     "BriefReason": "申请理由(简要)",
     "DetailReason": "详情理由(时间范围, 交接说明等)",
     "Signature": "签名确认",
     "Prefix": "选择前缀",
     "Name": "输入姓名"
   },
-
-
   "questLog": {
     "title": "营地",
     "runningQuest": "进行中的任务\n",
@@ -60,19 +58,56 @@
   },
   "questBoard": {
     "title": "委托墙\n",
-    "filter": "筛选"
+    "filter": "筛选",
+    "filterTasks": "筛选任务",
+    "chooseLevel": "选择等级",
+    "assigned": "已接取",
+    "available": "可接取"
   },
   "teacherHome": {
     "releaaseTask": "发布任务",
     "chooseLevel": "选择级别",
     "taskDetails": "任务详情",
     "helpText": "F级：志愿者搬运两箱水 // E级：期中礼仪小哥 // 本质区别在于时长和任务难度，请自由判断，并适当添加奖励。",
-    "datePlaceholder": "月/日/年",
+    "datePlaceholder": "MM/DD/YYYY（截止日期）",
     "bigTitle": "输入标题",
     "submit": "提交",
     "editTask": "编辑任务详情",
     "approve": "批准完成",
-    "shareTask": "分享任务"
+    "shareTask": "分享任务",
+    "assigned": "已接取",
+    "cancelTask": "取消任务",
+    "deadlineLabel": "截止",
+    "paymentLabel": "需支付：",
+    "feeHint": "（含手续费 {fee}₷，无优惠券）",
+    "editorPlaceholder": "请输入任务描述，包括：目的、需要人数、任务细节、所需技能、个性化说明等……",
+    "levelTip": "等级越高的任务奖励越丰厚，但等级越高对冒险者的限制也会越多。【点击左上角问号可查看示例】",
+    "contentRequired": "任务内容不能为空",
+    "slotsSummary": "已占 {used} / 名额 {total}；剩余 {left}",
+    "removedUser": "已将 {name} 踢出",
+    "defaultUser": "该用户",
+    "downloadFileName": "任务-{id}.png",
+    "taskLabel": "任务 {id}",
+    "noAssigneeToComplete": "无人接取，无法完成",
+    "metrics": {
+      "exp": "经验",
+      "coin": "代币",
+      "hours": "时长",
+      "hoursUnit": "h",
+      "expUnit": "exp"
+    },
+    "rewards": {
+      "title": "选择奖励",
+      "helpText": "代币：学生可用来购买一些有趣的道具。志愿时长：若任务属于志愿服务，请填写；其他任务保持 0 即可。",
+      "studentHelpText": "代币：学生可用来购买一些有趣的道具。",
+      "coin": "代币",
+      "hours": "时长",
+      "num": "人数",
+      "coinRangeAria": "代币范围",
+      "hoursRangeAria": "志愿时长范围",
+      "decreaseNumAria": "减少人数",
+      "increaseNumAria": "增加人数"
+    }
   },
   "greetings-student": {
     "night": "你不要命了，冒险者？",
@@ -89,12 +124,14 @@
   "tabs": {
     "ongoing": "进行中",
     "completed": "已完成",
-    "acceptTask" : "接取任务",
-    "releaseTask" : "发布任务"
+    "acceptTask": "接取任务",
+    "releaseTask": "发布任务"
   },
   "common": {
     "na": "空",
     "level": "等级",
+    "back": "返回",
+    "confirm": "确认",
     "close": "关闭",
     "decline": "拒绝",
     "accept": "接受",
@@ -106,6 +143,29 @@
     "target": "目标",
     "reason": "原因",
     "applicant": "申请人"
+  },
+  "ranking": {
+    "rank": "排名",
+    "name": "名称",
+    "me": "我",
+    "meSuffix": "（我）",
+    "boards": {
+      "tokens": {
+        "title": "富豪榜",
+        "header": "代币",
+        "unit": "阿幺斯"
+      },
+      "volunteerTime": {
+        "title": "时长榜",
+        "header": "时长",
+        "unit": "小时"
+      },
+      "publishedTasks": {
+        "title": "发布榜",
+        "header": "次数",
+        "unit": "次"
+      }
+    }
   },
   "notifications": {
     "systemName": "系统",
@@ -133,7 +193,18 @@
   },
   "settings": {
     "title": "设置",
-    "signOut": "退出登录"
+    "signOut": "退出登录",
+    "language": "语言",
+    "shortcutTitle": "快捷方式",
+    "shortcutSave": "保存快捷方式至桌面",
+    "acknowledgementsTitle": "致谢名单",
+    "viewAcknowledgements": "查看致谢名单",
+    "languageOptions": {
+      "en": "English",
+      "zhCN": "中文",
+      "flipEn": "ɥsᴉlƃuƎ dᴉl™",
+      "wyw": "文言文"
+    }
   },
   "teacherCancel": {
     "approve": "同意取消请求",

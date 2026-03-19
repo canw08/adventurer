@@ -13,8 +13,8 @@
 
       <!-- ✅ 说明行（表头） -->
       <div class="ranking-row ranking-header-row">
-        <span class="rank header-cell">Rank</span>
-        <span class="name header-cell">Name</span>
+        <span class="rank header-cell">{{ t('ranking.rank') }}</span>
+        <span class="name header-cell">{{ t('ranking.name') }}</span>
         <span class="count header-cell">{{ board.headerLabel }}</span>
       </div>
 
@@ -43,7 +43,7 @@
 
         <div class="name-cell">
           <img :src="board.my.avatarUrl || defaultAvatar" class="avatar" />
-          <span class="name">{{ board.my.nickname }}（我）</span>
+          <span class="name">{{ board.my.nickname }}{{ t('ranking.meSuffix') }}</span>
         </div>
 
         <span class="count">{{ formatValue(board.my.value, board.unit) }}</span>
@@ -54,10 +54,12 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import api from '../../api.js'
 
 // 默认头像（你可以换成你项目的真实资源）
 const defaultAvatar = '/img/default-avatar.png'
+const { t } = useI18n()
 
 
 function getAvatarUrl(u) {
@@ -112,7 +114,7 @@ function mapMeItem(me, top3) {
     rank: me?.rank ?? '-',
     userId: me?.id,
     avatarUrl: getAvatarUrl(meInTop || me), // mock 的 me 没 avatar，这里从 top3 里补
-    nickname: me?.nickname ?? '我',
+    nickname: me?.nickname ?? t('ranking.me'),
     value: me?.value ?? 0
   }
 }
@@ -135,25 +137,25 @@ const boards = computed(() => {
   return [
     {
       key: 'tokens',
-      title: '富豪榜',
-      unit: '阿幺斯',
-      headerLabel: 'Tokens',
+      title: t('ranking.boards.tokens.title'),
+      unit: t('ranking.boards.tokens.unit'),
+      headerLabel: t('ranking.boards.tokens.header'),
       top3: tokensTop3.map(mapTopItem),
       my: mapMeItem(d?.tokens?.me, tokensTop3)
     },
     {
       key: 'volunteerTime',
-      title: '时长榜',
-      unit: '小时',
-      headerLabel: 'Hours',
+      title: t('ranking.boards.volunteerTime.title'),
+      unit: t('ranking.boards.volunteerTime.unit'),
+      headerLabel: t('ranking.boards.volunteerTime.header'),
       top3: volunteerTop3.map(mapTopItem),
       my: mapMeItem(d?.volunteerTime?.me, volunteerTop3)
     },
     {
       key: 'published_tasks',
-      title: '发布榜',
-      unit: '次',
-      headerLabel: 'Count',
+      title: t('ranking.boards.publishedTasks.title'),
+      unit: t('ranking.boards.publishedTasks.unit'),
+      headerLabel: t('ranking.boards.publishedTasks.header'),
       top3: publishedTop3.map(mapTopItem),
       my: mapMeItem(d?.published_tasks?.me, publishedTop3)
     }
@@ -163,7 +165,7 @@ const boards = computed(() => {
 /** 格式化数值展示（时长保留 1 位小数更自然） */
 function formatValue(val, unit) {
   if (val === null || val === undefined) return '-'
-  if (unit === '小时') return `${Number(val).toFixed(1)} ${unit}`
+  if (unit === t('ranking.boards.volunteerTime.unit')) return `${Number(val).toFixed(1)} ${unit}`
   return `${val} ${unit ?? ''}`.trim()
 }
 </script>

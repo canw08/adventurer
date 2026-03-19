@@ -11,7 +11,7 @@
     <div class="main-body">
       <!-- Language -->
         <section class="block">
-        <h3 class="block-title">Language</h3>
+        <h3 class="block-title">{{ $t('settings.language') }}</h3>
         <div class="lang-toggle" role="tablist">
             <button
             v-for="lang in languages"
@@ -28,7 +28,7 @@
       <!-- Acknowledgements -->
       <section class="block">
         <h3 class="block-title">
-          List of Acknowledgements ：
+          {{ $t('settings.acknowledgementsTitle') }}：
           <button class="linklike" @click="ackOpen = !ackOpen">
             {{ ackOpen ? '▼' : '▲' }}
           </button>
@@ -62,7 +62,7 @@ meta:
 </route>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { setLocale } from '../../i18n/index.js'   // 👈 引入你写的 setLocale 方法
 import { useRouter } from 'vue-router'
@@ -74,10 +74,11 @@ const router = useRouter();
 const { locale, t } = useI18n()
 
 // 在这里扩展语言即可
-const languages = ref([
-  { code: 'en', label: 'English' },
-  { code: 'zh-CN', label: '中文' },
-  { code: 'flip-en', label: 'ɥsᴉlƃuƎ dᴉlℲ' },
+const languages = computed(() => [
+  { code: 'en', label: t('settings.languageOptions.en') },
+  { code: 'zh-CN', label: t('settings.languageOptions.zhCN') },
+  { code: 'wyw', label: t('settings.languageOptions.wyw') },
+  { code: 'flip-en', label: t('settings.languageOptions.flipEn') },
   // { code: 'jp', label: '日本語' } // 扩展示例
 ])
 

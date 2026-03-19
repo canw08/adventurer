@@ -1,10 +1,10 @@
 <template>
   <div class="p-field">
     <div class="choose-size-label-wrapper">
-      <label class="choose-size-label">Choose award</label>
+      <label class="choose-size-label">{{ t('teacherHome.rewards.title') }}</label>
       <i
         class="pi pi-question-circle help-icon"
-        v-tooltip.top="'Coins金币：学生用来购买一些有趣的道具/ EXP：学生用来升级/ HOURS：志愿者时长，请在任务是志愿者任务是添加，别的任务只需保持默认为0就好'"
+        v-tooltip.top="t('teacherHome.rewards.helpText')"
       ></i>
     </div>
 
@@ -32,7 +32,7 @@
 
     <!-- coin -->
     <div class="award-item">
-      <label>COINS</label>
+      <label>{{ t('teacherHome.rewards.coin') }}</label>
       <span class="min-val">{{ coinMin }}</span>
       <input
         class="range coin-range pixelated"
@@ -43,7 +43,7 @@
         :value="coinLocal"
         :disabled="disabled"
         @input="onCoin(($event.target as HTMLInputElement).value)"
-        aria-label="coin range"
+        :aria-label="t('teacherHome.rewards.coinRangeAria')"
         :style="progressStyle(coinLocal, coinMin, coinMax)"
       />
       <small class="range-hint" :style="bubbleStyle(coinLocal, coinMin, coinMax)">
@@ -54,7 +54,7 @@
 
     <!-- 志愿者时长 -->
     <div class="award-item">
-      <label>HOURS</label>
+      <label>{{ t('teacherHome.rewards.hours') }}</label>
       <span class="min-val">{{ hoursMin }}</span>
       <input
         class="range hours-range pixelated"
@@ -65,7 +65,7 @@
         :value="hoursLocal"
         :disabled="disabled"
         @input="onHours(($event.target as HTMLInputElement).value)"
-        aria-label="volunteer hours range"
+        :aria-label="t('teacherHome.rewards.hoursRangeAria')"
         :style="progressStyle(hoursLocal, hoursMin, hoursMax)"
       />
       <small class="range-hint" :style="bubbleStyle(hoursLocal, hoursMin, hoursMax)">
@@ -76,14 +76,14 @@
 
     <!-- Num 步进器（在 HOURS 下方） -->
     <div class="award-item num-item">
-      <label>NUM</label>
+      <label>{{ t('teacherHome.rewards.num') }}</label>
       <div class="num-wrap">
         <button
           type="button"
           class="num-btn"
           :disabled="numLocal <= numMin"
           @click="decNum"
-          aria-label="decrease num"
+          :aria-label="t('teacherHome.rewards.decreaseNumAria')"
         >-</button>
 
         <div class="num-value" :aria-live="'polite'">{{ numLocal }}</div>
@@ -93,7 +93,7 @@
           class="num-btn"
           :disabled="numLocal >= numMax"
           @click="incNum"
-          aria-label="increase num"
+          :aria-label="t('teacherHome.rewards.increaseNumAria')"
         >+</button>
       </div>
     </div>
@@ -102,6 +102,9 @@
 
 <script setup lang="ts">
 import { ref, watch, withDefaults, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = withDefaults(defineProps<{
   level?: string

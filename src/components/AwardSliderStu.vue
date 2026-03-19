@@ -1,16 +1,16 @@
 <template>
   <div class="p-field">
     <div class="choose-size-label-wrapper">
-      <label class="choose-size-label">Choose award</label>
+      <label class="choose-size-label">{{ t('teacherHome.rewards.title') }}</label>
       <i
         class="pi pi-question-circle help-icon"
-        v-tooltip.top="'Coins金币：学生用来购买一些有趣的道具。'"
+        v-tooltip.top="t('teacherHome.rewards.studentHelpText')"
       ></i>
     </div>
 
     <!-- COINS -->
     <div class="award-item">
-      <label>COINS</label>
+      <label>{{ t('teacherHome.rewards.coin') }}</label>
       <span class="min-val">{{ coinMin }}</span>
       <input
         class="range coin-range pixelated"
@@ -19,7 +19,7 @@
         :max="coinMax"
         :step="coinStep"
         v-model.number="coinLocal"
-        aria-label="coin range"
+        :aria-label="t('teacherHome.rewards.coinRangeAria')"
         :style="progressStyle(coinLocal, coinMin, coinMax)"
         @input="emit('update:coin', coinLocal)"
       />
@@ -33,6 +33,9 @@
 
 <script setup lang="ts">
 import { ref, watch, withDefaults, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const props = withDefaults(defineProps<{
   /** 当前 coins 值（v-model:coin） */

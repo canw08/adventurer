@@ -65,7 +65,7 @@
       <!-- 底部 -->
       <footer class="bottom">
         <button class="accept" @click="onAccept" :disabled="accepting">
-          {{ accepting ? 'Processing...' : 'Accept' }}
+          {{ accepting ? 'Processing...' : 'Forward' }}
         </button>
 
         <AssigneesStack

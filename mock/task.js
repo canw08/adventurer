@@ -37,6 +37,7 @@ export default [
           task_type: 'solo',
           deadline: '2026-08-20 18:00',
           experience_reward: 7,
+          
           token_reward: 20,
           volunteerTime_reward: 12,
           publisher_nickname: 'silverteacher',

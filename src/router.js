@@ -61,6 +61,7 @@ router.beforeEach(async (to) => {
     // 已登录但没权限：按角色分流或 403
     if (role === 'teacher') return { path: '/teacher/home' }
     if (role === 'student') return { path: '/student/home' }
+    if (role === 'admin') return { path: '/admin/home' }
     return { path: '/403' }
   }
 
