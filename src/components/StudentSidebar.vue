@@ -1,29 +1,5 @@
 <template>
-<DesktopPet @action="handlePetAction" />
-<Dialog
-  v-if="bagOpen"
-  v-model:visible="bagOpen"
-  modal
-  :dismissableMask="true" 
-  :closable="false"
-  :showHeader="false"
-  :style="{ width: '755px' }"
->
-<div class="bag-content">
-  <div class="bag-title">My back pack</div>
-
-  <div class="bag-grid" role="grid" aria-label="backpack grid">
-    <button
-      v-for="i in GRID_COLS * GRID_ROWS"
-      :key="i"
-      class="bag-slot"
-      type="button"
-      aria-label="bag slot"
-      @click="onBagSlotClick(i)"
-    />
-  </div>
-</div>
-</Dialog>
+  <PetBackpackPanel />
   <div class="sidebar" v-if="userStore.userInfo">
     <Toast />
     <!-- 替换你现有的 .profile-header 里的头像块 -->
@@ -149,23 +125,13 @@ import { useUserStore } from '../stores/user'
 import { useI18n } from 'vue-i18n'
 import { useToast } from 'primevue/usetoast'
 import { showOnce } from '../composables/tip-once.js'
-import DesktopPet from '../components/business/DesktopPet.vue'
-import avatar from '../assets/tiper.png'
-import Dialog from 'primevue/dialog'
+import PetBackpackPanel from '../components/business/PetBackpackPanel.vue'
 
 const toast = useToast()
 const { t } = useI18n()
 const router = useRouter();
 const route = useRoute();
 const userStore = useUserStore();
-const bagOpen = ref(false)
-const GRID_COLS = 8
-const GRID_ROWS = 6
-
-
-function onBagSlotClick(index) {
-  console.log('bag slot clicked:', index)
-}
 
 // 如果这些 PNG 原图是 16x16，显示用 32x32、64x64 等整数倍
 const tokenIcon = new URL('../assets/icon/token.png', import.meta.url).href;
@@ -173,26 +139,6 @@ const timeIcon  = new URL('../assets/icon/time.png', import.meta.url).href;
 // carpet 是矢量/底图，不需要像素化
 const carpetImgB = new URL('../assets/icon/redcarpet.png', import.meta.url).href;
 const carpetImgA = new URL('../assets/icon/bluecarpet.png', import.meta.url).href;
-
-
-function handlePetAction(action) {
-  switch (action) {
-    case 'open-bag':
-      bagOpen.value = true
-      break
-
-    case 'open-store':
-      router.push('/student/store')
-      break
-
-    case 'open-quest':
-      router.push('/student/task')
-      break
-
-    default:
-      console.log('unknown pet action:', action)
-  }
-}
 
 const showExp = ref(false)
 const toggleExp = () => 
@@ -568,55 +514,5 @@ const copyId = async () => {
   /* 若想在 hover 时给点反馈，可解注释下两行 */
   /* transition: transform .2s ease; */
   /* .user-name:hover .level-badge { transform: scale(1.05); } */
-}
-
-/* ========== Backpack Dialog Grid ========== */
-
-.bag-slot {
-  width: 80px;
-  height: 80px;
-  border-radius: 0;              /* ✅ 去掉圆角 */
-  border: 1px solid #dcdcdc;     /* 更像背包格子 */
-  background: #f8f8f8;
-  cursor: pointer;
-  transition: background 0.12s ease;
-}
-
-.bag-slot:hover {
-  background: rgba(0, 0, 0, 0.06);
-}
-
-.bag-slot:active {
-  transform: scale(0.98);
-}
-
-
-
-:deep(.p-dialog-content) {
-  padding: 0 !important;
-}
-
-.bag-grid {
-  --inner-gap: 8px;
-
-  display: grid;
-  grid-template-columns: repeat(8, 80px);
-  grid-auto-rows: 80px;
-
-  gap: var(--inner-gap);
-}
-.bag-content {
-    padding-left: 6px;
-  padding-right: px;
-  padding-bottom: 6px;
-  padding-top: 10px; /* 可单独调标题间距 */
-  justify-content: center;
-}
-.bag-title {
-  margin: 0 0 8px;
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 1;
-  color: #2f4668;
 }
 </style>
