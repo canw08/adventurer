@@ -1,76 +1,69 @@
-import Mock from 'mockjs';
+import Mock from 'mockjs'
+
+const itemsDB = {
+  1: {
+    id: 1,
+    name: "瑞幸咖啡",
+    description: "提神醒脑",
+    image: "https://picsum.photos/200?random=1",
+    token_price: 32,
+    category: "food",
+    icon_style_id: 1
+  },
+  2: {
+    id: 2,
+    name: "蛋糕",
+    description: "甜甜的快乐",
+    image: "https://picsum.photos/200?random=2",
+    token_price: 50,
+    category: "food",
+    icon_style_id: 2
+  }
+}
+
+let userTokens = 200
 
 export default [
-  // 获取商店物品列表
   {
     url: '/shop/items/',
     method: 'get',
-    response: () => ({
-      items: [
-        {
-          id: 1,
-          name: "一颗甜菜根",
-          description: "这是一颗甜菜根，看起来味道不错。",
-          image: "https://picsum.photos/200/200?random=2",
-          token_price: 100,
-          category: "cultural",
-          icon_style_id: 1
-        }
-      ]
-    })
-  },
-
-  // 获取用户的库存
-  {
-    url: '/shop/inventory/',
-    method: 'get',
-    response: () => ({
-      inventory: [
-        {
-          id: 1,
-          item: {
-            id: 1,
-            name: "一颗甜菜根",
-            description: "这是一颗甜菜根，看起来味道不错。",
-            image: "https://picsum.photos/200/200?random=2",
-            token_price: 100,
-            category: "cultural",
-            icon_style_id: 1
-          },
-          purchase_price: 100,
-          status: "stored",
-          purchased_at: "2026-03-15T11:35:44.758340Z",
-          delivered_at: null,
-          delivery_request: null
-        }
-      ]
-    })
-  },
-
-  // 购买物品
-  {
-    url: '/shop/items/1/purchase/',
-    method: 'post',
-    response: () => ({
-      message: "购买成功",
-      tokens: 177,
-      inventory_item: {
-        id: 1,
-        item: {
-          id: 1,
-          name: "一颗甜菜根",
-          description: "这是一颗甜菜根，看起来味道不错。",
-          image: "https://picsum.photos/200/200?random=2",
-          token_price: 100,
-          category: "cultural",
-          icon_style_id: 1
-        },
-        purchase_price: 100,
-        status: "stored",
-        purchased_at: "2026-03-15T11:35:44.758340Z",
-        delivered_at: null,
-        delivery_request: null
+    response: () => {
+      return {
+        items: Object.values(itemsDB)
       }
-    })
+    }
+  },
+  {
+    url: /\/shop\/items\/\d+\/purchase\//,
+    method: 'post',
+    response: (config) => {
+      const id = config.url.match(/\/shop\/items\/(\d+)\//)[1]
+      const item = itemsDB[id]
+
+      if (!item) {
+        return {
+          status: 404,
+          message: "商品不存在"
+        }
+      }
+
+      if (userTokens < item.token_price) {
+        return {
+          status: 400,
+          message: "金币不足"
+        }
+      }
+
+      userTokens -= item.token_price
+
+      return {
+        message: `购买 ${item.name} 成功`,
+        tokens: userTokens,
+        inventory_item: {
+          id: Date.now(),
+          item: item
+        }
+      }
+    }
   }
 ]

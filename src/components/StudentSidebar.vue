@@ -98,7 +98,7 @@
         <i class="pi pi-user icon"></i>
         <span class="label-text">{{ t('sidebar.board') }}</span>
       </div>
-      <!-- <div
+      <div
         class="menu-button"
         :class="{ active: isActive('/student/store') }"
         @click="goToStore"
@@ -106,7 +106,7 @@
       >
         <i class="pi pi-shop icon"></i>
         <span class="label-text">{{ t('sidebar.store') }}</span>
-      </div> -->
+      </div>
       <div
         class="menu-button"
         :class="{ active: isActive('/student/settings') }"

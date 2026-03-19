@@ -21,12 +21,7 @@
       <!-- 左侧：原有设置内容 -->
       <div class="left-panel">
           
-            <!-- 动态生成产品卡片 -->
-            <div
-              class="product-card"
-              v-for="product in products"
-              :key="product.id"
-            >
+            <div class="product-card" v-for="product in products" :key="product.id">
               <img :src="product.image" :alt="product.title" />
               <div class="product-title">{{ product.title }}</div>
               <div class="product-description">{{ product.description }}</div>
@@ -40,14 +35,14 @@
                   {{ product.price }}
                 </div>
                 <button
-                  class = "product-buy-btn"
+                  class="product-buy-btn"
                   @click="openConfirm(product)"
                 >
-                购买
-              </button>
+                  购买
+                </button>
               </div>
 
-                          <!-- 购买确认矩形 -->
+              <!-- 购买确认矩形 -->
               <div
                 v-if="showConfirm && selectedProduct && selectedProduct.id === product.id"
                 class="purchase-box"
@@ -56,7 +51,7 @@
                 <div class="purchase-text">
                   是否购买？需消耗
                   <span class="price">
-                     {{ selectedProduct.price }}<img src="../../assets/icon/token.png" alt=""/>
+                    {{ selectedProduct.price }}<img src="../../assets/icon/token.png" alt=""/>
                   </span>          
                 </div>
                 <div class="purchase-buttons">
@@ -82,6 +77,39 @@ import { useI18n } from 'vue-i18n'
 import { setLocale } from '../../i18n/index.js'   // 👈 引入你写的 setLocale 方法
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../../stores/user'
+import { ref, onMounted } from 'vue'
+import api from '../../api.js'
+
+// 商品列表
+const products = ref([])
+
+// 用户金币
+const userCoins = ref(0)
+
+// ✅ 获取商品
+const fetchProducts = async () => {
+  try {
+    const res = await api.get('/shop/items/')
+
+    // 👉 把后端字段转换成你页面用的
+    products.value = res.data.items.map(item => ({
+      id: item.id,
+      title: item.name,
+      description: item.description,
+      price: item.token_price,
+      image: item.image
+    }))
+
+  } catch (err) {
+    console.error("获取商品失败:", err)
+  }
+}
+
+// 页面加载执行
+onMounted(() => {
+  fetchProducts()
+})
+
 const userStore = useUserStore();
 const router = useRouter();
 const { locale, t } = useI18n()
@@ -91,45 +119,7 @@ const selectedProduct = ref(null)
 const SHORTCUT_DOT_KEY = 'settings.shortcutDotDismissed'  // 记忆小红点是否已消失
 const showShortcutDot = ref(localStorage.getItem(SHORTCUT_DOT_KEY) !== '1')
 
-// 商店产品展示框
-const products = ref([
-  {
-    id: 1,
-    title: '瑞幸咖啡',
-    description: '这个咖啡是瑞幸的，它的配料是张忠泽, 不知道, 和橙子。它非常的好喝。',
-    price: 32,
-    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxh9Pn1t9AALRLCBwG90kcSQj1r1kxqvDFWw&s'
-  },
-  {
-    id: 2,
-    title: '瑞幸拿铁',
-    description: '这是一款瑞幸拿铁，配料是牛奶, 咖啡, 糖，非常好喝。',
-    price: 35,
-    image: 'https://www.zhanlu.com.tw/wp-content/uploads/2023/12/d5b715852e9014d4254650a4e7ba30c0.jpg'
-  },
-  {
-    id: 3,
-    title: '瑞幸拿铁',
-    description: '这是一款瑞幸拿铁，配料是牛奶, 咖啡, 糖，非常好喝。',
-    price: 35,
-    image: 'https://www.zhanlu.com.tw/wp-content/uploads/2023/12/d5b715852e9014d4254650a4e7ba30c0.jpg'
-  },
-  {
-    id: 4,
-    title: '瑞幸拿铁',
-    description: '这是一款瑞幸拿铁，配料是牛奶, 咖啡, 糖，非常好喝。',
-    price: 35,
-    image: 'https://www.zhanlu.com.tw/wp-content/uploads/2023/12/d5b715852e9014d4254650a4e7ba30c0.jpg'
-  },
-  {
-    id: 5,
-    title: '瑞幸拿铁',
-    description: '这是一款瑞幸拿铁，配料是牛奶, 咖啡, 糖，非常好喝。',
-    price: 35,
-    image: 'https://www.zhanlu.com.tw/wp-content/uploads/2023/12/d5b715852e9014d4254650a4e7ba30c0.jpg'
-  },
-  // 可以继续添加更多产品
-])
+
 
 // 在这里扩展语言即可
 const languages = ref([
