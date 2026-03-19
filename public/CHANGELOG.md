@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.4.0 (2026-3-18) [Alpha]
+## v0.4.0 (2026-03-18) [Alpha]
 ### Breaking Changes
 - 新增广告系统
 - 新增商城
