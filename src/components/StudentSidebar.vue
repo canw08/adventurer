@@ -1,11 +1,5 @@
 <template>
-  <DesktopPet
-    :visible="true"
-    :avatar="avatar"
-    message="我是桌面宠物：拖我移动，点我说话，ESC 关闭。"
-    :size="160"
-    persistKey="desktop-pet-pos"
-  />
+  <PetBackpackPanel />
   <div class="sidebar" v-if="userStore.userInfo">
     <Toast />
     <!-- 替换你现有的 .profile-header 里的头像块 -->
@@ -131,8 +125,7 @@ import { useUserStore } from '../stores/user'
 import { useI18n } from 'vue-i18n'
 import { useToast } from 'primevue/usetoast'
 import { showOnce } from '../composables/tip-once.js'
-import DesktopPet from '../components/business/DesktopPet.vue'
-import avatar from '../assets/tiper.png'
+import PetBackpackPanel from '../components/business/PetBackpackPanel.vue'
 
 const toast = useToast()
 const { t } = useI18n()
@@ -220,7 +213,7 @@ const copyId = async () => {
   const legacyCopy = () => {
     try {
       const ta = document.createElement('textarea');
-      ta.value = t;
+      ta.value = text;
       ta.setAttribute('readonly', '');
       ta.style.position = 'fixed';
       ta.style.left = '-9999px';
@@ -522,5 +515,4 @@ const copyId = async () => {
   /* transition: transform .2s ease; */
   /* .user-name:hover .level-badge { transform: scale(1.05); } */
 }
-
 </style>
