@@ -72,7 +72,6 @@ meta:
   roles: ['student']
 </route>
 <script setup>
-import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { setLocale } from '../../i18n/index.js'   // 👈 引入你写的 setLocale 方法
 import { useRouter } from 'vue-router'
@@ -82,9 +81,6 @@ import api from '../../api.js'
 
 // 商品列表
 const products = ref([])
-
-// 用户金币
-const userCoins = ref(0)
 
 // ✅ 获取商品
 const fetchProducts = async () => {
@@ -206,7 +202,7 @@ const confirmPurchase = () => {
 /* ===== 保留原布局与配色 ===== */
 .main-content {
   flex: 1;
-  padding: 4px 48px;
+  padding: 24px 48px;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -217,10 +213,12 @@ const confirmPurchase = () => {
 
 .main-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
   border-bottom: 2px solid #d5dbe5;
-  padding: 4px 0;
-  height: 64px;
+  padding-top: 16px;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
 }
 .header-left-group { display: flex; align-items: center; gap: 16px; }
 .header-left { font-size: 28px; font-weight: 800; color: #1e1e1e; }
@@ -367,8 +365,10 @@ const confirmPurchase = () => {
 .left-panel {
   display: grid;
   grid-template-columns: repeat(3,1fr);
-  gap: 24px;
+  gap: 40px;
   width: 100%;
+  padding-left: 15px;
+  padding-top: 15px;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -378,7 +378,7 @@ const confirmPurchase = () => {
   background: #ffffff;
   border-radius: 15px;
   min-width: 0;
-  height: 375px;
+  height: 350px;
   position: relative;
 }
 
@@ -444,6 +444,10 @@ const confirmPurchase = () => {
   padding: 0 16px;
   height: 36px;
   cursor: pointer;
+
+  position: relative;
+  left: -5px;
+  top: 4px
 }
 .product-card .product-buy-btn:hover {
   background: #24264a;

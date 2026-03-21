@@ -18,7 +18,34 @@ const itemsDB = {
     token_price: 50,
     category: "food",
     icon_style_id: 2
-  }
+  },
+  3: {
+    id: 3,
+    name: "游戏手柄",
+    description: "提升游戏体验的高端手柄",
+    image: "https://picsum.photos/200?random=2",
+    token_price: 80,
+    category: "entertainment",
+    icon_style_id: 3
+  },
+  4: {
+    id: 4,
+    name: "游戏手柄",
+    description: "提升游戏体验的高端手柄",
+    image: "https://picsum.photos/200?random=2",
+    token_price: 80,
+    category: "entertainment",
+    icon_style_id: 4
+  },
+  5: {
+      id: 5,
+      name: "游戏手柄",
+      description: "提升游戏体验的高端手柄",
+      image: "https://picsum.photos/200?random=2",
+      token_price: 80,
+      category: "entertainment",
+      icon_style_id: 5
+    }
 }
 
 let userTokens = 200
