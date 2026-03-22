@@ -1,9 +1,10 @@
 <template>
-  <div class="main-content">
+  <Toast position="top-right" :baseZIndex="10000" />
+  <div class="main-content" @click="cancelPurchase">
     <!-- 顶部标题栏 -->
     <div class="main-header">
       <div class="header-left-group">
-        <span class="header-left">商店(要翻译!!!)</span>
+        <span class="header-left">商店(要翻译!!!)</span> 
       </div>
     </div>
 
@@ -16,8 +17,7 @@
 
    <!-- 主体卡片（浅蓝背景） -->
     <!-- 主体卡片（浅蓝背景） -->
-    <div class="main-body two-column"
-  @click.self="cancelPurchase">
+    <div class="main-body two-column">
       <!-- 左侧：原有设置内容 -->
       <div class="left-panel">
           
@@ -36,7 +36,7 @@
                 </div>
                 <button
                   class="product-buy-btn"
-                  @click="openConfirm(product)"
+                  @click.stop="openConfirm(product)"
                 >
                   购买
                 </button>
@@ -77,7 +77,10 @@ import { setLocale } from '../../i18n/index.js'   // 👈 引入你写的 setLoc
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../../stores/user'
 import { ref, onMounted } from 'vue'
+import { useToast } from 'primevue/usetoast'
+const toast = useToast()
 import api from '../../api.js'
+
 
 // 商品列表
 const products = ref([])
@@ -104,19 +107,27 @@ const fetchProducts = async () => {
 // 页面加载执行
 onMounted(() => {
   fetchProducts()
+  fetchTokens()
 })
 
 const userStore = useUserStore();
 const router = useRouter();
 const { locale, t } = useI18n()
-const userCoins = ref(200)
+const userCoins = ref(0)
 const showConfirm = ref(false)
 const selectedProduct = ref(null)
 const SHORTCUT_DOT_KEY = 'settings.shortcutDotDismissed'  // 记忆小红点是否已消失
 const showShortcutDot = ref(localStorage.getItem(SHORTCUT_DOT_KEY) !== '1')
 
 
-
+const fetchTokens = async () => {
+  try {
+    const res = await api.get('/user/tokens/')
+    userCoins.value = res.data.tokens
+  } catch (err) {
+    console.error("获取金币失败:", err)
+  }
+}
 // 在这里扩展语言即可
 const languages = ref([
   { code: 'en', label: 'English' },
@@ -160,18 +171,41 @@ const cancelPurchase = () => {
   selectedProduct.value = null
 }
 
-const confirmPurchase = () => {
+const confirmPurchase = async () => {
   if (!selectedProduct.value) return
 
-  if (userCoins.value >= selectedProduct.value.price){
-    userCoins.value -= selectedProduct.value.price
-    console.log("购买成功:", selectedProduct.value.title)
+  try {
+    const res = await api.post(`/shop/items/${selectedProduct.value.id}/purchase/`)
 
+    // ✅ 使用 PrimeVue Toast 替代 alert
+    toast.add({
+      severity: 'success',   // success / info / warn / error
+      summary: '购买成功!',
+      detail: res.data.message,
+      life: 3000             // 显示 3 秒
+    })
+
+    // 更新金币（后端返回）
+    userCoins.value = res.data.tokens
     cancelPurchase()
-  } else{
-    alert("金币不足")
+
+  } catch (err) {
+    // ❌ 失败
+    let msg = "购买失败，请稍后重试"
+    if (err.response && err.response.data.message) {
+      msg = err.response.data.message
+    }
+    toast.add({
+      severity: 'error',
+      summary: '购买失败',
+      detail: msg,
+      life: 3000
+    })
+
+    console.error("购买失败:", err)
   }
 }
+
 </script>
 
 <style scoped>
@@ -216,9 +250,10 @@ const confirmPurchase = () => {
   justify-content: space-between;
   align-items: center;
   border-bottom: 2px solid #d5dbe5;
-  padding-top: 16px;
+  padding-top: 0px;
   padding-bottom: 12px;
   margin-bottom: 12px;
+  margin-top: -8px;
 }
 .header-left-group { display: flex; align-items: center; gap: 16px; }
 .header-left { font-size: 28px; font-weight: 800; color: #1e1e1e; }
@@ -421,19 +456,20 @@ const confirmPurchase = () => {
 }
 
 .product-card .product-price {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-weight: 500;
   font-size: 16px;
-  padding-left: 11px;
-  padding-right: 11px;
-  box-sizing: border-box
+  position: relative;
+  top: 5px;
 }
 
 .product-card .product-price img {
-  vertical-align: middle;
-  margin-right: 1px; /* 调整数字与图片间距 */
-  margin-bottom: 2px;
   width: 16px;
   height: 16px;
+  margin: 0;
+  position: relative;
 }
 
 .product-card .product-buy-btn {
@@ -528,5 +564,11 @@ const confirmPurchase = () => {
   display: flex;
   align-items: center;
   gap: 2px;
+}
+
+.p-toast-success {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #ccc !important;
 }
 </style>

@@ -92,5 +92,14 @@ export default [
         }
       }
     }
+  },
+  {
+  url: '/user/tokens/',
+  method: 'get',
+  response: () => {
+    return {
+      tokens: userTokens
+    }
   }
+}
 ]
