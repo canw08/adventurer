@@ -151,7 +151,7 @@ watch(() => props.coin,  v => coinLocal.value  = v ?? 0)
 watch(() => props.hours, v => hoursLocal.value = v ?? 0)
 /** 新增：外部变更时同步 Num */
 watch(() => props.num,   v => { 
-  const clamped = clampNumber(v ?? props.numMin, props.numMin, props.numMax)
+  const clamped = clampNumber(v ?? props.numMin,   props.numMin, props.numMax)
   numLocal.value = clamped
 })
 
@@ -328,7 +328,7 @@ function bubbleStyle(val: number, min: number, max: number) {
 .hours-range::-webkit-slider-thumb { height: 24px; width: 24px; border: none; background: url('../assets/icon/time.png') no-repeat center; background-size: contain; cursor: pointer;}
 .hours-range::-moz-range-thumb { height: 24px; width: 24px; border: none; background: url('../assets/icon/time.png') no-repeat center; background-size: contain; cursor: pointer; }
 
-.choose-size-label { font-size: 20px; font-weight: 300; }
+.choose-size-label { font-size: 20px; font-weight: 700; }
 
 .min-val, .max-val, .range-hint {
   width: 50px;

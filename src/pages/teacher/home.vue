@@ -86,6 +86,28 @@
       </div>
 
       <div class="gapping">
+        <div class="mode-switch" :class="{ active: taskMode }">
+          <div class="switch-bg" :class="{ right: taskMode === 'team' }"></div>
+
+          <div
+            class="switch-btn"
+            :class="{ active: taskMode === 'solo' }"
+            @click="taskMode = 'solo'"
+          >
+            单人
+          </div>
+
+          <div
+            class="switch-btn"
+            :class="{ active: taskMode === 'team' }"
+            @click="taskMode = 'team'"
+          >
+            组队
+          </div>
+        </div>
+      </div>
+
+      <div class="gapping">
         <!-- 任务日期 -->
         <div class="p-field field-stack">
           <label class="choose-size-label">{{ $t('teacherHome.taskDetails') }}</label>
@@ -407,7 +429,7 @@ import solo2 from '../../assets/solo2.png'
 import { useToast } from 'primevue/usetoast'
 import UpdateNotice from "../../components/UpdateNotice.vue"
 import AssigneesStack from '../../components/AssigneesStack.vue'
-
+import { watch } from 'vue'
 
 const avatarUrl = (u) =>
   `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(u?.avatar || u?.nickname || u?.name || 'user')}&skinColor=ecad80,f2d3b1`
@@ -808,6 +830,7 @@ const exp   = ref(0)
 const coin  = ref(0)
 const hours = ref(0)
 const num = ref(1)
+const taskMode = ref('solo')
 const bigTitle = ref('')
 const editorContent = ref('')
 const taskDate = ref(null)
@@ -816,6 +839,12 @@ const todayStart = computed(() => {
   const d = new Date()
   d.setHours(0, 0, 0, 0)
   return d
+})
+
+watch(taskMode, (val) => {
+  if (val === 'solo') {
+    num.value = 1
+  }
 })
 
 const isValidDateValue = (val) => {
@@ -898,7 +927,7 @@ const onFormSubmit = async (e) => {
       volunteerTime_reward: hours.value,
       maximum_users: num.value,
       deadline: toLocalDateTime(taskDate.value, 'end', { withOffset: false }),
-      task_type: 'solo'
+      task_type: taskMode.value
     }
 
     const isEdit = !!isEditing.value
@@ -1216,6 +1245,66 @@ async function downloadQrForTask(taskId: number | string, title?: string) {
 
 
 <style scoped>
+
+.gapping {
+  padding-left: 20px;   /* ✅ 整体右移 */
+}
+
+.switch-btn.active {
+  color: white;
+  font-weight: 600;
+}
+
+.mode-switch:not(.active) .switch-bg {
+  display: none;
+}
+
+.mode-switch:has(.switch-btn.active) .switch-bg {
+  opacity: 1;               /* 只有选中才显示 */
+}
+
+.mode-switch {
+  position: relative;
+  width: 100px;
+  height: 40px;
+  background: white;
+  border-radius: 10px;
+  display: flex;
+  overflow: hidden;
+  font-weight: 500;
+}
+
+.switch-bg {
+  position: absolute;
+  width: 50%;
+  height: 100%;
+  background: #4a67af;
+  border-radius: 10px;
+  left: 0;
+  transition: all 0.3s ease;
+  opacity: 0;
+}
+
+.switch-bg.right {
+  left: 50%;
+}
+
+.switch-btn {
+  flex: 1;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #6b7280;
+  font-size: 15px;
+  transition: all 0.2s;
+}
+
+.switch-btn.active {
+  color: white;
+}
+
 /* 全局布局 */
 .layout-container {
   display: flex;
@@ -1696,7 +1785,7 @@ async function downloadQrForTask(taskId: number | string, title?: string) {
 }
 .choose-size-label {
   font-size: 20px;
-  font-weight: 300;
+  font-weight: 600;
 }
 .gapping {
   margin-bottom: 20px;
