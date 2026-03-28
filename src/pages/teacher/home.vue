@@ -87,7 +87,7 @@
 
       <div class="gapping">
         <div class="mode-switch" :class="{ active: taskMode }">
-          <div class="switch-bg" :class="{ right: taskMode === 'team' }"></div>
+          
 
           <div
             class="switch-btn"
@@ -103,6 +103,18 @@
             @click="taskMode = 'team'"
           >
             组队
+          </div>
+          <div class="switch-bg" :class="{ right: taskMode === 'team' }"></div>
+        </div>
+      </div>
+
+      <div class="gapping">
+        <div class="team-size-wrapper">
+          <span class="team-label">人数:</span>
+          <div class="team-number-wrapper">
+            <button class="num-btn" @click="decreaseTeamSize">-</button>
+            <span class="num-value">{{ teamSize }}</span>
+            <button class="num-btn" @click="increaseTeamSize">+</button>
           </div>
         </div>
       </div>
@@ -407,7 +419,8 @@ meta:
 </route>
 <script setup lang="ts">
 /* ===== Imports ===== */
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../../stores/user'
 import { useI18n } from 'vue-i18n'
@@ -429,7 +442,19 @@ import solo2 from '../../assets/solo2.png'
 import { useToast } from 'primevue/usetoast'
 import UpdateNotice from "../../components/UpdateNotice.vue"
 import AssigneesStack from '../../components/AssigneesStack.vue'
-import { watch } from 'vue'
+
+const teamSize = ref(1)
+const increaseTeamSize = () => {
+  if (teamSize.value < 20) {
+    teamSize.value++
+  }
+}
+
+const decreaseTeamSize = () => {
+  if (teamSize.value > 1) {
+    teamSize.value--
+  }
+}
 
 const avatarUrl = (u) =>
   `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(u?.avatar || u?.nickname || u?.name || 'user')}&skinColor=ecad80,f2d3b1`
@@ -1245,6 +1270,72 @@ async function downloadQrForTask(taskId: number | string, title?: string) {
 
 
 <style scoped>
+.team-size-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 18px;
+}
+
+.team-number-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px; 
+  border-radius: 8px; /* 圆角 */
+}
+
+.team-number-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #e0e0e0; /* 灰色背景 */
+  border-radius: 8px;
+  z-index: 0;
+  width: 102px;
+  height: 23px;
+  top: 12%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.team-number-wrapper .num-btn,
+.team-number-wrapper .num-value {
+  position: relative;
+  z-index: 1;
+}
+
+
+.num-btn {
+  width: 28px;
+  height: 23px;
+  border: none;
+  border-radius: 8px;
+  background-color: #dbebf5;
+  color: #1f3a8a;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  font-weight: 100;
+  align-items: center;
+  justify-content: center;
+  transition: background-coloe 0.2s;
+}
+
+.num-btn:hover {
+  background-color: #dbeafe; /* 悬停浅蓝色 */
+}
+
+.num-value {
+  min-width: 40px;
+  text-align: center;
+  font-weight: 700;
+  color: #111827;
+}
 
 .gapping {
   padding-left: 20px;   /* ✅ 整体右移 */
@@ -1267,7 +1358,7 @@ async function downloadQrForTask(taskId: number | string, title?: string) {
   position: relative;
   width: 100px;
   height: 40px;
-  background: white;
+  background: rgb(255, 255, 255);
   border-radius: 10px;
   display: flex;
   overflow: hidden;

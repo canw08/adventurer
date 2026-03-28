@@ -65,15 +65,10 @@
             </div>
             <div class="task-exp">{{ project.exp || $t('common.na') }}</div>
             <!-- ✅ 卡片人数条 -->
-            <div
-              v-if="project.slotsTotal >= 1"
-              class="task-slotsline"
-              :title="`已占 ${project.slotsUsed} / 名额 ${project.slotsTotal}；剩余 ${Math.max(0, project.slotsTotal - project.slotsUsed)}`"
-              aria-label="available-slots"
-            >
+            <div class="task-slotsline">
               <i class="pi pi-users" aria-hidden="true"></i>
               <span class="slots-count">
-                {{ project.slotsUsed }} / {{ project.slotsTotal }}
+                {{ project.teamSize }}人
               </span>
             </div>
             <div class="task-teamwork">
@@ -495,6 +490,7 @@ const mapTaskToProject = (task) => {
       ? task.accepted_by.length
       : (task.current_participants ?? task.current_people ?? task.joined_count ?? task.current_count ?? 0)
   )
+  
   const slotsTotal = toInt(task.maximum_users)
 
   return {
@@ -513,6 +509,7 @@ const mapTaskToProject = (task) => {
     author: task.publisher_nickname,
     description: task.description,
     slotsUsed,
+    teamSize: toInt(task.maximum_users),
     slotsTotal,
     slotsLeft: Math.max(0, slotsTotal - slotsUsed),
     wechatId: task.wechat || '',
