@@ -220,7 +220,7 @@ function isJwtValid(token: string | null): boolean {
 }
 
 function goAccountHelp() {
-  router.push('/help/accounts'); // 按你的实际路由修改
+  router.push('/help/account');
 }
 
 onMounted(async () => {

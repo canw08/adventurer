@@ -1,4 +1,4 @@
-{
+﻿{
   "Success": {
     "Operation": "操作成功",
     "Mark": "任务标记成功",
@@ -251,5 +251,16 @@
     "descSmall": "点击下方按钮查看更新日志。",
     "ctaView": "让我看看!",
     "ctaDismiss": "朕知道了"
+  },
+  "storePage": {
+    "title": "商店",
+    "products": "商品",
+    "buy": "购买",
+    "confirmPurchasePrompt": "是否购买？需消耗",
+    "cancel": "取消",
+    "confirm": "确认",
+    "purchaseSuccess": "购买成功!",
+    "purchaseFailed": "购买失败",
+    "purchaseFailedFallback": "购买失败，请稍后重试"
   }
 }

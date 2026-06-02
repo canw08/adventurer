@@ -1,17 +1,17 @@
-<template>
+﻿<template>
   <Toast position="top-right" :baseZIndex="10000" />
   <div class="main-content" @click="cancelPurchase">
     <!-- 顶部标题栏 -->
     <div class="main-header">
       <div class="header-left-group">
-        <span class="header-left">商店(要翻译!!!)</span> 
+        <span class="header-left">{{ t('storePage.title') }}</span> 
       </div>
     </div>
 
       <!-- 商店功能按钮 -->
     <div class="store-toolbar">
         <button class="store-btn">
-        商品
+        {{ t('storePage.products') }}
         </button>
     </div>
 
@@ -38,7 +38,7 @@
                   class="product-buy-btn"
                   @click.stop="openConfirm(product)"
                 >
-                  购买
+                  {{ t('storePage.buy') }}
                 </button>
               </div>
 
@@ -49,14 +49,14 @@
                 @click.stop
               >
                 <div class="purchase-text">
-                  是否购买？需消耗
+                  {{ t('storePage.confirmPurchasePrompt') }}
                   <span class="price">
                     {{ selectedProduct.price }}<img src="../../assets/icon/token.png" alt=""/>
                   </span>          
                 </div>
                 <div class="purchase-buttons">
-                  <button class="cancel-btn" @click="cancelPurchase">取消</button>
-                  <button class="confirm-btn" @click="confirmPurchase">确认</button>
+                  <button class="cancel-btn" @click="cancelPurchase">{{ t('storePage.cancel') }}</button>
+                  <button class="confirm-btn" @click="confirmPurchase">{{ t('storePage.confirm') }}</button>
                 </div>
               </div>
             </div>
@@ -88,15 +88,18 @@ const products = ref([])
 // ✅ 获取商品
 const fetchProducts = async () => {
   try {
-    const res = await api.get('/shop/items/')
+    const res = await api.get('/api/shop/items/')
 
-    // 👉 把后端字段转换成你页面用的
-    products.value = res.data.items.map(item => ({
+    // 👉 兼容后端返回“数组”或“{ items: [] }”
+    const rawItems = Array.isArray(res.data) ? res.data : (res.data?.items || [])
+    products.value = rawItems.map(item => ({
       id: item.id,
       title: item.name,
       description: item.description,
       price: item.token_price,
-      image: item.image
+      image: typeof item.image === 'string' && item.image.startsWith('http')
+        ? item.image
+        : `${window.location.origin}${item.image || ''}`
     }))
 
   } catch (err) {
@@ -122,10 +125,19 @@ const showShortcutDot = ref(localStorage.getItem(SHORTCUT_DOT_KEY) !== '1')
 
 const fetchTokens = async () => {
   try {
-    const res = await api.get('/user/tokens/')
-    userCoins.value = res.data.tokens
+    // UserDetailView 需要 me=true 才返回当前用户
+    const res = await api.get('/api/users/', {
+      params: { me: true }
+    })
+    userCoins.value = Number(res.data?.tokens ?? 0)
   } catch (err) {
-    console.error("获取金币失败:", err)
+    try {
+      // 兼容旧接口
+      const legacyRes = await api.get('/api/user/tokens/')
+      userCoins.value = Number(legacyRes.data?.tokens ?? 0)
+    } catch (legacyErr) {
+      console.error("获取金币失败:", legacyErr?.response?.data || legacyErr)
+    }
   }
 }
 // 在这里扩展语言即可
@@ -175,12 +187,12 @@ const confirmPurchase = async () => {
   if (!selectedProduct.value) return
 
   try {
-    const res = await api.post(`/shop/items/${selectedProduct.value.id}/purchase/`)
+    const res = await api.post(`/api/shop/items/${selectedProduct.value.id}/purchase/`)
 
     // ✅ 使用 PrimeVue Toast 替代 alert
     toast.add({
       severity: 'success',   // success / info / warn / error
-      summary: '购买成功!',
+      summary: t('storePage.purchaseSuccess'),
       detail: res.data.message,
       life: 3000             // 显示 3 秒
     })
@@ -191,13 +203,13 @@ const confirmPurchase = async () => {
 
   } catch (err) {
     // ❌ 失败
-    let msg = "购买失败，请稍后重试"
-    if (err.response && err.response.data.message) {
-      msg = err.response.data.message
+    let msg = t('storePage.purchaseFailedFallback')
+    if (err.response && err.response.data) {
+      msg = err.response.data.detail || err.response.data.message || msg
     }
     toast.add({
       severity: 'error',
-      summary: '购买失败',
+      summary: t('storePage.purchaseFailed'),
       detail: msg,
       life: 3000
     })

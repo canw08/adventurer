@@ -1,4 +1,4 @@
-{
+﻿{
   "Success": {
     "Operation": "lɟnɔɔǝssnS uoᴉʇɐɹǝdO",
     "Mark": "lɟnɔɔǝssnS ƃuᴉʞɹɐW ʞsɐ⊥",
@@ -106,5 +106,16 @@
       "flipEn": "ɥsᴉlƃuƎ dᴉl™",
       "wyw": "uɐᴉz ɓuǝΛ"
     }
+  },
+  "storePage": {
+    "title": "ǝɹoʇS",
+    "products": "sʇɔnpoɹԀ",
+    "buy": "ʎnԐ",
+    "confirmPurchasePrompt": ":ʇsoƆ ¿ǝsɐɥɔɹnd ɯɹᴉɟuoƆ",
+    "cancel": "lǝɔuɐƆ",
+    "confirm": "ɯɹᴉɟuoƆ",
+    "purchaseSuccess": "!lɟssǝɔɔns ǝsɐɥɔɹnԀ",
+    "purchaseFailed": "pǝlᴉɐɟ ǝsɐɥɔɹnԀ",
+    "purchaseFailedFallback": "ɹǝʇɐl uᴉɐƃɐ ʎɹʇ ǝsɐǝld ,pǝlᴉɐɟ ǝsɐɥɔɹnԀ"
   }
 }
