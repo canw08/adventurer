@@ -56,10 +56,12 @@
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import api from '../../api.js'
+import { useUserStore } from '../../stores/user'
 
 // 默认头像（你可以换成你项目的真实资源）
 const defaultAvatar = '/img/default-avatar.png'
 const { t } = useI18n()
+const userStore = useUserStore()
 
 
 function getAvatarUrl(u) {
@@ -70,6 +72,17 @@ function getAvatarUrl(u) {
     'user'
 
   return `https://api.dicebear.com/9.x/adventurer/svg?skinColor=ecad80,f2d3b1&seed=${encodeURIComponent(seed)}&backgroundColor=transparent`
+}
+
+function isCurrentUser(u) {
+  const currentUserId = userStore.userInfo?.id
+  return currentUserId !== undefined &&
+    currentUserId !== null &&
+    String(u?.id) === String(currentUserId)
+}
+
+function getLeaderboardAvatarUrl(u, isMe = false) {
+  return getAvatarUrl(isMe || isCurrentUser(u) ? userStore.userInfo : u)
 }
 /**
  * 后端(mock)返回结构（来自你之前的 mock/rankings.js）：
@@ -101,7 +114,7 @@ onMounted(() => {
 function mapTopItem(item) {
   return {
     userId: item?.id,
-    avatarUrl: getAvatarUrl(item),
+    avatarUrl: getLeaderboardAvatarUrl(item),
     nickname: item?.nickname,
     value: item?.value
   }
@@ -113,7 +126,7 @@ function mapMeItem(me, top3) {
   return {
     rank: me?.rank ?? '-',
     userId: me?.id,
-    avatarUrl: getAvatarUrl(meInTop || me), // mock 的 me 没 avatar，这里从 top3 里补
+    avatarUrl: getLeaderboardAvatarUrl(meInTop || me, true),
     nickname: me?.nickname ?? t('ranking.me'),
     value: me?.value ?? 0
   }

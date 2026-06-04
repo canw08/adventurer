@@ -3,22 +3,22 @@
     <div class="menu-list">
       <div
         class="menu-button"
+        :class="{ active: isActive('/admin/email') }"
+        @click="goToEmail"
+        v-ripple
+      >
+        <i class="pi pi-envelope icon"></i>
+        <span class="label-text">用户与邮件</span>
+      </div>
+
+      <div
+        class="menu-button"
         :class="{ active: isActive('/admin/home') }"
         @click="goToHome"
         v-ripple
       >
         <i class="pi pi-book icon"></i>
-        <span class="label-text">后台主页</span>
-      </div>
-
-      <div
-        class="menu-button"
-        :class="{ active: isActive('/admin/audit') }"
-        @click="goToAudit"
-        v-ripple
-      >
-        <i class="pi pi-verified icon"></i>
-        <span class="label-text">审核页面</span>
+        <span class="label-text">全部任务</span>
       </div>
     </div>
   </div>
@@ -32,7 +32,7 @@ const router = useRouter()
 const route = useRoute()
 
 const goToHome = () => router.push('/admin/home')
-const goToAudit = () => router.push('/admin/audit')
+const goToEmail = () => router.push('/admin/email')
 const isActive = (path) => route.path === path
 </script>
 
