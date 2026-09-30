@@ -187,6 +187,10 @@ async function login() {
     if (redirect) {
       // 有 redirect，就跳回去（替换掉历史，避免回退到登录页）
       router.replace(redirect);
+    } else if (user?.role === 'admin') {
+      router.push("/admin/email");
+    } else if (user?.role === 'teacher') {
+      router.push("/teacher/home");
     } else if (noAvatar) {
       fading.value = true;
       window.setTimeout(() => {
@@ -220,7 +224,7 @@ function isJwtValid(token: string | null): boolean {
 }
 
 function goAccountHelp() {
-  router.push('/help/accounts'); // 按你的实际路由修改
+  router.push('/help/account');
 }
 
 onMounted(async () => {
@@ -240,6 +244,10 @@ onMounted(async () => {
       if (redirect) {
         // 如果有 redirect，优先跳过去
         router.replace(redirect);
+      } else if (user?.role === 'admin') {
+        router.replace("/admin/email");
+      } else if (user?.role === 'teacher') {
+        router.replace("/teacher/home");
       } else if (noAvatar) {
         fading.value = true;
         window.setTimeout(() => {

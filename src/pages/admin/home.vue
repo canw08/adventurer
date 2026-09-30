@@ -4,7 +4,7 @@
   <div class="main-content">
       <div class="main-header">
         <div class="header-left-group">
-          <span class="header-left">管理员后台</span>
+          <span class="header-left">全部任务</span>
           <div class="vertical-divider"></div>
           <span class="header-right">
             <span class="running-count">{{ runningProjects.length }}</span>
@@ -14,7 +14,7 @@
       </div>
 
       <div class="main-subheader">
-        <span class="greeting">管理员你好</span>
+        <span class="greeting">服务器内所有用户发布的任务</span>
         <div class="filter-buttons-wrapper small-toggle">
           <SelectButton
             v-model="activeTab"

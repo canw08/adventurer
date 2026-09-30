@@ -1,4 +1,4 @@
-{
+﻿{
   "Success": {
     "Operation": "Operation Successful",
     "Mark": "Task Marking Successful",
@@ -251,5 +251,16 @@
     "descSmall": "Click the button below to view the changelog.",
     "ctaView": "Show me!",
     "ctaDismiss": "Got it"
+  },
+  "storePage": {
+    "title": "Store",
+    "products": "Products",
+    "buy": "Buy",
+    "confirmPurchasePrompt": "Confirm purchase? Cost:",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "purchaseSuccess": "Purchase successful!",
+    "purchaseFailed": "Purchase failed",
+    "purchaseFailedFallback": "Purchase failed, please try again later"
   }
 }

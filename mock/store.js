@@ -52,7 +52,7 @@ let userTokens = 200
 
 export default [
   {
-    url: '/shop/items/',
+    url: '/api/shop/items/',
     method: 'get',
     response: () => {
       return {
